@@ -1,0 +1,97 @@
+import { getRecipeById } from '@/lib/data';
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
+import { ChefHat, Tag, User } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+
+type RecipePageProps = {
+  params: {
+    id: string;
+  };
+};
+
+export default async function RecipePage({ params }: RecipePageProps) {
+  const recipe = await getRecipeById(params.id);
+
+  if (!recipe) {
+    notFound();
+  }
+
+  return (
+    <article className="container mx-auto max-w-4xl py-8">
+      <div className="space-y-4 text-center">
+        <h1 className="text-4xl font-headline font-extrabold tracking-tight lg:text-5xl">
+          {recipe.title}
+        </h1>
+        <div className="flex items-center justify-center space-x-4 text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            <span>{recipe.contributor}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Tag className="h-4 w-4" />
+            <div className="flex flex-wrap gap-1">
+              {recipe.tags.map((tag, index) => (
+                <span key={tag} className="capitalize">
+                  {tag}
+                  {index < recipe.tags.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="my-8 overflow-hidden rounded-lg shadow-lg">
+        <Image
+          src={recipe.imageUrl}
+          alt={recipe.title}
+          width={1200}
+          height={675}
+          className="h-full w-full object-cover"
+          data-ai-hint={recipe.imageHint}
+          priority
+        />
+      </div>
+
+      <div className="mx-auto max-w-2xl">
+        <div className="my-8 rounded-lg border bg-card p-6">
+            <div className="flex items-center gap-3">
+                <ChefHat className="h-8 w-8 text-primary"/>
+                <h2 className="text-2xl font-headline font-semibold">Chef's Summary</h2>
+            </div>
+            <p className="mt-3 text-muted-foreground">
+                {recipe.summary}
+            </p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-3">
+          <div className="md:col-span-1">
+            <h2 className="text-2xl font-headline font-semibold">Ingredients</h2>
+            <Separator className="my-4" />
+            <ul className="space-y-2 text-muted-foreground">
+              {recipe.ingredients.split('\n').map((line, i) => (
+                <li key={i} className="flex items-start">
+                  <span className="mr-2 mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="md:col-span-2">
+            <h2 className="text-2xl font-headline font-semibold">Instructions</h2>
+            <Separator className="my-4" />
+            <div className="prose prose-stone dark:prose-invert max-w-none prose-p:text-muted-foreground prose-li:text-muted-foreground">
+              {recipe.instructions
+                .split('\n')
+                .map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}

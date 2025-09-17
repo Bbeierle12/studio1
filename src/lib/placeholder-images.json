@@ -1,3 +1,52 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "1",
+      "description": "A delicious looking lasagna",
+      "imageUrl": "https://picsum.photos/seed/lasagna/600/400",
+      "imageHint": "lasagna pasta"
+    },
+    {
+      "id": "2",
+      "description": "A stack of fluffy pancakes",
+      "imageUrl": "https://picsum.photos/seed/pancakes/600/400",
+      "imageHint": "pancakes breakfast"
+    },
+    {
+      "id": "3",
+      "description": "A vibrant green salad",
+      "imageUrl": "https://picsum.photos/seed/salad/600/400",
+      "imageHint": "salad bowl"
+    },
+    {
+      "id": "4",
+      "description": "A close-up of a chocolate cake",
+      "imageUrl": "https://picsum.photos/seed/cake/600/400",
+      "imageHint": "chocolate cake"
+    },
+    {
+      "id": "5",
+      "description": "A steaming bowl of soup",
+      "imageUrl": "https://picsum.photos/seed/soup/600/400",
+      "imageHint": "soup bowl"
+    },
+    {
+      "id": "6",
+      "description": "Freshly baked bread",
+      "imageUrl": "https://picsum.photos/seed/bread/600/400",
+      "imageHint": "artisan bread"
+    },
+     {
+      "id": "7",
+      "description": "A plate of tacos",
+      "imageUrl": "https://picsum.photos/seed/tacos/600/400",
+      "imageHint": "tacos mexican"
+    },
+    {
+      "id": "8",
+      "description": "A bowl of spaghetti bolognese",
+      "imageUrl": "https://picsum.photos/seed/spaghetti/600/400",
+      "imageHint": "spaghetti pasta"
+    }
+  ]
 }
