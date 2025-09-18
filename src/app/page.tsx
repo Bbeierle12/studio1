@@ -9,11 +9,11 @@ export default function Home() {
     <div className="flex-grow">
       <div className="absolute inset-0 top-[65px] opacity-10">
         <Image
-          src="https://picsum.photos/seed/kitchen/1920/1080"
-          alt="Kitchen background"
+          src="https://picsum.photos/seed/gnomes/1920/1080"
+          alt="Gnomes in a kitchen sketch background"
           fill
           className="object-cover"
-          data-ai-hint="kitchen cooking"
+          data-ai-hint="gnomes kitchen"
         />
       </div>
       <main className="relative flex h-full grow flex-col items-center justify-center p-8 text-center">
