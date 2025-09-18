@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { Header } from '@/components/header';
 
 export const metadata: Metadata = {
-  title: 'Family Cookbook Keeper',
-  description: 'Preserve and share your family\'s culinary heritage.',
+  title: 'Our Family Table',
+  description: 'Preserving culinary heritage, one recipe at a time.',
 };
 
 export default function RootLayout({
@@ -19,14 +18,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="font-body antialiased">
-        <div className="flex min-h-screen w-full flex-col">
-          <Header />
-          <main className="flex flex-1 flex-col">{children}</main>
+        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+          {children}
         </div>
         <Toaster />
       </body>
