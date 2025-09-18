@@ -8,8 +8,15 @@
  * - GenerateRecipeOutput - The return type for the generateRecipe function.
  */
 
-import {ai} from '@/ai/genkit';
+import {genkit} from 'genkit';
 import {z} from 'genkit';
+import {googleAI} from '@genkit-ai/googleai';
+
+const ai = genkit({
+  plugins: [googleAI()],
+  model: 'googleai/gemini-2.5-flash',
+});
+
 
 const GenerateRecipeInputSchema = z.object({
     title: z.string().describe('The desired title for the recipe.'),

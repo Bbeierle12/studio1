@@ -8,8 +8,14 @@
  * - SummarizeRecipeOutput - The return type for the summarizeRecipe function.
  */
 
-import {ai} from '@/ai/genkit';
+import {genkit} from 'genkit';
 import {z} from 'genkit';
+import {googleAI} from '@genkit-ai/googleai';
+
+const ai = genkit({
+    plugins: [googleAI()],
+    model: 'googleai/gemini-2.5-flash',
+});
 
 const SummarizeRecipeInputSchema = z.object({
   recipeName: z.string().describe('The name of the recipe.'),
