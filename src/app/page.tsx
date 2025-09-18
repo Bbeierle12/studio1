@@ -37,7 +37,7 @@ export default function Home() {
             className="w-full transition-colors"
             size="lg"
           >
-            <Link href="#">Log In</Link>
+            <Link href="/login">Log In</Link>
           </Button>
         </div>
       </main>

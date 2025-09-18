@@ -44,8 +44,8 @@ export function Header() {
           })}
         </nav>
         <div className="flex items-center justify-end">
-          <Button variant="secondary" size="sm">
-            Log In
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/login">Log In</Link>
           </Button>
         </div>
       </div>
