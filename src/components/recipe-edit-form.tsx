@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
+import { useEffect, useState, useTransition, useActionState } from 'react';
 import { updateRecipeAction, type FormState } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,7 @@ type RecipeEditFormProps = {
 
 export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
   const initialState: FormState = { message: '', errors: {} };
-  const [state, dispatch] = useFormState(updateRecipeAction, initialState);
+  const [state, dispatch] = useActionState(updateRecipeAction, initialState);
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const { user } = useAuth();

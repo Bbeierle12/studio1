@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
+import { useEffect, useState, useTransition, useActionState } from 'react';
 import { addRecipeAction, type FormState } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
+import Link from 'next/link';
 
 type RecipeFormProps = {
     recipe?: {
@@ -22,7 +22,7 @@ type RecipeFormProps = {
 
 export function RecipeForm({ recipe }: RecipeFormProps) {
   const initialState: FormState = { message: '', errors: {} };
-  const [state, dispatch] = useFormState(addRecipeAction, initialState);
+  const [state, dispatch] = useActionState(addRecipeAction, initialState);
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const { user } = useAuth();
