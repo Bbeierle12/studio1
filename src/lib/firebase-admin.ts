@@ -1,32 +1,38 @@
-'use server';
-
 import admin from 'firebase-admin';
-import { config } from 'dotenv';
 
-config();
-
+// Ensure idempotency in a serverless environment
 if (!admin.apps.length) {
-  // When deployed, this will use the service account from the environment
-  if (process.env.NODE_ENV === 'production' && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      admin.initializeApp({
-          credential: admin.credential.applicationDefault(),
-      });
-  } else {
-      // For local development, use the service account key from .env
-      const serviceAccount = {
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      } as admin.ServiceAccount;
+  const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    // The following line is crucial for parsing the private key from an environment variable
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  } as admin.ServiceAccount;
 
-      if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
-        throw new Error('Firebase Admin SDK Service Account credentials are not defined in .env file. Please add FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY.');
-      }
-      
-      admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
-      });
+  // Validate the service account credentials
+  if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+    // In a production environment, you might want to log this error more robustly
+    console.error('Firebase Admin SDK Service Account credentials are not defined in environment variables.');
+  } else {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+    });
   }
 }
 
-export const auth = admin.auth();
+let authInstance;
+
+// Check if the app was initialized before trying to use its services
+if (admin.apps.length > 0) {
+    authInstance = admin.auth();
+} else {
+    // Provide a dummy object or throw an error if the app is not initialized
+    // This prevents the app from crashing if firebase-admin fails to initialize
+    console.error("Firebase Admin SDK not initialized. Auth functionality will not work.");
+    authInstance = {
+        verifySessionCookie: () => Promise.reject(new Error('Firebase not initialized')),
+        createSessionCookie: () => Promise.reject(new Error('Firebase not initialized')),
+    };
+}
+
+export const auth = authInstance;
