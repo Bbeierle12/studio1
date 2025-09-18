@@ -2,11 +2,12 @@ import { getRecipeById } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { ChefHat, Tag, User, Edit, Clock, Users, UtensilsCrossed, Globe, BarChart } from 'lucide-react';
+import { ChefHat, Tag, User, Edit, Clock, Users, UtensilsCrossed, Globe, BarChart, Printer } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { DeleteRecipeButton } from '@/components/delete-recipe-button';
+import { PrintRecipeButton } from '@/components/print-recipe-button';
 
 type RecipePageProps = {
   params: {
@@ -76,7 +77,8 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 </div>
             </div>
         </div>
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center gap-2 no-print">
+            <PrintRecipeButton />
             <Button asChild variant="outline" size="sm">
                 <Link href={`/recipes/${recipe.id}/edit`}>
                     <Edit className="mr-2 h-4 w-4" />

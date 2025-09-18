@@ -57,3 +57,62 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  @page {
+    size: auto;
+    margin: 0.75in;
+  }
+
+  body {
+    background-color: #fff !important;
+    color: #000 !important;
+    font-size: 10pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print,
+  header,
+  footer,
+  nav {
+    display: none !important;
+  }
+
+  article {
+    max-width: 100% !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #000 !important;
+    page-break-after: avoid;
+  }
+  
+  a {
+    text-decoration: none;
+    color: #000 !important;
+  }
+
+  img {
+    max-width: 50% !important;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    page-break-inside: avoid;
+  }
+
+  .prose {
+    color: #000 !important;
+  }
+
+  ul, p {
+    color: #000 !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}
