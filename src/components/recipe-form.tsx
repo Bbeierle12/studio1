@@ -43,6 +43,9 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     const formData = new FormData(event.currentTarget);
     if (user?.displayName) {
         formData.set('contributor', user.displayName);
+    } else {
+        // Fallback for when user has no display name
+        formData.set('contributor', 'Anonymous Chef');
     }
     startTransition(() => {
       dispatch(formData);
@@ -57,7 +60,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
         {state.errors?.title && <p className="text-sm text-destructive">{state.errors.title}</p>}
       </div>
 
-       {user?.displayName && <input type="hidden" name="contributor" value={user.displayName} />}
+       <input type="hidden" name="contributor" value={user?.displayName || 'Anonymous Chef'} />
 
       <div className="space-y-2">
         <Label htmlFor="ingredients">Ingredients</Label>

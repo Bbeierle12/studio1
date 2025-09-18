@@ -7,12 +7,20 @@ import { summarizeRecipe } from '@/ai/flows/recipe-summarization';
 import { generateRecipe } from '@/ai/flows/generate-recipe-flow';
 import { recipeSchema, generatedRecipeSchema } from '@/lib/schemas';
 import { auth } from '@/lib/firebase-admin';
+import { cookies } from 'next/headers';
 
 async function getUserId() {
-  // This is a placeholder for getting the user ID from the session
-  // In a real app, you would get this from a cookie or session store
-  // For now, we'll assume there's a way to get the current user
-  return 'user-123'; //
+  try {
+    const sessionCookie = cookies().get('session')?.value;
+    if (!sessionCookie) {
+      return null;
+    }
+    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+    return decodedClaims.uid;
+  } catch (error) {
+    console.error('Error verifying session cookie:', error);
+    return null;
+  }
 }
 
 
@@ -200,4 +208,17 @@ export async function generateRecipeAction(formData: FormData) {
     console.error('Error generating recipe with AI:', error);
     redirect('/recipes/generate?error=ai_failed');
   }
+}
+
+
+export async function createSession(idToken: string) {
+  const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
+  const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
+  cookies().set('session', sessionCookie, { maxAge: expiresIn, httpOnly: true, secure: true });
+  revalidatePath('/');
+}
+
+export async function clearSession() {
+    cookies().delete('session');
+    revalidatePath('/');
 }

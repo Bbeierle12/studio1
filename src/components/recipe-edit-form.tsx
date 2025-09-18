@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useTransition, useActionState } from 'react';
+import { useEffect, useTransition, useActionState } from 'react';
 import { updateRecipeAction, type FormState } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,8 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
   const [isPending, startTransition] = useTransition();
   const { user } = useAuth();
   
-  const canEdit = user && (user.uid === recipe.userId || !recipe.userId);
+  // A user can edit if they are logged in AND (they are the recipe's owner OR the recipe has no owner).
+  const canEdit = user && (!recipe.userId || user.uid === recipe.userId);
 
 
   useEffect(() => {
@@ -42,6 +43,8 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
     const formData = new FormData(event.currentTarget);
     if (user?.displayName) {
       formData.set('contributor', user.displayName);
+    } else {
+        formData.set('contributor', recipe.contributor);
     }
     startTransition(() => {
       dispatch(formData);
@@ -51,13 +54,13 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <input type="hidden" name="id" value={recipe.id} />
-      <div className="space-y-2">
+      <div className.space-y-2>
         <Label htmlFor="title">Recipe Title</Label>
         <Input id="title" name="title" defaultValue={recipe.title} required disabled={!canEdit} />
         {state.errors?.title && <p className="text-sm text-destructive">{state.errors.title}</p>}
       </div>
 
-      {user?.displayName && <input type="hidden" name="contributor" value={user.displayName} />}
+      <input type="hidden" name="contributor" value={user?.displayName || recipe.contributor} />
 
       <div className="space-y-2">
         <Label htmlFor="ingredients">Ingredients</Label>
@@ -92,26 +95,28 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
         {state.errors?.tags && <p className="text-sm text-destructive">{state.errors.tags}</p>}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isPending || !canEdit}>
-        {isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Saving Changes...
-          </>
-        ) : (
-          'Save Changes'
+      <div className="flex flex-col items-center gap-4">
+        <Button type="submit" className="w-full" disabled={isPending || !canEdit}>
+            {isPending ? (
+            <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving Changes...
+            </>
+            ) : (
+            'Save Changes'
+            )}
+        </Button>
+        {!user && (
+            <p className="text-center text-sm text-muted-foreground">
+            Please <Link href="/login" className="underline hover:text-primary">log in</Link> to edit this recipe.
+            </p>
         )}
-      </Button>
-      {!user && (
-        <p className="text-center text-sm text-muted-foreground">
-          Please <Link href="/login" className="underline">log in</Link> to edit this recipe.
-        </p>
-      )}
-       {user && !canEdit && (
-        <p className="text-center text-sm text-muted-foreground">
-          You do not have permission to edit this recipe.
-        </p>
-      )}
+        {user && !canEdit && (
+            <p className="text-center text-sm text-destructive">
+            You do not have permission to edit this recipe.
+            </p>
+        )}
+      </div>
     </form>
   );
 }
