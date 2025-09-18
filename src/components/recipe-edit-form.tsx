@@ -54,13 +54,26 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <input type="hidden" name="id" value={recipe.id} />
-      <div className.space-y-2>
+      <div className="space-y-2">
         <Label htmlFor="title">Recipe Title</Label>
         <Input id="title" name="title" defaultValue={recipe.title} required disabled={!canEdit} />
         {state.errors?.title && <p className="text-sm text-destructive">{state.errors.title}</p>}
       </div>
 
       <input type="hidden" name="contributor" value={user?.displayName || recipe.contributor} />
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="prepTime">Prep Time (minutes)</Label>
+          <Input id="prepTime" name="prepTime" type="number" placeholder="e.g., 30" defaultValue={recipe.prepTime} disabled={!canEdit} />
+          {state.errors?.prepTime && <p className="text-sm text-destructive">{state.errors.prepTime}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="servings">Servings</Label>
+          <Input id="servings" name="servings" type="number" placeholder="e.g., 4" defaultValue={recipe.servings} disabled={!canEdit} />
+          {state.errors?.servings && <p className="text-sm text-destructive">{state.errors.servings}</p>}
+        </div>
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="ingredients">Ingredients</Label>

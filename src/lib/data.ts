@@ -25,6 +25,8 @@ const initialRecipes: Recipe[] = [
     imageHint: 'lasagna pasta',
     tags: ['dinner', 'italian'],
     summary: 'A heartwarming, classic lasagna recipe passed down through generations, featuring rich meat sauce, creamy ricotta, and layers of melted mozzarella. Perfect for family gatherings.',
+    prepTime: 90,
+    servings: 8,
   },
   {
     id: '2',
@@ -36,6 +38,8 @@ const initialRecipes: Recipe[] = [
     imageHint: 'pancakes breakfast',
     tags: ['breakfast', 'american'],
     summary: 'A foolproof recipe for incredibly fluffy and tender buttermilk pancakes. Simple to make and always a crowd-pleaser for a weekend breakfast or brunch.',
+    prepTime: 20,
+    servings: 4,
   },
   {
     id: '3',
@@ -47,6 +51,8 @@ const initialRecipes: Recipe[] = [
     imageHint: 'salad bowl',
     tags: ['lunch', 'healthy'],
     summary: 'A crisp, refreshing, and colorful summer salad with a zesty lemon-dijon vinaigrette. Easily customizable with your favorite veggies and proteins.',
+    prepTime: 15,
+    servings: 2,
   },
 ];
 

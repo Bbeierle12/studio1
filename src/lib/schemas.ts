@@ -4,6 +4,8 @@ export const recipeSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(3, 'Title must be at least 3 characters.'),
   contributor: z.string().min(1, 'Please select a contributor.'),
+  prepTime: z.coerce.number().int().positive('Preparation time must be a positive number.').optional(),
+  servings: z.coerce.number().int().positive('Servings must be a positive number.').optional(),
   ingredients: z.string().min(10, 'Ingredients list is too short.'),
   instructions: z.string().min(20, 'Instructions are too short.'),
   tags: z.string().min(1, 'Please add at least one tag.'),

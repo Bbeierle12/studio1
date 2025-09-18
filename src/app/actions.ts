@@ -29,6 +29,8 @@ export type FormState = {
   errors?: {
     title?: string[];
     contributor?: string[];
+    prepTime?: string[];
+    servings?: string[];
     ingredients?: string[];
     instructions?: string[];
     tags?: string[];
@@ -42,6 +44,8 @@ export async function addRecipeAction(
   const validatedFields = recipeSchema.safeParse({
     title: formData.get('title'),
     contributor: formData.get('contributor'),
+    prepTime: formData.get('prepTime'),
+    servings: formData.get('servings'),
     ingredients: formData.get('ingredients'),
     instructions: formData.get('instructions'),
     tags: formData.get('tags'),
@@ -60,7 +64,7 @@ export async function addRecipeAction(
   }
 
 
-  const { title, contributor, ingredients, instructions, tags } = validatedFields.data;
+  const { title, contributor, prepTime, servings, ingredients, instructions, tags } = validatedFields.data;
 
   try {
     const summaryResult = await summarizeRecipe({
@@ -74,6 +78,8 @@ export async function addRecipeAction(
     const newRecipe = await saveRecipe({
       title,
       contributor,
+      prepTime,
+      servings,
       ingredients,
       instructions,
       tags: tagsArray,
@@ -101,6 +107,8 @@ export async function updateRecipeAction(
     id: formData.get('id'),
     title: formData.get('title'),
     contributor: formData.get('contributor'),
+    prepTime: formData.get('prepTime'),
+    servings: formData.get('servings'),
     ingredients: formData.get('ingredients'),
     instructions: formData.get('instructions'),
     tags: formData.get('tags'),
@@ -113,7 +121,7 @@ export async function updateRecipeAction(
     };
   }
 
-  const { id, title, contributor, ingredients, instructions, tags } = validatedFields.data;
+  const { id, title, contributor, prepTime, servings, ingredients, instructions, tags } = validatedFields.data;
 
   if (!id) {
     return { message: 'Recipe ID is missing.' };
@@ -140,6 +148,8 @@ export async function updateRecipeAction(
       id,
       title,
       contributor,
+      prepTime,
+      servings,
       ingredients,
       instructions,
       tags: tagsArray,

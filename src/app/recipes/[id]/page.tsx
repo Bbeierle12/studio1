@@ -2,7 +2,7 @@ import { getRecipeById } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { ChefHat, Tag, User, Edit } from 'lucide-react';
+import { ChefHat, Tag, User, Edit, Clock, Users } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -33,16 +33,28 @@ export default async function RecipePage({ params }: RecipePageProps) {
                     <User className="h-4 w-4" />
                     <span>{recipe.contributor}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Tag className="h-4 w-4" />
-                    <div className="flex flex-wrap gap-1">
-                    {recipe.tags.map((tag, index) => (
-                        <span key={tag} className="capitalize">
-                        {tag}
-                        {index < recipe.tags.length - 1 ? ', ' : ''}
-                        </span>
-                    ))}
+                 {recipe.prepTime && (
+                    <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span>{recipe.prepTime} min</span>
                     </div>
+                 )}
+                 {recipe.servings && (
+                    <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        <span>Serves {recipe.servings}</span>
+                    </div>
+                 )}
+            </div>
+            <div className="mt-2 flex items-center justify-center gap-2">
+                <Tag className="h-4 w-4 text-muted-foreground" />
+                <div className="flex flex-wrap gap-1">
+                {recipe.tags.map((tag, index) => (
+                    <span key={tag} className="capitalize text-muted-foreground">
+                    {tag}
+                    {index < recipe.tags.length - 1 ? ', ' : ''}
+                    </span>
+                ))}
                 </div>
             </div>
         </div>

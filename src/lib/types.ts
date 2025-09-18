@@ -9,6 +9,8 @@ export type Recipe = {
   tags: string[];
   summary: string;
   userId?: string;
+  prepTime?: number;
+  servings?: number;
 };
 
 export type User = {

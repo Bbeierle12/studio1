@@ -17,6 +17,8 @@ type RecipeFormProps = {
         ingredients: string;
         instructions: string;
         tags: string;
+        prepTime?: number;
+        servings?: number;
     }
 }
 
@@ -61,6 +63,19 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       </div>
 
        <input type="hidden" name="contributor" value={user?.displayName || 'Anonymous Chef'} />
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="prepTime">Prep Time (minutes)</Label>
+          <Input id="prepTime" name="prepTime" type="number" placeholder="e.g., 30" defaultValue={recipe?.prepTime} />
+          {state.errors?.prepTime && <p className="text-sm text-destructive">{state.errors.prepTime}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="servings">Servings</Label>
+          <Input id="servings" name="servings" type="number" placeholder="e.g., 4" defaultValue={recipe?.servings} />
+          {state.errors?.servings && <p className="text-sm text-destructive">{state.errors.servings}</p>}
+        </div>
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="ingredients">Ingredients</Label>
