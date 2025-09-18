@@ -8,6 +8,7 @@ import { generateRecipe } from '@/ai/flows/generate-recipe-flow';
 import { recipeSchema, generatedRecipeSchema } from '@/lib/schemas';
 import { auth } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
+import type { Recipe } from '@/lib/types';
 
 async function getUserId() {
   try {
@@ -31,6 +32,9 @@ export type FormState = {
     contributor?: string[];
     prepTime?: string[];
     servings?: string[];
+    course?: string[];
+    cuisine?: string[];
+    difficulty?: string[];
     ingredients?: string[];
     instructions?: string[];
     tags?: string[];
@@ -46,6 +50,9 @@ export async function addRecipeAction(
     contributor: formData.get('contributor'),
     prepTime: formData.get('prepTime'),
     servings: formData.get('servings'),
+    course: formData.get('course'),
+    cuisine: formData.get('cuisine'),
+    difficulty: formData.get('difficulty'),
     ingredients: formData.get('ingredients'),
     instructions: formData.get('instructions'),
     tags: formData.get('tags'),
@@ -64,7 +71,7 @@ export async function addRecipeAction(
   }
 
 
-  const { title, contributor, prepTime, servings, ingredients, instructions, tags } = validatedFields.data;
+  const { title, contributor, prepTime, servings, course, cuisine, difficulty, ingredients, instructions, tags } = validatedFields.data;
 
   try {
     const summaryResult = await summarizeRecipe({
@@ -80,6 +87,9 @@ export async function addRecipeAction(
       contributor,
       prepTime,
       servings,
+      course,
+      cuisine,
+      difficulty,
       ingredients,
       instructions,
       tags: tagsArray,
@@ -109,6 +119,9 @@ export async function updateRecipeAction(
     contributor: formData.get('contributor'),
     prepTime: formData.get('prepTime'),
     servings: formData.get('servings'),
+    course: formData.get('course'),
+    cuisine: formData.get('cuisine'),
+    difficulty: formData.get('difficulty'),
     ingredients: formData.get('ingredients'),
     instructions: formData.get('instructions'),
     tags: formData.get('tags'),
@@ -121,7 +134,7 @@ export async function updateRecipeAction(
     };
   }
 
-  const { id, title, contributor, prepTime, servings, ingredients, instructions, tags } = validatedFields.data;
+  const { id, title, contributor, prepTime, servings, course, cuisine, difficulty, ingredients, instructions, tags } = validatedFields.data;
 
   if (!id) {
     return { message: 'Recipe ID is missing.' };
@@ -150,6 +163,9 @@ export async function updateRecipeAction(
       contributor,
       prepTime,
       servings,
+      course,
+      cuisine,
+      difficulty,
       ingredients,
       instructions,
       tags: tagsArray,

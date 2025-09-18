@@ -11,6 +11,9 @@ export type Recipe = {
   userId?: string;
   prepTime?: number;
   servings?: number;
+  course?: 'Appetizer' | 'Main' | 'Dessert' | 'Side' | 'Breakfast';
+  cuisine?: 'Italian' | 'American' | 'Mexican' | 'Asian' | 'Other';
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
 };
 
 export type User = {

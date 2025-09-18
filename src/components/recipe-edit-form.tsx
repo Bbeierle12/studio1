@@ -12,6 +12,7 @@ import type { Recipe } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type RecipeEditFormProps = {
     recipe: Recipe;
@@ -62,7 +63,7 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
 
       <input type="hidden" name="contributor" value={user?.displayName || recipe.contributor} />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="prepTime">Prep Time (minutes)</Label>
           <Input id="prepTime" name="prepTime" type="number" placeholder="e.g., 30" defaultValue={recipe.prepTime} disabled={!canEdit} />
@@ -74,6 +75,56 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
           {state.errors?.servings && <p className="text-sm text-destructive">{state.errors.servings}</p>}
         </div>
       </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="course">Course</Label>
+          <Select name="course" defaultValue={recipe.course} disabled={!canEdit}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a course" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Appetizer">Appetizer</SelectItem>
+              <SelectItem value="Main">Main</SelectItem>
+              <SelectItem value="Dessert">Dessert</SelectItem>
+              <SelectItem value="Side">Side</SelectItem>
+              <SelectItem value="Breakfast">Breakfast</SelectItem>
+            </SelectContent>
+          </Select>
+           {state.errors?.course && <p className="text-sm text-destructive">{state.errors.course}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cuisine">Cuisine</Label>
+          <Select name="cuisine" defaultValue={recipe.cuisine} disabled={!canEdit}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a cuisine" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Italian">Italian</SelectItem>
+              <SelectItem value="American">American</SelectItem>
+              <SelectItem value="Mexican">Mexican</SelectItem>
+              <SelectItem value="Asian">Asian</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+          {state.errors?.cuisine && <p className="text-sm text-destructive">{state.errors.cuisine}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="difficulty">Difficulty</Label>
+          <Select name="difficulty" defaultValue={recipe.difficulty} disabled={!canEdit}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select difficulty" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Easy">Easy</SelectItem>
+              <SelectItem value="Medium">Medium</SelectItem>
+              <SelectItem value="Hard">Hard</SelectItem>
+            </SelectContent>
+          </Select>
+          {state.errors?.difficulty && <p className="text-sm text-destructive">{state.errors.difficulty}</p>}
+        </div>
+      </div>
+
 
       <div className="space-y-2">
         <Label htmlFor="ingredients">Ingredients</Label>

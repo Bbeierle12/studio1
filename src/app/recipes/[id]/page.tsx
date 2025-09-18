@@ -2,7 +2,7 @@ import { getRecipeById } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { ChefHat, Tag, User, Edit, Clock, Users } from 'lucide-react';
+import { ChefHat, Tag, User, Edit, Clock, Users, UtensilsCrossed, Globe, BarChart } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -28,7 +28,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
             <h1 className="text-4xl font-headline font-extrabold tracking-tight lg:text-5xl">
             {recipe.title}
             </h1>
-            <div className="mt-2 flex items-center justify-center space-x-4 text-muted-foreground">
+            <div className="mt-2 flex items-center justify-center space-x-4 text-muted-foreground flex-wrap">
                 <div className="flex items-center gap-2">
                     <User className="h-4 w-4" />
                     <span>{recipe.contributor}</span>
@@ -43,6 +43,24 @@ export default async function RecipePage({ params }: RecipePageProps) {
                     <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
                         <span>Serves {recipe.servings}</span>
+                    </div>
+                 )}
+                 {recipe.course && (
+                    <div className="flex items-center gap-2">
+                        <UtensilsCrossed className="h-4 w-4" />
+                        <span>{recipe.course}</span>
+                    </div>
+                 )}
+                 {recipe.cuisine && (
+                    <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        <span>{recipe.cuisine}</span>
+                    </div>
+                 )}
+                 {recipe.difficulty && (
+                    <div className="flex items-center gap-2">
+                        <BarChart className="h-4 w-4 -rotate-90" />
+                        <span>{recipe.difficulty}</span>
                     </div>
                  )}
             </div>
