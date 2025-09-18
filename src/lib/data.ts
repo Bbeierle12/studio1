@@ -98,3 +98,20 @@ export const addRecipe = async (recipe: Omit<Recipe, 'id'>): Promise<Recipe> => 
   globalForData.recipes!.unshift(newRecipe);
   return newRecipe;
 };
+
+export const updateRecipe = async (recipe: Recipe): Promise<Recipe> => {
+    const index = globalForData.recipes!.findIndex(r => r.id === recipe.id);
+    if (index === -1) {
+        throw new Error('Recipe not found');
+    }
+    globalForData.recipes![index] = recipe;
+    return recipe;
+};
+
+export const deleteRecipe = async (id: string): Promise<void> => {
+    const index = globalForData.recipes!.findIndex(r => r.id === id);
+    if (index === -1) {
+        throw new Error('Recipe not found');
+    }
+    globalForData.recipes!.splice(index, 1);
+};

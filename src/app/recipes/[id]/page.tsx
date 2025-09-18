@@ -2,8 +2,11 @@ import { getRecipeById } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { ChefHat, Tag, User } from 'lucide-react';
+import { ChefHat, Tag, User, Edit } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { DeleteRecipeButton } from '@/components/delete-recipe-button';
 
 type RecipePageProps = {
   params: {
@@ -20,26 +23,37 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   return (
     <article className="container mx-auto max-w-4xl py-8">
-      <div className="space-y-4 text-center">
-        <h1 className="text-4xl font-headline font-extrabold tracking-tight lg:text-5xl">
-          {recipe.title}
-        </h1>
-        <div className="flex items-center justify-center space-x-4 text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            <span>{recipe.contributor}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Tag className="h-4 w-4" />
-            <div className="flex flex-wrap gap-1">
-              {recipe.tags.map((tag, index) => (
-                <span key={tag} className="capitalize">
-                  {tag}
-                  {index < recipe.tags.length - 1 ? ', ' : ''}
-                </span>
-              ))}
+      <div className="space-y-4">
+        <div className="text-center">
+            <h1 className="text-4xl font-headline font-extrabold tracking-tight lg:text-5xl">
+            {recipe.title}
+            </h1>
+            <div className="mt-2 flex items-center justify-center space-x-4 text-muted-foreground">
+                <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>{recipe.contributor}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    <div className="flex flex-wrap gap-1">
+                    {recipe.tags.map((tag, index) => (
+                        <span key={tag} className="capitalize">
+                        {tag}
+                        {index < recipe.tags.length - 1 ? ', ' : ''}
+                        </span>
+                    ))}
+                    </div>
+                </div>
             </div>
-          </div>
+        </div>
+        <div className="flex justify-center gap-2">
+            <Button asChild variant="outline" size="sm">
+                <Link href={`/recipes/${recipe.id}/edit`}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                </Link>
+            </Button>
+            <DeleteRecipeButton recipeId={recipe.id} />
         </div>
       </div>
 

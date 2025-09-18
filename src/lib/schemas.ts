@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const recipeSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(3, 'Title must be at least 3 characters.'),
   contributor: z.string().min(1, 'Please select a contributor.'),
   ingredients: z.string().min(10, 'Ingredients list is too short.'),
