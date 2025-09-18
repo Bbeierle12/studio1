@@ -4,7 +4,8 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { addRecipe as saveRecipe, updateRecipe, deleteRecipe } from '@/lib/data';
 import { summarizeRecipe } from '@/ai/flows/recipe-summarization';
-import { recipeSchema } from '@/lib/schemas';
+import { generateRecipe } from '@/ai/flows/generate-recipe-flow';
+import { recipeSchema, generatedRecipeSchema } from '@/lib/schemas';
 
 export type FormState = {
   message: string;
@@ -135,4 +136,36 @@ export async function deleteRecipeAction(id: string) {
 
     revalidatePath('/recipes');
     redirect('/recipes');
+}
+
+export async function generateRecipeAction(formData: FormData) {
+  const validatedFields = generatedRecipeSchema.safeParse({
+    title: formData.get('title'),
+    photoDataUri: formData.get('photoDataUri'),
+  });
+
+  if (!validatedFields.success) {
+    // This case should ideally be handled by client-side validation
+    console.error('Validation failed:', validatedFields.error.flatten().fieldErrors);
+    redirect('/recipes/generate?error=validation');
+    return;
+  }
+
+  try {
+    const { title, photoDataUri } = validatedFields.data;
+    const result = await generateRecipe({ title, photoDataUri });
+
+    const queryParams = new URLSearchParams({
+      title,
+      ingredients: result.ingredients,
+      instructions: result.instructions,
+      tags: result.tags,
+      fromAI: 'true'
+    });
+    
+    redirect(`/recipes/new?${queryParams.toString()}`);
+  } catch (error) {
+    console.error('Error generating recipe with AI:', error);
+    redirect('/recipes/generate?error=ai_failed');
+  }
 }

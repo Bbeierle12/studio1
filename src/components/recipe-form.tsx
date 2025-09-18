@@ -19,7 +19,16 @@ import { getUsers } from '@/lib/data';
 import type { User } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 
-export function RecipeForm() {
+type RecipeFormProps = {
+    recipe?: {
+        title: string;
+        ingredients: string;
+        instructions: string;
+        tags: string;
+    }
+}
+
+export function RecipeForm({ recipe }: RecipeFormProps) {
   const initialState: FormState = { message: '', errors: {} };
   const [state, dispatch] = useFormState(addRecipeAction, initialState);
   const { toast } = useToast();
@@ -57,7 +66,7 @@ export function RecipeForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="title">Recipe Title</Label>
-        <Input id="title" name="title" placeholder="e.g., Classic Chocolate Chip Cookies" required />
+        <Input id="title" name="title" placeholder="e.g., Classic Chocolate Chip Cookies" defaultValue={recipe?.title} required />
         {state.errors?.title && <p className="text-sm text-destructive">{state.errors.title}</p>}
       </div>
 
@@ -85,6 +94,7 @@ export function RecipeForm() {
           name="ingredients"
           placeholder="List each ingredient on a new line..."
           rows={8}
+          defaultValue={recipe?.ingredients}
           required
         />
         {state.errors?.ingredients && <p className="text-sm text-destructive">{state.errors.ingredients}</p>}
@@ -97,6 +107,7 @@ export function RecipeForm() {
           name="instructions"
           placeholder="Describe the cooking steps..."
           rows={12}
+          defaultValue={recipe?.instructions}
           required
         />
         {state.errors?.instructions && <p className="text-sm text-destructive">{state.errors.instructions}</p>}
@@ -104,7 +115,7 @@ export function RecipeForm() {
 
       <div className="space-y-2">
         <Label htmlFor="tags">Tags</Label>
-        <Input id="tags" name="tags" placeholder="e.g., dessert, baking, vegetarian" required />
+        <Input id="tags" name="tags" placeholder="e.g., dessert, baking, vegetarian" defaultValue={recipe?.tags} required />
         <p className="text-sm text-muted-foreground">Separate tags with a comma.</p>
         {state.errors?.tags && <p className="text-sm text-destructive">{state.errors.tags}</p>}
       </div>
