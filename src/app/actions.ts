@@ -38,6 +38,7 @@ export type FormState = {
     ingredients?: string[];
     instructions?: string[];
     tags?: string[];
+    story?: string[];
   };
 };
 
@@ -56,6 +57,7 @@ export async function addRecipeAction(
     ingredients: formData.get('ingredients'),
     instructions: formData.get('instructions'),
     tags: formData.get('tags'),
+    story: formData.get('story'),
   });
 
   if (!validatedFields.success) {
@@ -71,7 +73,7 @@ export async function addRecipeAction(
   }
 
 
-  const { title, contributor, prepTime, servings, course, cuisine, difficulty, ingredients, instructions, tags } = validatedFields.data;
+  const { title, contributor, prepTime, servings, course, cuisine, difficulty, ingredients, instructions, tags, story } = validatedFields.data;
 
   try {
     const summaryResult = await summarizeRecipe({
@@ -94,6 +96,7 @@ export async function addRecipeAction(
       instructions,
       tags: tagsArray,
       summary: summaryResult.summary,
+      story,
       imageUrl: `https://picsum.photos/seed/${title.replace(/\s+/g, '-')}/600/400`,
       imageHint: 'food meal',
       userId
@@ -125,6 +128,7 @@ export async function updateRecipeAction(
     ingredients: formData.get('ingredients'),
     instructions: formData.get('instructions'),
     tags: formData.get('tags'),
+    story: formData.get('story'),
   });
 
   if (!validatedFields.success) {
@@ -134,7 +138,7 @@ export async function updateRecipeAction(
     };
   }
 
-  const { id, title, contributor, prepTime, servings, course, cuisine, difficulty, ingredients, instructions, tags } = validatedFields.data;
+  const { id, title, contributor, prepTime, servings, course, cuisine, difficulty, ingredients, instructions, tags, story } = validatedFields.data;
 
   if (!id) {
     return { message: 'Recipe ID is missing.' };
@@ -170,6 +174,7 @@ export async function updateRecipeAction(
       instructions,
       tags: tagsArray,
       summary: summaryResult.summary,
+      story,
       imageUrl: `https://picsum.photos/seed/${title.replace(/\s+/g, '-')}/600/400`,
       imageHint: 'food meal',
       userId: recipeToUpdate?.userId || userId

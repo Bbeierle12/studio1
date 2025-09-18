@@ -2,7 +2,7 @@ import { getRecipeById } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { ChefHat, Tag, User, Edit, Clock, Users, UtensilsCrossed, Globe, BarChart, Printer } from 'lucide-react';
+import { ChefHat, Tag, User, Edit, Clock, Users, UtensilsCrossed, Globe, BarChart, Printer, BookOpen } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -111,6 +111,18 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 {recipe.summary}
             </p>
         </div>
+
+        {recipe.story && (
+          <div className="my-8 rounded-lg border bg-card p-6">
+              <div className="flex items-center gap-3">
+                  <BookOpen className="h-8 w-8 text-primary"/>
+                  <h2 className="text-2xl font-headline font-semibold">Family Story</h2>
+              </div>
+              <p className="mt-3 text-muted-foreground prose prose-stone dark:prose-invert max-w-none prose-p:text-muted-foreground">
+                  {recipe.story}
+              </p>
+          </div>
+        )}
 
         <div className="grid gap-8 md:grid-cols-3">
           <div className="md:col-span-1">

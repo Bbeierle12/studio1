@@ -12,6 +12,7 @@ export const recipeSchema = z.object({
   ingredients: z.string().min(10, 'Ingredients list is too short.'),
   instructions: z.string().min(20, 'Instructions are too short.'),
   tags: z.string().min(1, 'Please add at least one tag.'),
+  story: z.string().optional(),
 });
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB

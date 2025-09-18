@@ -125,6 +125,18 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
         </div>
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="story">Family Story / Anecdote</Label>
+        <Textarea
+          id="story"
+          name="story"
+          placeholder="Share a memory or a story about this recipe..."
+          rows={4}
+          defaultValue={recipe.story}
+          disabled={!canEdit}
+        />
+        {state.errors?.story && <p className="text-sm text-destructive">{state.errors.story}</p>}
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="ingredients">Ingredients</Label>

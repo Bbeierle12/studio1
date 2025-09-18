@@ -14,6 +14,7 @@ export type Recipe = {
   course?: 'Appetizer' | 'Main' | 'Dessert' | 'Side' | 'Breakfast';
   cuisine?: 'Italian' | 'American' | 'Mexican' | 'Asian' | 'Other';
   difficulty?: 'Easy' | 'Medium' | 'Hard';
+  story?: string;
 };
 
 export type User = {
