@@ -2,10 +2,19 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { addRecipe as saveRecipe, updateRecipe, deleteRecipe } from '@/lib/data';
+import { addRecipe as saveRecipe, updateRecipe, deleteRecipe, getRecipeById } from '@/lib/data';
 import { summarizeRecipe } from '@/ai/flows/recipe-summarization';
 import { generateRecipe } from '@/ai/flows/generate-recipe-flow';
 import { recipeSchema, generatedRecipeSchema } from '@/lib/schemas';
+import { auth } from '@/lib/firebase-admin';
+
+async function getUserId() {
+  // This is a placeholder for getting the user ID from the session
+  // In a real app, you would get this from a cookie or session store
+  // For now, we'll assume there's a way to get the current user
+  return 'user-123'; //
+}
+
 
 export type FormState = {
   message: string;
@@ -36,6 +45,12 @@ export async function addRecipeAction(
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
+  
+  const userId = await getUserId();
+  if (!userId) {
+    return { message: 'You must be logged in to add a recipe.' };
+  }
+
 
   const { title, contributor, ingredients, instructions, tags } = validatedFields.data;
 
@@ -56,7 +71,8 @@ export async function addRecipeAction(
       tags: tagsArray,
       summary: summaryResult.summary,
       imageUrl: `https://picsum.photos/seed/${title.replace(/\s+/g, '-')}/600/400`,
-      imageHint: 'food meal'
+      imageHint: 'food meal',
+      userId
     });
 
   } catch (error) {
@@ -94,6 +110,14 @@ export async function updateRecipeAction(
   if (!id) {
     return { message: 'Recipe ID is missing.' };
   }
+  
+  const userId = await getUserId();
+  const recipeToUpdate = await getRecipeById(id);
+
+  if (recipeToUpdate && recipeToUpdate.userId && recipeToUpdate.userId !== userId) {
+      return { message: 'You do not have permission to edit this recipe.' };
+  }
+
 
   try {
     const summaryResult = await summarizeRecipe({
@@ -113,7 +137,8 @@ export async function updateRecipeAction(
       tags: tagsArray,
       summary: summaryResult.summary,
       imageUrl: `https://picsum.photos/seed/${title.replace(/\s+/g, '-')}/600/400`,
-      imageHint: 'food meal'
+      imageHint: 'food meal',
+      userId: recipeToUpdate?.userId || userId
     });
 
   } catch (error) {
@@ -127,6 +152,13 @@ export async function updateRecipeAction(
 }
 
 export async function deleteRecipeAction(id: string) {
+    const userId = await getUserId();
+    const recipeToDelete = await getRecipeById(id);
+
+    if (recipeToDelete && recipeToDelete.userId && recipeToDelete.userId !== userId) {
+      return { message: 'You do not have permission to delete this recipe.' };
+    }
+
     try {
         await deleteRecipe(id);
     } catch (error) {

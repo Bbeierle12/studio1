@@ -8,17 +8,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { getUsers } from '@/lib/data';
-import type { User, Recipe } from '@/lib/types';
+import type { Recipe } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
+import Link from 'next/link';
 
 type RecipeEditFormProps = {
     recipe: Recipe;
@@ -29,16 +23,10 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
   const [state, dispatch] = useFormState(updateRecipeAction, initialState);
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const { user } = useAuth();
+  
+  const canEdit = user && (user.uid === recipe.userId || !recipe.userId);
 
-  const [users, setUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    async function fetchUsers() {
-      const fetchedUsers = await getUsers();
-      setUsers(fetchedUsers);
-    }
-    fetchUsers();
-  }, []);
 
   useEffect(() => {
     if (state.message && state.message !== 'Validation failed. Please check your input.') {
@@ -53,6 +41,9 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    if (user?.displayName) {
+      formData.set('contributor', user.displayName);
+    }
     startTransition(() => {
       dispatch(formData);
     });
@@ -63,26 +54,11 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
       <input type="hidden" name="id" value={recipe.id} />
       <div className="space-y-2">
         <Label htmlFor="title">Recipe Title</Label>
-        <Input id="title" name="title" defaultValue={recipe.title} required />
+        <Input id="title" name="title" defaultValue={recipe.title} required disabled={!canEdit} />
         {state.errors?.title && <p className="text-sm text-destructive">{state.errors.title}</p>}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="contributor">Contributor</Label>
-        <Select name="contributor" defaultValue={recipe.contributor} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a family member" />
-          </SelectTrigger>
-          <SelectContent>
-            {users.map(user => (
-              <SelectItem key={user.id} value={user.name}>
-                {user.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {state.errors?.contributor && <p className="text-sm text-destructive">{state.errors.contributor}</p>}
-      </div>
+      {user?.displayName && <input type="hidden" name="contributor" value={user.displayName} />}
 
       <div className="space-y-2">
         <Label htmlFor="ingredients">Ingredients</Label>
@@ -92,6 +68,7 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
           defaultValue={recipe.ingredients}
           rows={8}
           required
+          disabled={!canEdit}
         />
         {state.errors?.ingredients && <p className="text-sm text-destructive">{state.errors.ingredients}</p>}
       </div>
@@ -104,18 +81,19 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
           defaultValue={recipe.instructions}
           rows={12}
           required
+          disabled={!canEdit}
         />
         {state.errors?.instructions && <p className="text-sm text-destructive">{state.errors.instructions}</p>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="tags">Tags</Label>
-        <Input id="tags" name="tags" defaultValue={recipe.tags.join(', ')} required />
+        <Input id="tags" name="tags" defaultValue={recipe.tags.join(', ')} required disabled={!canEdit} />
         <p className="text-sm text-muted-foreground">Separate tags with a comma.</p>
         {state.errors?.tags && <p className="text-sm text-destructive">{state.errors.tags}</p>}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isPending}>
+      <Button type="submit" className="w-full" disabled={isPending || !canEdit}>
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -125,6 +103,16 @@ export function RecipeEditForm({ recipe }: RecipeEditFormProps) {
           'Save Changes'
         )}
       </Button>
+      {!user && (
+        <p className="text-center text-sm text-muted-foreground">
+          Please <Link href="/login" className="underline">log in</Link> to edit this recipe.
+        </p>
+      )}
+       {user && !canEdit && (
+        <p className="text-center text-sm text-muted-foreground">
+          You do not have permission to edit this recipe.
+        </p>
+      )}
     </form>
   );
 }

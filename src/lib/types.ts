@@ -8,6 +8,7 @@ export type Recipe = {
   imageHint: string;
   tags: string[];
   summary: string;
+  userId?: string;
 };
 
 export type User = {
