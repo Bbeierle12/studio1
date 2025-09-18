@@ -57,10 +57,25 @@ export const getUsers = async (): Promise<User[]> => {
   return globalForData.users!;
 };
 
-export const getRecipes = async (): Promise<Recipe[]> => {
-  // Simulate network latency
-  // await new Promise(resolve => setTimeout(resolve, 500));
-  return globalForData.recipes!.sort((a, b) => (a.title > b.title ? 1 : -1));
+export const getRecipes = async (
+  { query, tag }: { query?: string; tag?: string } = {}
+): Promise<Recipe[]> => {
+  let recipes = globalForData.recipes!;
+
+  if (query) {
+    const lowerCaseQuery = query.toLowerCase();
+    recipes = recipes.filter(recipe =>
+      recipe.title.toLowerCase().includes(lowerCaseQuery) ||
+      recipe.ingredients.toLowerCase().includes(lowerCaseQuery) ||
+      recipe.summary.toLowerCase().includes(lowerCaseQuery)
+    );
+  }
+
+  if (tag) {
+    recipes = recipes.filter(recipe => recipe.tags.includes(tag.toLowerCase()));
+  }
+
+  return recipes.sort((a, b) => (a.title > b.title ? 1 : -1));
 };
 
 export const getRecipeById = async (id: string): Promise<Recipe | undefined> => {
