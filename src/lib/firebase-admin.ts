@@ -21,7 +21,7 @@ if (!admin.apps.length) {
   }
 }
 
-let authInstance;
+let authInstance: admin.auth.Auth;
 
 // Check if the app was initialized before trying to use its services
 if (admin.apps.length > 0) {
@@ -33,7 +33,7 @@ if (admin.apps.length > 0) {
     authInstance = {
         verifySessionCookie: () => Promise.reject(new Error('Firebase not initialized')),
         createSessionCookie: () => Promise.reject(new Error('Firebase not initialized')),
-    };
+    } as unknown as admin.auth.Auth;
 }
 
 export const auth = authInstance;
