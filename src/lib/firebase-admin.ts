@@ -15,9 +15,13 @@ if (!admin.apps.length) {
     // In a production environment, you might want to log this error more robustly
     console.error('Firebase Admin SDK Service Account credentials are not defined in environment variables.');
   } else {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-    });
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+        });
+    } catch (error: any) {
+        console.error('Firebase Admin SDK initialization error:', error.message);
+    }
   }
 }
 
