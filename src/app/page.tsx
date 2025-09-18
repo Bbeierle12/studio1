@@ -6,8 +6,8 @@ import Image from 'next/image';
 
 export default function Home() {
   return (
-    <>
-      <div className="absolute inset-0 opacity-10">
+    <div className="flex-grow">
+      <div className="absolute inset-0 top-[65px] opacity-10">
         <Image
           src="https://picsum.photos/seed/kitchen/1920/1080"
           alt="Kitchen background"
@@ -29,7 +29,7 @@ export default function Home() {
             className="w-full transform transition-transform hover:scale-105"
             size="lg"
           >
-            <Link href="#">Browse Recipes</Link>
+            <Link href="/recipes">Browse Recipes</Link>
           </Button>
           <Button
             asChild
@@ -44,6 +44,6 @@ export default function Home() {
       <footer className="absolute bottom-8 w-full text-center text-sm text-secondary">
         <p>© 2024 Our Family Table. All Rights Reserved.</p>
       </footer>
-    </>
+    </div>
   );
 }

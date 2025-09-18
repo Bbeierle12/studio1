@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import { Header } from '@/components/header';
 
 export const metadata: Metadata = {
   title: 'Our Family Table',
@@ -24,6 +25,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+          <Header />
           {children}
         </div>
         <Toaster />
