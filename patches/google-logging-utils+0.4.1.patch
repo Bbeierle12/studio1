@@ -1,0 +1,13 @@
+diff --git a/node_modules/google-logging-utils/build/src/logging-utils.js b/node_modules/google-logging-utils/build/src/logging-utils.js
+index 72559eb..1e63a8c 100644
+--- a/node_modules/google-logging-utils/build/src/logging-utils.js
++++ b/node_modules/google-logging-utils/build/src/logging-utils.js
+@@ -19,7 +19,7 @@ const bunyan_1 = require("bunyan");
+ const stream_1 = require("stream");
+ const bunyan_common_1 = require("@google-cloud/bunyan-common");
+ const process = require("node:process");
+-const LOGGING_TRACE_KEY = 'logging.googleapis.com/trace';
++const LOGGING_TRACE_KEY = 'logging.googleapis.com/trace_sampled';
+ const omit = require("lodash.omit");
+ const get = require("lodash.get");
+ const set = require("lodash.set");
