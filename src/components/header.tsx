@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { CookingPot, Home, PlusCircle, LogOut, LogIn } from 'lucide-react';
+import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
@@ -38,6 +38,7 @@ export function Header() {
   const navLinks = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/recipes', label: 'Browse', icon: CookingPot },
+    { href: '/collections', label: 'Collections', icon: Library },
     { href: '/recipes/new', label: 'Add Recipe', icon: PlusCircle },
   ];
 
