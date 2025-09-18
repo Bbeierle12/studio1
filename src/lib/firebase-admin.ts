@@ -1,3 +1,4 @@
+
 import admin from 'firebase-admin';
 
 // Ensure idempotency in a serverless environment
