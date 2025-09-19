@@ -9,9 +9,8 @@ export function PrintRecipeButton() {
   const { toast } = useToast();
 
   const handlePrint = () => {
-    const article = document.querySelector('article');
-    if (!article) {
-      console.error('Printable article area not found.');
+    const articleNode = document.querySelector('article');
+    if (!articleNode) {
       toast({
         variant: 'destructive',
         title: 'Print Error',
@@ -31,10 +30,11 @@ export function PrintRecipeButton() {
     iframe.style.width = '0';
     iframe.style.height = '0';
     iframe.style.border = 'none';
-    document.body.appendChild(iframe);
     
-    const doc = iframe.contentWindow?.document;
-    if (!doc) {
+    document.body.appendChild(iframe);
+
+    const printDocument = iframe.contentWindow?.document;
+    if (!printDocument) {
         toast({
             variant: 'destructive',
             title: 'Print Error',
@@ -43,47 +43,49 @@ export function PrintRecipeButton() {
         document.body.removeChild(iframe);
         return;
     }
-    
-    // Write the document structure, including head content for styles
-    const headContent = document.head.innerHTML;
-    doc.open();
-    doc.write(`
+
+    // Get all styles from the main document
+    const headContent = Array.from(document.querySelectorAll('link, style'))
+        .map(el => el.outerHTML)
+        .join('');
+
+    // Set the content of the iframe
+    printDocument.open();
+    printDocument.write(`
         <html>
             <head>
-                <title>Print Recipe - ${document.title}</title>
+                <title>Print - ${document.title}</title>
                 ${headContent}
             </head>
-            <body>
-                ${article.outerHTML}
+            <body class="dark">
+                ${articleNode.outerHTML}
             </body>
         </html>
     `);
-    doc.close();
+    printDocument.close();
 
-    // Use a timeout to allow the iframe content and styles to load
-    const printTimeout = setTimeout(() => {
-        if (iframe.contentWindow) {
-            iframe.contentWindow.focus(); // focus is important for some browsers
-            iframe.contentWindow.print();
+    // Wait for the iframe to fully load its content and styles
+    iframe.onload = function() {
+        try {
+            // Focus on the iframe and print
+            iframe.contentWindow?.focus();
+            iframe.contentWindow?.print();
+        } catch (e) {
+            console.error("Print failed: ", e);
+            toast({
+                variant: 'destructive',
+                title: 'Print Error',
+                description: 'An error occurred while trying to print.',
+            });
+        } finally {
+            // Clean up the iframe after a delay
+            setTimeout(() => {
+                if (document.body.contains(iframe)) {
+                    document.body.removeChild(iframe);
+                }
+            }, 1000);
         }
-    }, 500); // 500ms delay is usually sufficient
-
-    // Add an event listener to clean up the iframe after printing
-    const afterPrint = () => {
-        clearTimeout(printTimeout); // Clear the timeout in case printing was cancelled
-        if (document.body.contains(iframe)) {
-          document.body.removeChild(iframe);
-        }
-        iframe.contentWindow?.removeEventListener('afterprint', afterPrint);
     };
-    iframe.contentWindow?.addEventListener('afterprint', afterPrint);
-
-    // Fallback cleanup in case 'afterprint' event doesn't fire
-    setTimeout(() => {
-        if (document.body.contains(iframe)) {
-            document.body.removeChild(iframe);
-        }
-    }, 5000);
   };
 
   return (
