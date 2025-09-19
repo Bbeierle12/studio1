@@ -83,6 +83,7 @@ export function PrintDialog() {
             title="Print Content"
             className="w-full h-full"
             srcDoc={printHtml}
+            onLoad={step === 2 ? handlePrint : undefined}
           />
         </div>
         <AlertDialogFooter>
