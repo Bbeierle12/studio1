@@ -25,44 +25,34 @@ export function PrintDialog() {
 
   const handlePrint = useCallback(() => {
     if (printContainerRef.current) {
-        document.body.classList.add('printing-active');
+        // The CSS will handle showing only this content
         window.print();
-        document.body.classList.remove('printing-active');
     } else {
         console.error("Could not find content to print.");
     }
   }, []);
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
-        // clean up classes when dialog is closed
-        document.body.classList.remove('printing-active');
-    }
     setPrintOpen(open);
   };
   
-  // Add a listener to clean up in case the user uses the browser's "Cancel" button
-  useEffect(() => {
-    const afterPrint = () => {
-        document.body.classList.remove('printing-active');
-    };
-    
-    window.addEventListener('afterprint', afterPrint);
-    return () => window.removeEventListener('afterprint', afterPrint);
-  }, []);
-
-
   if (!isClient) {
     return null;
   }
 
-  return (
-    <>
+  // This hidden div gets populated with the print content and is the only thing shown via print CSS
+  const PrintArea = () => (
       <div 
         ref={printContainerRef}
         className="printable-content"
         dangerouslySetInnerHTML={{ __html: printContent }}
       />
+  );
+
+
+  return (
+    <>
+      <PrintArea />
       <AlertDialog open={isPrintOpen} onOpenChange={handleOpenChange}>
         <AlertDialogContent className="max-w-3xl no-print">
           <AlertDialogHeader>
