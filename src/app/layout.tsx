@@ -4,6 +4,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/header';
 import { AuthProvider } from '@/context/auth-context';
 import { ShoppingListProvider } from '@/context/shopping-list-context';
+import { PrintProvider } from '@/context/print-context';
+import { PrintDialog } from '@/components/print-dialog';
 
 export const metadata: Metadata = {
   title: 'Our Family Table',
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.Node;
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" className="dark">
@@ -28,11 +30,14 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <AuthProvider>
           <ShoppingListProvider>
-            <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-              <Header />
-              {children}
-            </div>
-            <Toaster />
+            <PrintProvider>
+              <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+                <Header />
+                {children}
+              </div>
+              <Toaster />
+              <PrintDialog />
+            </PrintProvider>
           </ShoppingListProvider>
         </AuthProvider>
       </body>

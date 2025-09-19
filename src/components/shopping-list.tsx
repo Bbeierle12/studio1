@@ -19,11 +19,13 @@ import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
+import { usePrint } from '@/context/print-context';
 
 export function ShoppingList() {
   const { items, toggleItem, clearList, getItemsCount, getListAsText } = useShoppingList();
   const { total, unchecked } = getItemsCount();
   const { toast } = useToast();
+  const { triggerPrint } = usePrint();
 
   const handleCopy = () => {
     const listText = getListAsText();
@@ -53,46 +55,13 @@ export function ShoppingList() {
         return;
     }
 
-    // Use an iframe to print to avoid popup issues
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow?.document;
-    if (doc) {
-        doc.open();
-        doc.write(`
-            <html>
-            <head>
-                <title>Shopping List</title>
-                <style>
-                body { font-family: sans-serif; }
-                h1 { font-size: 1.5rem; margin-bottom: 1rem; }
-                ul { list-style-type: none; padding: 0; }
-                li { margin-bottom: 0.5rem; font-size: 1rem; }
-                </style>
-            </head>
-            <body>
-                <h1>Shopping List</h1>
-                <ul>
-                ${listText.split('\n').map(item => `<li>&#9744; ${item}</li>`).join('')}
-                </ul>
-            </body>
-            </html>
-        `);
-        doc.close();
-        
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-    }
-    
-    // Clean up the iframe after printing
-    setTimeout(() => {
-        document.body.removeChild(iframe);
-    }, 1000);
+    const printContent = `
+      <h1>Shopping List</h1>
+      <ul>
+        ${listText.split('\n').map(item => `<li>&#9744; ${item}</li>`).join('')}
+      </ul>
+    `;
+    triggerPrint(printContent);
   };
 
 
