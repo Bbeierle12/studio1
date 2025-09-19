@@ -1,5 +1,3 @@
-'use server';
-
 import { PrismaClient } from '@prisma/client'
 import type { Recipe, User } from './types';
 
