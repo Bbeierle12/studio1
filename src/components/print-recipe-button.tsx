@@ -63,7 +63,7 @@ export function PrintRecipeButton() {
     // Use a timeout to allow the iframe content and styles to load
     const printTimeout = setTimeout(() => {
         if (iframe.contentWindow) {
-            iframe.contentWindow.focus();
+            iframe.contentWindow.focus(); // focus is important for some browsers
             iframe.contentWindow.print();
         }
     }, 500); // 500ms delay is usually sufficient
@@ -71,7 +71,9 @@ export function PrintRecipeButton() {
     // Add an event listener to clean up the iframe after printing
     const afterPrint = () => {
         clearTimeout(printTimeout); // Clear the timeout in case printing was cancelled
-        document.body.removeChild(iframe);
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
         iframe.contentWindow?.removeEventListener('afterprint', afterPrint);
     };
     iframe.contentWindow?.addEventListener('afterprint', afterPrint);
