@@ -6,6 +6,7 @@ import { AuthProvider } from '@/context/auth-context';
 import { ShoppingListProvider } from '@/context/shopping-list-context';
 import { PrintProvider } from '@/context/print-context';
 import { PrintDialog } from '@/components/print-dialog';
+import { ThemeProvider } from '@/context/theme-context';
 
 export const metadata: Metadata = {
   title: 'Our Family Table',
@@ -18,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -28,18 +29,25 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <AuthProvider>
-          <ShoppingListProvider>
-            <PrintProvider>
-              <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-                <Header />
-                {children}
-              </div>
-              <Toaster />
-              <PrintDialog />
-            </PrintProvider>
-          </ShoppingListProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <ShoppingListProvider>
+              <PrintProvider>
+                <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+                  <Header />
+                  {children}
+                </div>
+                <Toaster />
+                <PrintDialog />
+              </PrintProvider>
+            </ShoppingListProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

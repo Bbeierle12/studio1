@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library, ShoppingCart } from 'lucide-react';
+import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library, ShoppingCart, Sun, Moon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShoppingList } from './shopping-list';
+import { useTheme } from 'next-themes';
 
 function getInitials(name?: string | null) {
   if (!name) return 'U';
@@ -31,6 +32,7 @@ function getInitials(name?: string | null) {
 export function Header() {
   const pathname = usePathname();
   const { user, loading } = useAuth();
+  const { setTheme, theme } = useTheme();
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -42,6 +44,14 @@ export function Header() {
     { href: '/collections', label: 'Collections', icon: Library },
     { href: '/recipes/new', label: 'Add Recipe', icon: PlusCircle },
   ];
+  
+  const toggleTheme = () => {
+    if (theme === 'light') {
+      setTheme('dark');
+    } else {
+      setTheme('light');
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -73,6 +83,11 @@ export function Header() {
         </nav>
         <div className="flex items-center justify-end gap-2">
           <ShoppingList />
+          <Button variant="ghost" size="icon" onClick={toggleTheme}>
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
           {loading ? (
              <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
           ) : user ? (
