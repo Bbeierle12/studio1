@@ -13,8 +13,6 @@ export function PrintRecipeButton() {
     const articleNode = document.querySelector('article');
 
     if (articleNode) {
-      articleNode.classList.add('printable-source');
-      
       toast({
         title: 'Preparing Print View',
         description: 'The print preview dialog is opening.',
