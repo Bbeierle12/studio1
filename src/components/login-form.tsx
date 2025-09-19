@@ -85,7 +85,7 @@ export function LoginForm() {
             Sending link...
           </>
         ) : (
-          'Sign In with Email'
+          'Continue with Email'
         )}
       </Button>
       <p className="text-center text-xs text-muted-foreground">

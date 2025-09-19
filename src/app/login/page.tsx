@@ -6,6 +6,8 @@ import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { Separator } from '@/components/ui/separator';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
@@ -29,8 +31,8 @@ export default function LoginPage() {
     <div className="container mx-auto flex h-full flex-col items-center justify-center py-8">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-headline">Welcome Back</CardTitle>
-          <CardDescription>Sign in to access your family's recipes.</CardDescription>
+          <CardTitle className="text-3xl font-headline">Welcome</CardTitle>
+          <CardDescription>Sign in or create an account to get started.</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm />

@@ -64,14 +64,24 @@ export default function Home() {
             <Link href="/recipes">Browse Recipes</Link>
           </Button>
           {!loading && !user && (
-            <Button
-              asChild
-              variant="outline"
-              className="w-full transition-colors"
-              size="lg"
-            >
-              <Link href="/login">Log In</Link>
-            </Button>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                asChild
+                variant="secondary"
+                className="w-full transition-colors"
+                size="lg"
+              >
+                <Link href="/login">Log In</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full transition-colors"
+                size="lg"
+              >
+                <Link href="/login">Sign Up</Link>
+              </Button>
+            </div>
           )}
         </div>
       </main>
