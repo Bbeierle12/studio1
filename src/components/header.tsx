@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library } from 'lucide-react';
+import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library, ShoppingCart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ShoppingList } from './shopping-list';
 
 function getInitials(name?: string | null) {
   if (!name) return 'U';
@@ -70,7 +71,8 @@ export function Header() {
             );
           })}
         </nav>
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end gap-2">
+          <ShoppingList />
           {loading ? (
              <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
           ) : user ? (

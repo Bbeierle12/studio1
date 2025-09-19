@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/header';
 import { AuthProvider } from '@/context/auth-context';
+import { ShoppingListProvider } from '@/context/shopping-list-context';
 
 export const metadata: Metadata = {
   title: 'Our Family Table',
@@ -26,11 +27,13 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-            <Header />
-            {children}
-          </div>
-          <Toaster />
+          <ShoppingListProvider>
+            <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+              <Header />
+              {children}
+            </div>
+            <Toaster />
+          </ShoppingListProvider>
         </AuthProvider>
       </body>
     </html>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { DeleteRecipeButton } from '@/components/delete-recipe-button';
 import { PrintRecipeButton } from '@/components/print-recipe-button';
+import { AddToShoppingListButton } from '@/components/add-to-shopping-list-button';
 
 type RecipePageProps = {
   params: {
@@ -126,7 +127,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
         <div className="grid gap-8 md:grid-cols-3">
           <div className="md:col-span-1">
-            <h2 className="text-2xl font-headline font-semibold">Ingredients</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-headline font-semibold">Ingredients</h2>
+            </div>
             <Separator className="my-4" />
             <ul className="space-y-2 text-muted-foreground">
               {recipe.ingredients.split('\n').map((line, i) => (
@@ -136,6 +139,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
                 </li>
               ))}
             </ul>
+             <AddToShoppingListButton ingredients={recipe.ingredients} />
           </div>
           <div className="md:col-span-2">
             <h2 className="text-2xl font-headline font-semibold">Instructions</h2>
