@@ -24,21 +24,26 @@ export function PrintRecipeButton() {
     });
 
     try {
-      // Get all link tags from the head
+      // Get all link tags from the head that are stylesheets
       const stylesheets = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+      
       // Fetch the content of each stylesheet
-      const stylePromises = stylesheets.map(sheet => fetch(sheet.href).then(res => res.text()));
+      const stylePromises = stylesheets.map(sheet => 
+        fetch(sheet.href).then(res => res.text()).catch(err => {
+          console.error(`Could not fetch stylesheet: ${sheet.href}`, err);
+          return ''; // Return empty string on error
+        })
+      );
       const styleContents = await Promise.all(stylePromises);
       
       const combinedStyles = styleContents.join('\n');
 
       // Create a hidden iframe
       const iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.width = '1px';
-      iframe.style.height = '1px';
-      iframe.style.left = '-9999px';
-      iframe.style.top = '-9999px';
+      iframe.style.position = 'absolute';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
       
       let cleanupTimeout: NodeJS.Timeout;
 
@@ -46,7 +51,9 @@ export function PrintRecipeButton() {
         if (document.body.contains(iframe)) {
           document.body.removeChild(iframe);
         }
-        clearTimeout(cleanupTimeout);
+        if (cleanupTimeout) {
+            clearTimeout(cleanupTimeout);
+        }
       };
       
       iframe.onload = () => {
@@ -59,6 +66,7 @@ export function PrintRecipeButton() {
           // Write the HTML to the iframe
           printDocument.open();
           printDocument.write(`
+            <!DOCTYPE html>
             <html>
               <head>
                 <title>Print - ${document.title}</title>
@@ -70,6 +78,12 @@ export function PrintRecipeButton() {
             </html>
           `);
           printDocument.close();
+
+          // Add a listener for after the print dialog is closed
+          if (iframe.contentWindow) {
+             iframe.contentWindow.addEventListener('afterprint', cleanup);
+          }
+         
 
           // Wait a fraction of a second for rendering before printing
           setTimeout(() => {
@@ -86,9 +100,9 @@ export function PrintRecipeButton() {
             title: 'Print Error',
             description: e.message || 'An error occurred while trying to print.',
           });
+          // Cleanup on error as well
+          cleanup();
         } finally {
-          // Add a listener for after the print dialog is closed
-          iframe.contentWindow?.addEventListener('afterprint', cleanup);
           // Fallback cleanup in case afterprint doesn't fire
           cleanupTimeout = setTimeout(cleanup, 5000);
         }
