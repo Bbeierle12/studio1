@@ -1,5 +1,11 @@
 import { RecipeGenerator } from '@/components/recipe-generator';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { Suspense } from 'react';
@@ -20,21 +26,27 @@ function ErrorMessage({ error }: { error?: string }) {
       : 'The AI failed to generate a recipe. Please try again.';
 
   return (
-    <Alert variant="destructive" className="mb-6">
-      <AlertTriangle className="h-4 w-4" />
+    <Alert variant='destructive' className='mb-6'>
+      <AlertTriangle className='h-4 w-4' />
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>{description}</AlertDescription>
     </Alert>
   );
 }
 
-export default function GenerateRecipePage({ searchParams }: GenerateRecipePageProps) {
+export default function GenerateRecipePage({
+  searchParams,
+}: GenerateRecipePageProps) {
   return (
-    <div className="container mx-auto max-w-2xl py-8">
+    <div className='container mx-auto max-w-2xl py-8'>
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-headline">Generate Recipe with AI</CardTitle>
-          <CardDescription>Upload a picture of a dish and let AI create a recipe for you.</CardDescription>
+          <CardTitle className='text-3xl font-headline'>
+            Generate Recipe with AI
+          </CardTitle>
+          <CardDescription>
+            Upload a picture of a dish and let AI create a recipe for you.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Suspense fallback={null}>

@@ -32,7 +32,7 @@ export function PrintDialog() {
   const handleOpenChange = (open: boolean) => {
     setPrintOpen(open);
   };
-  
+
   // Return null if not on the client or if the dialog is not open.
   // This prevents any server-side rendering attempts of the dialog.
   if (!isClient) {
@@ -41,39 +41,43 @@ export function PrintDialog() {
 
   // This hidden div gets populated with the print content and is the only thing shown via print CSS
   const PrintArea = () => (
-      <div 
-        ref={printContainerRef}
-        className="printable-content"
-        dangerouslySetInnerHTML={{ __html: printContent }}
-      />
+    <div
+      ref={printContainerRef}
+      className='printable-content'
+      dangerouslySetInnerHTML={{ __html: printContent }}
+    />
   );
-
 
   return (
     <>
       <PrintArea />
       <AlertDialog open={isPrintOpen} onOpenChange={handleOpenChange}>
-        <AlertDialogContent className="max-w-3xl no-print">
+        <AlertDialogContent className='max-w-3xl no-print'>
           <AlertDialogHeader>
             <AlertDialogTitle>Print Preview</AlertDialogTitle>
             <AlertDialogDescription>
-              This is a preview of your recipe. Use the print button to open the print dialog. Note: The preview may differ slightly from the final printout.
+              This is a preview of your recipe. Use the print button to open the
+              print dialog. Note: The preview may differ slightly from the final
+              printout.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
-          <div className="flex-grow border rounded-md overflow-y-auto bg-white p-4 h-[60vh]">
-              <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: printContent }} />
+
+          <div className='flex-grow border rounded-md overflow-y-auto bg-white p-4 h-[60vh]'>
+            <div
+              className='prose prose-sm max-w-none'
+              dangerouslySetInnerHTML={{ __html: printContent }}
+            />
           </div>
 
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
-              <Button variant="ghost">
-                <X className="mr-2 h-4 w-4" />
+              <Button variant='ghost'>
+                <X className='mr-2 h-4 w-4' />
                 Close
               </Button>
             </AlertDialogCancel>
             <Button onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" />
+              <Printer className='mr-2 h-4 w-4' />
               Print
             </Button>
           </AlertDialogFooter>

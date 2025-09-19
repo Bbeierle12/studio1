@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 
 type Unit = 'imperial' | 'metric';
 
@@ -19,8 +26,13 @@ export function UnitProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const storedUnit = window.localStorage.getItem(LOCAL_STORAGE_KEY) as Unit | null;
-      if (storedUnit && (storedUnit === 'imperial' || storedUnit === 'metric')) {
+      const storedUnit = window.localStorage.getItem(
+        LOCAL_STORAGE_KEY
+      ) as Unit | null;
+      if (
+        storedUnit &&
+        (storedUnit === 'imperial' || storedUnit === 'metric')
+      ) {
         setUnit(storedUnit);
       }
     } catch (error) {
@@ -38,11 +50,7 @@ export function UnitProvider({ children }: { children: ReactNode }) {
 
   const value = { unit, toggleUnit, setUnit };
 
-  return (
-    <UnitContext.Provider value={value}>
-      {children}
-    </UnitContext.Provider>
-  );
+  return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>;
 }
 
 export const useUnit = () => {

@@ -16,12 +16,16 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
-  
-  const user: User | null = session?.user ? {
-    id: (session.user as any).id,
-    name: session.user.name || session.user.email?.split('@')[0] || 'User',
-    avatarUrl: session.user.image || `https://i.pravatar.cc/150?u=${session.user.email}`
-  } : null;
+
+  const user: User | null = session?.user
+    ? {
+        id: (session.user as any).id,
+        name: session.user.name || session.user.email?.split('@')[0] || 'User',
+        avatarUrl:
+          session.user.image ||
+          `https://i.pravatar.cc/150?u=${session.user.email}`,
+      }
+    : null;
 
   const loading = status === 'loading';
 

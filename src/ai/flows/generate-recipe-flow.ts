@@ -9,23 +9,33 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 
 const GenerateRecipeInputSchema = z.object({
-    title: z.string().describe('The desired title for the recipe.'),
-    photoDataUri: z
-        .string()
-        .describe(
-        "A photo of the dish, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-        ),
+  title: z.string().describe('The desired title for the recipe.'),
+  photoDataUri: z
+    .string()
+    .describe(
+      "A photo of the dish, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
 const GenerateRecipeOutputSchema = z.object({
-  ingredients: z.string().describe('The list of ingredients, with each on a new line.'),
-  instructions: z.string().describe('The cooking instructions, with each step on a new line.'),
-  tags: z.string().describe('A comma-separated list of relevant tags for the recipe (e.g., dinner, italian, pasta).'),
+  ingredients: z
+    .string()
+    .describe('The list of ingredients, with each on a new line.'),
+  instructions: z
+    .string()
+    .describe('The cooking instructions, with each step on a new line.'),
+  tags: z
+    .string()
+    .describe(
+      'A comma-separated list of relevant tags for the recipe (e.g., dinner, italian, pasta).'
+    ),
 });
 export type GenerateRecipeOutput = z.infer<typeof GenerateRecipeOutputSchema>;
 
-export async function generateRecipe(input: GenerateRecipeInput): Promise<GenerateRecipeOutput> {
+export async function generateRecipe(
+  input: GenerateRecipeInput
+): Promise<GenerateRecipeOutput> {
   try {
     const { object } = await generateObject({
       model: openai('gpt-4-vision-preview'),
@@ -44,15 +54,15 @@ export async function generateRecipe(input: GenerateRecipeInput): Promise<Genera
               - Step-by-step instructions (each step on a new line)
               - A few descriptive tags (comma-separated string)
 
-              Make the recipe realistic and achievable for home cooks.`
+              Make the recipe realistic and achievable for home cooks.`,
             },
             {
               type: 'image',
-              image: input.photoDataUri
-            }
-          ]
-        }
-      ]
+              image: input.photoDataUri,
+            },
+          ],
+        },
+      ],
     });
 
     return object;
@@ -60,9 +70,11 @@ export async function generateRecipe(input: GenerateRecipeInput): Promise<Genera
     console.error('Error generating recipe:', error);
     // Fallback response
     return {
-      ingredients: '2 cups all-purpose flour\n1 cup sugar\n2 eggs\n1/2 cup butter\n1 tsp vanilla',
-      instructions: '1. Preheat oven to 350°F\n2. Mix dry ingredients\n3. Add wet ingredients\n4. Bake for 25-30 minutes',
-      tags: 'dessert, baking, homemade'
+      ingredients:
+        '2 cups all-purpose flour\n1 cup sugar\n2 eggs\n1/2 cup butter\n1 tsp vanilla',
+      instructions:
+        '1. Preheat oven to 350°F\n2. Mix dry ingredients\n3. Add wet ingredients\n4. Bake for 25-30 minutes',
+      tags: 'dessert, baking, homemade',
     };
   }
 }

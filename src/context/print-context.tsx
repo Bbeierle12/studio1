@@ -21,7 +21,9 @@ export function PrintProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <PrintContext.Provider value={{ isPrintOpen, setPrintOpen, printContent, triggerPrint }}>
+    <PrintContext.Provider
+      value={{ isPrintOpen, setPrintOpen, printContent, triggerPrint }}
+    >
       {children}
     </PrintContext.Provider>
   );

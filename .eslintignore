@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Environment files
+.env*
+
+# Database
+*.db
+*.sqlite
+
+# Generated files
+next-env.d.ts
+*.tsbuildinfo
+
+# Prisma migrations
+prisma/migrations/
+
+# Patches
+patches/
+
+# Config files that are external
+tailwind.config.ts
+next.config.ts
+postcss.config.mjs

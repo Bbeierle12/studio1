@@ -72,11 +72,12 @@
   }
 
   /* Show only the printable content and ensure it takes up the full space */
-  .printable-content, .printable-content * {
+  .printable-content,
+  .printable-content * {
     display: block !important;
     visibility: visible !important;
   }
-  
+
   .printable-content {
     position: absolute !important;
     top: 0 !important;
@@ -87,7 +88,7 @@
     border: none !important;
     box-shadow: none !important;
   }
-  
+
   @page {
     size: auto;
     margin: 0.75in;
@@ -105,11 +106,16 @@
     display: none !important;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     color: #000 !important;
     page-break-after: avoid;
   }
-  
+
   a {
     text-decoration: none;
     color: #000 !important;
@@ -123,15 +129,19 @@
     page-break-inside: avoid;
   }
 
-  ul, p, li {
+  ul,
+  p,
+  li {
     color: #000 !important;
   }
 
-  .prose-black, .prose-black p, .prose-black li {
-      color: #000 !important;
+  .prose-black,
+  .prose-black p,
+  .prose-black li {
+    color: #000 !important;
   }
 
-   .bg-primary {
-      background-color: #000 !important;
-   }
+  .bg-primary {
+    background-color: #000 !important;
+  }
 }

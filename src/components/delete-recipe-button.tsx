@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useTransition } from 'react';
@@ -47,12 +46,12 @@ export function DeleteRecipeButton({ recipeId }: DeleteRecipeButtonProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">
-            {isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-                <Trash2 className="mr-2 h-4 w-4" />
-            )}
+        <Button variant='destructive' size='sm'>
+          {isPending ? (
+            <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+          ) : (
+            <Trash2 className='mr-2 h-4 w-4' />
+          )}
           Delete
         </Button>
       </AlertDialogTrigger>

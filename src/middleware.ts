@@ -1,13 +1,19 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-const PROTECTED_ROUTES = ['/recipes/new', '/recipes/generate', '/recipes/.*/edit'];
+const PROTECTED_ROUTES = [
+  '/recipes/new',
+  '/recipes/generate',
+  '/recipes/.*/edit',
+];
 const PUBLIC_ROUTES = ['/login'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session')?.value;
 
-  const isProtectedRoute = PROTECTED_ROUTES.some(path => new RegExp(`^${path}$`).test(pathname));
+  const isProtectedRoute = PROTECTED_ROUTES.some(path =>
+    new RegExp(`^${path}$`).test(pathname)
+  );
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
   if (isProtectedRoute && !sessionCookie) {

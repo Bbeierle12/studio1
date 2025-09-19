@@ -1,15 +1,21 @@
 'use client';
 
 import type { Recipe } from '@/lib/types';
-import { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 import { useToast } from '@/hooks/use-toast';
-
 
 type SavedRecipeItem = {
   id: string;
   recipe: Recipe;
   savedAt: number;
-}
+};
 
 type SavedRecipesContextType = {
   savedRecipes: SavedRecipeItem[];
@@ -20,7 +26,9 @@ type SavedRecipesContextType = {
   getSavedRecipesCount: () => number;
 };
 
-const SavedRecipesContext = createContext<SavedRecipesContextType | undefined>(undefined);
+const SavedRecipesContext = createContext<SavedRecipesContextType | undefined>(
+  undefined
+);
 
 const LOCAL_STORAGE_KEY = 'savedRecipes';
 
@@ -40,63 +48,87 @@ export function SavedRecipesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const persistRecipes = (recipes: SavedRecipeItem[]) => {
-     try {
-        setSavedRecipes(recipes);
-        window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(recipes));
-     } catch (error) {
-        console.error('Failed to save recipes to localStorage', error);
-        toast({
-            variant: 'destructive',
-            title: 'Could Not Save Recipe',
-            description: 'Your browser storage might be full. Please clear some space and try again.'
-        })
-     }
-  }
+    try {
+      setSavedRecipes(recipes);
+      window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(recipes));
+    } catch (error) {
+      console.error('Failed to save recipes to localStorage', error);
+      toast({
+        variant: 'destructive',
+        title: 'Could Not Save Recipe',
+        description:
+          'Your browser storage might be full. Please clear some space and try again.',
+      });
+    }
+  };
 
-  const saveRecipe = useCallback((recipe: Recipe) => {
-    setSavedRecipes(prev => {
+  const saveRecipe = useCallback(
+    (recipe: Recipe) => {
+      setSavedRecipes(prev => {
         const alreadyExists = prev.some(item => item.id === recipe.id);
         if (alreadyExists) return prev;
 
-        const newItem: SavedRecipeItem = { id: recipe.id, recipe, savedAt: Date.now() };
+        const newItem: SavedRecipeItem = {
+          id: recipe.id,
+          recipe,
+          savedAt: Date.now(),
+        };
         const updatedRecipes = [...prev, newItem];
         persistRecipes(updatedRecipes);
         toast({
-            title: 'Recipe Saved Offline',
-            description: `"${recipe.title}" is now available offline.`
+          title: 'Recipe Saved Offline',
+          description: `"${recipe.title}" is now available offline.`,
         });
         return updatedRecipes;
-    });
-  }, [toast]);
+      });
+    },
+    [toast]
+  );
 
-  const removeRecipe = useCallback((recipeId: string) => {
-    setSavedRecipes(prev => {
+  const removeRecipe = useCallback(
+    (recipeId: string) => {
+      setSavedRecipes(prev => {
         const recipeToRemove = prev.find(item => item.id === recipeId);
         const updatedRecipes = prev.filter(item => item.id !== recipeId);
         persistRecipes(updatedRecipes);
         if (recipeToRemove) {
-            toast({
-                title: 'Recipe Removed',
-                description: `"${recipeToRemove.recipe.title}" is no longer saved for offline access.`
-            });
+          toast({
+            title: 'Recipe Removed',
+            description: `"${recipeToRemove.recipe.title}" is no longer saved for offline access.`,
+          });
         }
         return updatedRecipes;
-    });
-  }, [toast]);
+      });
+    },
+    [toast]
+  );
 
-  const isRecipeSaved = useCallback((recipeId: string) => {
-    return savedRecipes.some(item => item.id === recipeId);
-  }, [savedRecipes]);
+  const isRecipeSaved = useCallback(
+    (recipeId: string) => {
+      return savedRecipes.some(item => item.id === recipeId);
+    },
+    [savedRecipes]
+  );
 
-  const getSavedRecipe = useCallback((recipeId: string) => {
-    return savedRecipes.find(item => item.id === recipeId)?.recipe;
-  }, [savedRecipes]);
-  
+  const getSavedRecipe = useCallback(
+    (recipeId: string) => {
+      return savedRecipes.find(item => item.id === recipeId)?.recipe;
+    },
+    [savedRecipes]
+  );
+
   const getSavedRecipesCount = useCallback(() => {
     return savedRecipes.length;
   }, [savedRecipes]);
 
-  const value = { savedRecipes, isRecipeSaved, saveRecipe, removeRecipe, getSavedRecipe, getSavedRecipesCount };
+  const value = {
+    savedRecipes,
+    isRecipeSaved,
+    saveRecipe,
+    removeRecipe,
+    getSavedRecipe,
+    getSavedRecipesCount,
+  };
 
   return (
     <SavedRecipesContext.Provider value={value}>
@@ -108,7 +140,9 @@ export function SavedRecipesProvider({ children }: { children: ReactNode }) {
 export const useSavedRecipes = () => {
   const context = useContext(SavedRecipesContext);
   if (context === undefined) {
-    throw new Error('useSavedRecipes must be used within a SavedRecipesProvider');
+    throw new Error(
+      'useSavedRecipes must be used within a SavedRecipesProvider'
+    );
   }
   return context;
 };

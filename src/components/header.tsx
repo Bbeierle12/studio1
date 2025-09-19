@@ -2,7 +2,19 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library, ShoppingCart, Sun, Moon, Scale, Bookmark } from 'lucide-react';
+import {
+  CookingPot,
+  Home,
+  PlusCircle,
+  LogOut,
+  LogIn,
+  Library,
+  ShoppingCart,
+  Sun,
+  Moon,
+  Scale,
+  Bookmark,
+} from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
@@ -45,9 +57,14 @@ export function Header() {
     { href: '/recipes', label: 'Browse', icon: CookingPot },
     { href: '/collections', label: 'Collections', icon: Library },
     { href: '/saved', label: 'Saved', icon: Bookmark },
-    { href: '/recipes/new', label: 'Add Recipe', icon: PlusCircle, className: 'hidden sm:flex' },
+    {
+      href: '/recipes/new',
+      label: 'Add Recipe',
+      icon: PlusCircle,
+      className: 'hidden sm:flex',
+    },
   ];
-  
+
   const toggleTheme = () => {
     if (theme === 'light') {
       setTheme('dark');
@@ -57,83 +74,98 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <Link href="/" className="mr-6 flex items-center space-x-2">
-          <CookingPot className="h-6 w-6" />
-          <span className="font-bold sm:inline-block font-headline">
+    <header className='sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+      <div className='container flex h-16 items-center'>
+        <Link href='/' className='mr-6 flex items-center space-x-2'>
+          <CookingPot className='h-6 w-6' />
+          <span className='font-bold sm:inline-block font-headline'>
             Our Family Table
           </span>
         </Link>
-        <nav className="flex flex-1 items-center space-x-4 text-sm font-medium">
-          {navLinks.map(({ href, label, icon: Icon, className: linkClassName }) => {
-            const isActive =
-              href === '/' ? pathname === href : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'flex items-center gap-2 transition-colors hover:text-foreground/80',
-                  isActive ? 'text-foreground' : 'text-foreground/60',
-                  linkClassName
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline-block">{label}</span>
-              </Link>
-            );
-          })}
+        <nav className='flex flex-1 items-center space-x-4 text-sm font-medium'>
+          {navLinks.map(
+            ({ href, label, icon: Icon, className: linkClassName }) => {
+              const isActive =
+                href === '/' ? pathname === href : pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    'flex items-center gap-2 transition-colors hover:text-foreground/80',
+                    isActive ? 'text-foreground' : 'text-foreground/60',
+                    linkClassName
+                  )}
+                >
+                  <Icon className='h-4 w-4' />
+                  <span className='hidden sm:inline-block'>{label}</span>
+                </Link>
+              );
+            }
+          )}
         </nav>
-        <div className="flex items-center justify-end gap-2">
-          <Button asChild variant="outline" size="sm" className="sm:hidden">
-             <Link href="/recipes/new">
-                <PlusCircle className="h-4 w-4" />
-                <span className="sr-only">Add Recipe</span>
-             </Link>
+        <div className='flex items-center justify-end gap-2'>
+          <Button asChild variant='outline' size='sm' className='sm:hidden'>
+            <Link href='/recipes/new'>
+              <PlusCircle className='h-4 w-4' />
+              <span className='sr-only'>Add Recipe</span>
+            </Link>
           </Button>
           <ShoppingList />
-           <Button variant="ghost" size="icon" onClick={toggleUnit} aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}>
-            <Scale className="h-[1.2rem] w-[1.2rem]" />
-            <span className="sr-only">Toggle Units</span>
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={toggleUnit}
+            aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}
+          >
+            <Scale className='h-[1.2rem] w-[1.2rem]' />
+            <span className='sr-only'>Toggle Units</span>
           </Button>
-          <Button variant="ghost" size="icon" onClick={toggleTheme}>
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
+          <Button variant='ghost' size='icon' onClick={toggleTheme}>
+            <Sun className='h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />
+            <Moon className='absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100' />
+            <span className='sr-only'>Toggle theme</span>
           </Button>
           {loading ? (
-             <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
+            <div className='h-8 w-20 animate-pulse rounded-md bg-muted' />
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? 'User'} />
+                <Button
+                  variant='ghost'
+                  className='relative h-8 w-8 rounded-full'
+                >
+                  <Avatar className='h-8 w-8'>
+                    <AvatarImage
+                      src={user.avatarUrl ?? undefined}
+                      alt={user.name ?? 'User'}
+                    />
                     <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
+              <DropdownMenuContent className='w-56' align='end' forceMount>
+                <DropdownMenuLabel className='font-normal'>
+                  <div className='flex flex-col space-y-1'>
+                    <p className='text-sm font-medium leading-none'>
+                      {user.name}
+                    </p>
+                    <p className='text-xs leading-none text-muted-foreground'>
                       {session?.user?.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut className='mr-2 h-4 w-4' />
                   <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button asChild variant="secondary" size="sm">
-              <Link href="/login">
-                <LogIn className="mr-2 h-4 w-4" />
+            <Button asChild variant='secondary' size='sm'>
+              <Link href='/login'>
+                <LogIn className='mr-2 h-4 w-4' />
                 Log In
               </Link>
             </Button>

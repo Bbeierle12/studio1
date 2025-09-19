@@ -22,20 +22,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang='en' suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel='preconnect' href='https://fonts.googleapis.com' />
         <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400&display=swap"
-          rel="stylesheet"
+          rel='preconnect'
+          href='https://fonts.gstatic.com'
+          crossOrigin='anonymous'
+        />
+        <link
+          href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400&display=swap'
+          rel='stylesheet'
         />
       </head>
-      <body className="font-body antialiased">
+      <body className='font-body antialiased'>
         <ClientSessionProvider>
           <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
+            attribute='class'
+            defaultTheme='system'
             enableSystem
             disableTransitionOnChange
           >
@@ -44,7 +48,7 @@ export default function RootLayout({
                 <SavedRecipesProvider>
                   <UnitProvider>
                     <PrintProvider>
-                      <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+                      <div className='relative flex min-h-screen w-full flex-col overflow-x-hidden'>
                         <Header />
                         {children}
                       </div>

@@ -17,32 +17,32 @@ type RecipeCardProps = {
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
   return (
-    <Link href={`/recipes/${recipe.id}`} className="group block">
-      <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:border-primary/50">
+    <Link href={`/recipes/${recipe.id}`} className='group block'>
+      <Card className='flex h-full flex-col overflow-hidden transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:border-primary/50'>
         <CardHeader>
-          <CardTitle className="line-clamp-2 font-headline text-xl leading-tight">
+          <CardTitle className='line-clamp-2 font-headline text-xl leading-tight'>
             {recipe.title}
           </CardTitle>
           <CardDescription>by {recipe.contributor}</CardDescription>
         </CardHeader>
-        <CardContent className="flex-grow p-0">
-          <div className="aspect-video overflow-hidden">
+        <CardContent className='flex-grow p-0'>
+          <div className='aspect-video overflow-hidden'>
             <Image
-              src="https://placehold.co/600x400/FFFFFF/FFFFFF"
+              src='https://placehold.co/600x400/FFFFFF/FFFFFF'
               alt={recipe.title}
               width={600}
               height={400}
               data-ai-hint={recipe.imageHint}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
             />
           </div>
-          <p className="mt-4 px-6 text-sm text-muted-foreground line-clamp-3">
+          <p className='mt-4 px-6 text-sm text-muted-foreground line-clamp-3'>
             {recipe.summary}
           </p>
         </CardContent>
-        <CardFooter className="mt-auto flex flex-wrap gap-2 pt-4">
+        <CardFooter className='mt-auto flex flex-wrap gap-2 pt-4'>
           {recipe.tags.map(tag => (
-            <Badge key={tag} variant="secondary" className="capitalize">
+            <Badge key={tag} variant='secondary' className='capitalize'>
               {tag}
             </Badge>
           ))}

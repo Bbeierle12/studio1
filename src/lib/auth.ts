@@ -1,9 +1,9 @@
-import { NextAuthOptions } from 'next-auth'
-import CredentialsProvider from 'next-auth/providers/credentials'
-import { compare, hash } from 'bcryptjs'
-import { PrismaClient } from '@prisma/client'
+import { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { compare, hash } from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,87 +12,87 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
-        action: { label: 'Action', type: 'text' } // login or signup
+        action: { label: 'Action', type: 'text' }, // login or signup
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          return null;
         }
 
-        const { email, password, action } = credentials
+        const { email, password, action } = credentials;
 
         try {
           if (action === 'signup') {
             // Check if user already exists
             const existingUser = await prisma.user.findUnique({
-              where: { email }
-            })
+              where: { email },
+            });
 
             if (existingUser) {
-              throw new Error('User already exists')
+              throw new Error('User already exists');
             }
 
             // Create new user
-            const hashedPassword = await hash(password, 12)
+            const hashedPassword = await hash(password, 12);
             const user = await prisma.user.create({
               data: {
                 email,
                 password: hashedPassword,
-                name: email.split('@')[0] // Use email prefix as default name
-              }
-            })
+                name: email.split('@')[0], // Use email prefix as default name
+              },
+            });
 
             return {
               id: user.id,
               email: user.email,
-              name: user.name
-            }
+              name: user.name,
+            };
           } else {
             // Login existing user
             const user = await prisma.user.findUnique({
-              where: { email }
-            })
+              where: { email },
+            });
 
             if (!user) {
-              return null
+              return null;
             }
 
-            const isPasswordValid = await compare(password, user.password)
+            const isPasswordValid = await compare(password, user.password);
             if (!isPasswordValid) {
-              return null
+              return null;
             }
 
             return {
               id: user.id,
               email: user.email,
-              name: user.name
-            }
+              name: user.name,
+            };
           }
         } catch (error) {
-          console.error('Auth error:', error)
-          return null
+          console.error('Auth error:', error);
+          return null;
         }
-      }
-    })
+      },
+    }),
   ],
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
   },
   pages: {
-    signIn: '/login'
+    signIn: '/login',
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
+        token.id = user.id;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
       if (token.id && session.user) {
-        (session.user as any).id = token.id as string
+        (session.user as any).id = token.id as string;
       }
-      return session
-    }
-  }
-}
+      return session;
+    },
+  },
+};

@@ -20,7 +20,11 @@ export function SaveRecipeButton({ recipe }: SaveRecipeButtonProps) {
 
   if (!isClient) {
     // Render a disabled placeholder on the server
-    return <Button variant="outline" size="sm" disabled><Bookmark className="mr-2 h-4 w-4" /> Save Offline</Button>;
+    return (
+      <Button variant='outline' size='sm' disabled>
+        <Bookmark className='mr-2 h-4 w-4' /> Save Offline
+      </Button>
+    );
   }
 
   const saved = isRecipeSaved(recipe.id);
@@ -34,15 +38,15 @@ export function SaveRecipeButton({ recipe }: SaveRecipeButtonProps) {
   };
 
   return (
-    <Button onClick={handleToggle} variant="outline" size="sm">
+    <Button onClick={handleToggle} variant='outline' size='sm'>
       {saved ? (
         <>
-          <BookmarkCheck className="mr-2 h-4 w-4 text-green-500" />
+          <BookmarkCheck className='mr-2 h-4 w-4 text-green-500' />
           Saved
         </>
       ) : (
         <>
-          <Bookmark className="mr-2 h-4 w-4" />
+          <Bookmark className='mr-2 h-4 w-4' />
           Save Offline
         </>
       )}

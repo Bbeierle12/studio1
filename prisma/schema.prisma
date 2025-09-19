@@ -17,6 +17,7 @@ model User {
   name      String?
   avatarUrl String?
   recipes   Recipe[]
+  plans     Plan[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -24,6 +25,7 @@ model User {
 model Recipe {
   id           String    @id @default(cuid())
   title        String
+  slug         String    @unique
   contributor  String
   prepTime     Int?
   servings     Int?
@@ -37,8 +39,29 @@ model Recipe {
   story        String?
   imageUrl     String
   imageHint    String
+  audioUrl     String?
+  originName   String?   // Name of place/region of origin
+  originLat    Float?    // Latitude of origin location
+  originLng    Float?    // Longitude of origin location
+  parentId     String?   // Reference to parent recipe for variations
+  parent       Recipe?   @relation("RecipeVariations", fields: [parentId], references: [id])
+  variations   Recipe[]  @relation("RecipeVariations")
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plans        Plan[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+}
+
+model Plan {
+  id         String   @id @default(cuid())
+  recipeId   String
+  recipe     Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  plannedFor DateTime
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([recipeId, plannedFor, userId])
 }

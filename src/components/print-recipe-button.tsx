@@ -30,8 +30,13 @@ export function PrintRecipeButton() {
   }, [triggerPrint, toast]);
 
   return (
-    <Button variant="outline" size="sm" onClick={handlePrintClick} className="no-print">
-      <Printer className="mr-2 h-4 w-4" />
+    <Button
+      variant='outline'
+      size='sm'
+      onClick={handlePrintClick}
+      className='no-print'
+    >
+      <Printer className='mr-2 h-4 w-4' />
       Print
     </Button>
   );

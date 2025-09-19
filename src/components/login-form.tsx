@@ -33,14 +33,15 @@ export function LoginForm() {
         toast({
           variant: 'destructive',
           title: isSignUp ? 'Sign Up Failed' : 'Sign In Failed',
-          description: result.error === 'CredentialsSignin' 
-            ? 'Invalid email or password. Please try again.'
-            : 'An unexpected error occurred. Please try again.',
+          description:
+            result.error === 'CredentialsSignin'
+              ? 'Invalid email or password. Please try again.'
+              : 'An unexpected error occurred. Please try again.',
         });
       } else {
         toast({
           title: isSignUp ? 'Account Created' : 'Signed In',
-          description: isSignUp 
+          description: isSignUp
             ? 'You have been successfully signed up and logged in.'
             : 'Welcome back!',
         });
@@ -60,57 +61,63 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <form onSubmit={handleSubmit} className='space-y-6'>
+      <div className='space-y-2'>
+        <Label htmlFor='email'>Email Address</Label>
+        <div className='relative'>
+          <Mail className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
           <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            className="pl-10"
+            id='email'
+            name='email'
+            type='email'
+            placeholder='you@example.com'
+            className='pl-10'
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             required
             disabled={loading}
           />
         </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className='space-y-2'>
+        <Label htmlFor='password'>Password</Label>
+        <div className='relative'>
+          <Lock className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
           <Input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="••••••••"
-            className="pl-10"
+            id='password'
+            name='password'
+            type='password'
+            placeholder='••••••••'
+            className='pl-10'
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             required
             disabled={loading}
           />
         </div>
       </div>
-      <Button type="submit" className="w-full" disabled={loading || !email || !password}>
+      <Button
+        type='submit'
+        className='w-full'
+        disabled={loading || !email || !password}
+      >
         {loading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className='mr-2 h-4 w-4 animate-spin' />
             Please wait...
           </>
+        ) : isSignUp ? (
+          'Create Account'
         ) : (
-          isSignUp ? 'Create Account' : 'Sign In'
+          'Sign In'
         )}
       </Button>
-      <p className="text-center text-sm text-muted-foreground">
+      <p className='text-center text-sm text-muted-foreground'>
         {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
         <button
-          type="button"
+          type='button'
           onClick={() => setIsSignUp(!isSignUp)}
-          className="font-medium text-primary hover:underline"
+          className='font-medium text-primary hover:underline'
           disabled={loading}
         >
           {isSignUp ? 'Sign In' : 'Create an account'}

@@ -9,12 +9,16 @@ type AddToShoppingListButtonProps = {
   ingredients: string;
 };
 
-export function AddToShoppingListButton({ ingredients }: AddToShoppingListButtonProps) {
+export function AddToShoppingListButton({
+  ingredients,
+}: AddToShoppingListButtonProps) {
   const { addIngredients } = useShoppingList();
   const { toast } = useToast();
 
   const handleAdd = () => {
-    const ingredientList = ingredients.split('\n').filter(line => line.trim() !== '');
+    const ingredientList = ingredients
+      .split('\n')
+      .filter(line => line.trim() !== '');
     addIngredients(ingredientList);
     toast({
       title: 'Ingredients Added',
@@ -23,8 +27,8 @@ export function AddToShoppingListButton({ ingredients }: AddToShoppingListButton
   };
 
   return (
-    <Button onClick={handleAdd} className="mt-4 w-full" variant="outline">
-      <ShoppingCart className="mr-2 h-4 w-4" />
+    <Button onClick={handleAdd} className='mt-4 w-full' variant='outline'>
+      <ShoppingCart className='mr-2 h-4 w-4' />
       Add to Shopping List
     </Button>
   );

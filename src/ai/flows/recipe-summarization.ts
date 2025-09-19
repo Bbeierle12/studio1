@@ -20,7 +20,9 @@ const SummarizeRecipeOutputSchema = z.object({
 });
 export type SummarizeRecipeOutput = z.infer<typeof SummarizeRecipeOutputSchema>;
 
-export async function summarizeRecipe(input: SummarizeRecipeInput): Promise<SummarizeRecipeOutput> {
+export async function summarizeRecipe(
+  input: SummarizeRecipeInput
+): Promise<SummarizeRecipeOutput> {
   try {
     const { object } = await generateObject({
       model: openai('gpt-3.5-turbo'),

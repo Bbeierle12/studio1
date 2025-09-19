@@ -2,7 +2,12 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { addRecipe as saveRecipe, updateRecipe, deleteRecipe, getRecipeById } from '@/lib/data';
+import {
+  addRecipe as saveRecipe,
+  updateRecipe,
+  deleteRecipe,
+  getRecipeById,
+} from '@/lib/data';
 import { summarizeRecipe } from '@/ai/flows/recipe-summarization';
 import { generateRecipe } from '@/ai/flows/generate-recipe-flow';
 import { convertIngredients } from '@/ai/flows/convert-ingredients-flow';
@@ -20,7 +25,6 @@ async function getUserId() {
     return null;
   }
 }
-
 
 export type FormState = {
   message: string;
@@ -63,22 +67,33 @@ export async function addRecipeAction(
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  
+
   const userId = await getUserId();
   if (!userId) {
     return { message: 'You must be logged in to add a recipe.' };
   }
 
-
-  const { title, contributor, prepTime, servings, course, cuisine, difficulty, ingredients, instructions, tags, story } = validatedFields.data;
+  const {
+    title,
+    contributor,
+    prepTime,
+    servings,
+    course,
+    cuisine,
+    difficulty,
+    ingredients,
+    instructions,
+    tags,
+    story,
+  } = validatedFields.data;
 
   try {
     const summaryResult = await summarizeRecipe({
-        recipeName: title,
-        ingredients: ingredients,
-        instructions: instructions,
+      recipeName: title,
+      ingredients,
+      instructions,
     });
-    
+
     const tagsArray = tags.split(',').map(tag => tag.trim().toLowerCase());
 
     const newRecipe = await saveRecipe({
@@ -96,9 +111,8 @@ export async function addRecipeAction(
       story,
       imageUrl: 'https://placehold.co/600x400/FFFFFF/FFFFFF',
       imageHint: '',
-      userId
+      userId,
     });
-
   } catch (error) {
     console.error('Error adding recipe:', error);
     return { message: 'Failed to add recipe. An unexpected error occurred.' };
@@ -135,27 +149,43 @@ export async function updateRecipeAction(
     };
   }
 
-  const { id, title, contributor, prepTime, servings, course, cuisine, difficulty, ingredients, instructions, tags, story } = validatedFields.data;
+  const {
+    id,
+    title,
+    contributor,
+    prepTime,
+    servings,
+    course,
+    cuisine,
+    difficulty,
+    ingredients,
+    instructions,
+    tags,
+    story,
+  } = validatedFields.data;
 
   if (!id) {
     return { message: 'Recipe ID is missing.' };
   }
-  
+
   const userId = await getUserId();
   const recipeToUpdate = await getRecipeById(id);
 
-  if (recipeToUpdate && recipeToUpdate.userId && recipeToUpdate.userId !== userId) {
-      return { message: 'You do not have permission to edit this recipe.' };
+  if (
+    recipeToUpdate &&
+    recipeToUpdate.userId &&
+    recipeToUpdate.userId !== userId
+  ) {
+    return { message: 'You do not have permission to edit this recipe.' };
   }
-
 
   try {
     const summaryResult = await summarizeRecipe({
-        recipeName: title,
-        ingredients: ingredients,
-        instructions: instructions,
+      recipeName: title,
+      ingredients,
+      instructions,
     });
-    
+
     const tagsArray = tags.split(',').map(tag => tag.trim().toLowerCase());
 
     await updateRecipe({
@@ -174,12 +204,13 @@ export async function updateRecipeAction(
       story,
       imageUrl: 'https://placehold.co/600x400/FFFFFF/FFFFFF',
       imageHint: '',
-      userId: recipeToUpdate?.userId || userId || undefined
+      userId: recipeToUpdate?.userId || userId || undefined,
     });
-
   } catch (error) {
     console.error('Error updating recipe:', error);
-    return { message: 'Failed to update recipe. An unexpected error occurred.' };
+    return {
+      message: 'Failed to update recipe. An unexpected error occurred.',
+    };
   }
 
   revalidatePath(`/recipes/${id}`);
@@ -188,22 +219,28 @@ export async function updateRecipeAction(
 }
 
 export async function deleteRecipeAction(id: string) {
-    const userId = await getUserId();
-    const recipeToDelete = await getRecipeById(id);
+  const userId = await getUserId();
+  const recipeToDelete = await getRecipeById(id);
 
-    if (recipeToDelete && recipeToDelete.userId && recipeToDelete.userId !== userId) {
-      return { message: 'You do not have permission to delete this recipe.' };
-    }
+  if (
+    recipeToDelete &&
+    recipeToDelete.userId &&
+    recipeToDelete.userId !== userId
+  ) {
+    return { message: 'You do not have permission to delete this recipe.' };
+  }
 
-    try {
-        await deleteRecipe(id);
-    } catch (error) {
-        console.error('Error deleting recipe:', error);
-        return { message: 'Failed to delete recipe. An unexpected error occurred.' };
-    }
+  try {
+    await deleteRecipe(id);
+  } catch (error) {
+    console.error('Error deleting recipe:', error);
+    return {
+      message: 'Failed to delete recipe. An unexpected error occurred.',
+    };
+  }
 
-    revalidatePath('/recipes');
-    redirect('/recipes');
+  revalidatePath('/recipes');
+  redirect('/recipes');
 }
 
 export async function generateRecipeAction(formData: FormData) {
@@ -214,7 +251,10 @@ export async function generateRecipeAction(formData: FormData) {
 
   if (!validatedFields.success) {
     // This case should ideally be handled by client-side validation
-    console.error('Validation failed:', validatedFields.error.flatten().fieldErrors);
+    console.error(
+      'Validation failed:',
+      validatedFields.error.flatten().fieldErrors
+    );
     redirect('/recipes/generate?error=validation');
     return;
   }
@@ -228,9 +268,9 @@ export async function generateRecipeAction(formData: FormData) {
       ingredients: result.ingredients,
       instructions: result.instructions,
       tags: result.tags,
-      fromAI: 'true'
+      fromAI: 'true',
     });
-    
+
     redirect(`/recipes/new?${queryParams.toString()}`);
   } catch (error) {
     console.error('Error generating recipe with AI:', error);
@@ -238,12 +278,15 @@ export async function generateRecipeAction(formData: FormData) {
   }
 }
 
-export async function convertIngredientsAction(ingredients: string, targetUnit: 'metric' | 'imperial') {
-    try {
-        const result = await convertIngredients({ ingredients, targetUnit });
-        return { convertedIngredients: result.convertedIngredients };
-    } catch (error) {
-        console.error('Error converting ingredients with AI:', error);
-        return { error: 'Failed to convert ingredients. Please try again.' };
-    }
+export async function convertIngredientsAction(
+  ingredients: string,
+  targetUnit: 'metric' | 'imperial'
+) {
+  try {
+    const result = await convertIngredients({ ingredients, targetUnit });
+    return { convertedIngredients: result.convertedIngredients };
+  } catch (error) {
+    console.error('Error converting ingredients with AI:', error);
+    return { error: 'Failed to convert ingredients. Please try again.' };
+  }
 }

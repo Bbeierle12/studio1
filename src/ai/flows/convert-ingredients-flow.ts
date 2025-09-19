@@ -9,17 +9,29 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 
 const ConvertIngredientsInputSchema = z.object({
-  ingredients: z.string().describe('A list of ingredients, with each ingredient on a new line.'),
-  targetUnit: z.enum(['metric', 'imperial']).describe('The target unit system to convert to.'),
+  ingredients: z
+    .string()
+    .describe('A list of ingredients, with each ingredient on a new line.'),
+  targetUnit: z
+    .enum(['metric', 'imperial'])
+    .describe('The target unit system to convert to.'),
 });
-export type ConvertIngredientsInput = z.infer<typeof ConvertIngredientsInputSchema>;
+export type ConvertIngredientsInput = z.infer<
+  typeof ConvertIngredientsInputSchema
+>;
 
 const ConvertIngredientsOutputSchema = z.object({
-  convertedIngredients: z.string().describe('The converted list of ingredients, with each on a new line.'),
+  convertedIngredients: z
+    .string()
+    .describe('The converted list of ingredients, with each on a new line.'),
 });
-export type ConvertIngredientsOutput = z.infer<typeof ConvertIngredientsOutputSchema>;
+export type ConvertIngredientsOutput = z.infer<
+  typeof ConvertIngredientsOutputSchema
+>;
 
-export async function convertIngredients(input: ConvertIngredientsInput): Promise<ConvertIngredientsOutput> {
+export async function convertIngredients(
+  input: ConvertIngredientsInput
+): Promise<ConvertIngredientsOutput> {
   try {
     const { object } = await generateObject({
       model: openai('gpt-3.5-turbo'),

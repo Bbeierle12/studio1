@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 
 type ShoppingListItem = {
   name: string;
@@ -16,7 +23,9 @@ type ShoppingListContextType = {
   getListAsText: (options?: { includeChecked?: boolean }) => string;
 };
 
-const ShoppingListContext = createContext<ShoppingListContextType | undefined>(undefined);
+const ShoppingListContext = createContext<ShoppingListContextType | undefined>(
+  undefined
+);
 
 const LOCAL_STORAGE_KEY = 'shoppingList';
 
@@ -40,14 +49,16 @@ export function ShoppingListProvider({ children }: { children: ReactNode }) {
 
   const addIngredients = useCallback((newItems: string[]) => {
     const itemsToAdd: ShoppingListItem[] = newItems
-        .filter(name => name.trim() !== '') // Ensure no empty items are added
-        .map(name => ({ name, checked: false }));
+      .filter(name => name.trim() !== '') // Ensure no empty items are added
+      .map(name => ({ name, checked: false }));
 
     // Prevent duplicates
     setItems(prevItems => {
-        const existingItems = new Set(prevItems.map(i => i.name.toLowerCase()));
-        const uniqueNewItems = itemsToAdd.filter(newItem => !existingItems.has(newItem.name.toLowerCase()));
-        return [...prevItems, ...uniqueNewItems];
+      const existingItems = new Set(prevItems.map(i => i.name.toLowerCase()));
+      const uniqueNewItems = itemsToAdd.filter(
+        newItem => !existingItems.has(newItem.name.toLowerCase())
+      );
+      return [...prevItems, ...uniqueNewItems];
     });
   }, []);
 
@@ -62,22 +73,32 @@ export function ShoppingListProvider({ children }: { children: ReactNode }) {
   const clearList = useCallback(() => {
     setItems([]);
   }, []);
-  
+
   const getItemsCount = useCallback(() => {
     const total = items.length;
     const unchecked = items.filter(item => !item.checked).length;
     return { total, unchecked };
   }, [items]);
 
-  const getListAsText = useCallback((options: { includeChecked?: boolean } = {}) => {
-    const { includeChecked = false } = options;
-    return items
-      .filter(item => includeChecked || !item.checked)
-      .map(item => item.name)
-      .join('\n');
-  }, [items]);
+  const getListAsText = useCallback(
+    (options: { includeChecked?: boolean } = {}) => {
+      const { includeChecked = false } = options;
+      return items
+        .filter(item => includeChecked || !item.checked)
+        .map(item => item.name)
+        .join('\n');
+    },
+    [items]
+  );
 
-  const value = { items, addIngredients, toggleItem, clearList, getItemsCount, getListAsText };
+  const value = {
+    items,
+    addIngredients,
+    toggleItem,
+    clearList,
+    getItemsCount,
+    getListAsText,
+  };
 
   return (
     <ShoppingListContext.Provider value={value}>
@@ -89,7 +110,9 @@ export function ShoppingListProvider({ children }: { children: ReactNode }) {
 export const useShoppingList = () => {
   const context = useContext(ShoppingListContext);
   if (context === undefined) {
-    throw new Error('useShoppingList must be used within a ShoppingListProvider');
+    throw new Error(
+      'useShoppingList must be used within a ShoppingListProvider'
+    );
   }
   return context;
 };
