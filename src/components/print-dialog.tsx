@@ -10,74 +10,47 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { usePrint } from '@/context/print-context';
-import { Printer, X, Loader2 } from 'lucide-react';
-import { useRef, useEffect, useState } from 'react';
+import { Printer, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
 export function PrintDialog() {
   const { isPrintOpen, setPrintOpen, printContent } = usePrint();
-  const printFrameRef = useRef<HTMLIFrameElement>(null);
-  const [isContentLoaded, setIsContentLoaded] = useState(false);
-  const [styles, setStyles] = useState('');
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isClient, setIsClient] = useState(false);
 
-  // Fetch and store stylesheet content when component mounts.
   useEffect(() => {
-    const fetchStyles = async () => {
-      // Find all link and style tags from the document head
-      const styleSheets = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
-      const stylePromises = Array.from(styleSheets).map(sheet => {
-          // For inline <style> tags
-          if (sheet.tagName === 'STYLE') {
-              return Promise.resolve(sheet.innerHTML);
-          }
-          // For <link> tags
-          if ('href' in sheet && (sheet as HTMLLinkElement).href) {
-              return fetch((sheet as HTMLLinkElement).href)
-                  .then(res => res.text())
-                  .catch(err => {
-                      console.error(`Could not fetch stylesheet: ${(sheet as HTMLLinkElement).href}`, err);
-                      return '';
-                  });
-          }
-          return Promise.resolve('');
-      });
-      const styleContents = await Promise.all(stylePromises);
-      setStyles(styleContents.join('\n'));
-    };
-
-    fetchStyles();
+    // This ensures the component only renders on the client,
+    // avoiding SSR issues with `dangerouslySetInnerHTML`.
+    setIsClient(true);
   }, []);
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      // Reset content loaded state when closing
-      setIsContentLoaded(false);
-    }
-    setPrintOpen(open);
-  }
-  
-  const handleFrameLoad = () => {
-    setIsContentLoaded(true);
-  }
-
   const handlePrint = () => {
-    const printFrame = printFrameRef.current;
-    if (printFrame && printFrame.contentWindow) {
-      printFrame.contentWindow.focus(); // Focus is required for some browsers
-      printFrame.contentWindow.print();
+    // Find the original article node on the main page
+    const printableElement = document.querySelector('.printable-source');
+    
+    if (printableElement) {
+      // Add a class to the element we want to print
+      printableElement.classList.add('printable-content');
+      
+      // Add a class to the body to hide other elements
+      document.body.classList.add('printing-active');
+      
+      window.print();
+      
+      // Clean up classes after print dialog is closed or print is done
+      printableElement.classList.remove('printable-content');
+      document.body.classList.remove('printing-active');
+    } else {
+      console.error("Could not find the source content to print.");
+      // You could show a toast message here to inform the user.
     }
   };
-  
-  // Construct the full HTML for the iframe, including fetched styles and the dark class
-  const printHtml = `<!DOCTYPE html><html><head><style>${styles}</style></head><body class="dark p-8">${printContent}</body></html>`;
 
-  // Reset content loaded state whenever the print content changes
-  useEffect(() => {
-    if (isPrintOpen) {
-      setIsContentLoaded(false);
-    }
-  }, [printContent, isPrintOpen]);
+  const handleOpenChange = (open: boolean) => {
+    setPrintOpen(open);
+  }
 
   return (
     <AlertDialog open={isPrintOpen} onOpenChange={handleOpenChange}>
@@ -85,33 +58,28 @@ export function PrintDialog() {
         <AlertDialogHeader>
           <AlertDialogTitle>Print Preview</AlertDialogTitle>
           <AlertDialogDescription>
-            Review the content below. When ready, click "Print".
+            This is a preview of your recipe. Use the print button to open the print dialog.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="flex-grow border rounded-md overflow-hidden relative bg-white">
-           {!isContentLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+        <div className="flex-grow border rounded-md overflow-auto p-4 bg-white dark:bg-background">
+          {isClient && (
+            <div
+              ref={contentRef}
+              className="prose dark:prose-invert"
+              dangerouslySetInnerHTML={{ __html: printContent }}
+            />
           )}
-          <iframe
-            ref={printFrameRef}
-            title="Print Content"
-            className={cn("w-full h-full", !isContentLoaded && 'opacity-0')}
-            srcDoc={printHtml}
-            onLoad={handleFrameLoad}
-          />
         </div>
         <AlertDialogFooter>
-           <AlertDialogCancel asChild>
+          <AlertDialogCancel asChild>
             <Button variant="ghost">
               <X className="mr-2 h-4 w-4" />
               Close
             </Button>
           </AlertDialogCancel>
-          <Button onClick={handlePrint} disabled={!isContentLoaded}>
+          <Button onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" />
-            {isContentLoaded ? 'Print' : 'Loading Preview...'}
+            Print
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

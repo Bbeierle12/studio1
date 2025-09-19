@@ -9,21 +9,34 @@ export function PrintRecipeButton() {
   const { triggerPrint } = usePrint();
   const { toast } = useToast();
 
-  const handlePrint = () => {
+  const handlePrintClick = () => {
+    // The element with this class will be found by the PrintDialog
     const articleNode = document.querySelector('article');
-    if (!articleNode) {
+
+    if (articleNode) {
+      // Add a temporary class to identify the correct article
+      articleNode.classList.add('printable-source');
+      
+      toast({
+        title: 'Preparing Print View',
+        description: 'The print preview dialog is opening.',
+      });
+      triggerPrint(articleNode.innerHTML);
+      
+      // Clean up the class after triggering the print
+      setTimeout(() => articleNode.classList.remove('printable-source'), 500);
+
+    } else {
       toast({
         variant: 'destructive',
-        title: 'Print Error',
+        title: 'Error',
         description: 'Could not find recipe content to print.',
       });
-      return;
     }
-    triggerPrint(articleNode.outerHTML);
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handlePrint} className="no-print">
+    <Button variant="outline" size="sm" onClick={handlePrintClick} className="no-print">
       <Printer className="mr-2 h-4 w-4" />
       Print
     </Button>
