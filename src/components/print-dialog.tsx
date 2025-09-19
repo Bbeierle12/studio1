@@ -38,9 +38,6 @@ export function PrintDialog() {
       
       window.print();
       
-      // Clean up classes after print dialog is closed or print is done
-      printableElement.classList.remove('printable-content');
-      document.body.classList.remove('printing-active');
     } else {
       console.error("Could not find the source content to print.");
       // You could show a toast message here to inform the user.

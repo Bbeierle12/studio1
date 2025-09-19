@@ -97,8 +97,8 @@ export async function addRecipeAction(
       tags: tagsArray,
       summary: summaryResult.summary,
       story,
-      imageUrl: `https://picsum.photos/seed/${title.replace(/\s+/g, '-')}/600/400`,
-      imageHint: 'food meal',
+      imageUrl: '',
+      imageHint: '',
       userId
     });
 
@@ -175,8 +175,8 @@ export async function updateRecipeAction(
       tags: tagsArray,
       summary: summaryResult.summary,
       story,
-      imageUrl: `https://picsum.photos/seed/${title.replace(/\s+/g, '-')}/600/400`,
-      imageHint: 'food meal',
+      imageUrl: '',
+      imageHint: '',
       userId: recipeToUpdate?.userId || userId
     });
 

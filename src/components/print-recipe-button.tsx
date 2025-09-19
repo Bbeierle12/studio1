@@ -10,11 +10,9 @@ export function PrintRecipeButton() {
   const { toast } = useToast();
 
   const handlePrintClick = () => {
-    // The element with this class will be found by the PrintDialog
     const articleNode = document.querySelector('article');
 
     if (articleNode) {
-      // Add a temporary class to identify the correct article
       articleNode.classList.add('printable-source');
       
       toast({
@@ -22,14 +20,6 @@ export function PrintRecipeButton() {
         description: 'The print preview dialog is opening.',
       });
       triggerPrint(articleNode.innerHTML);
-      
-      // Clean up the class after triggering the print dialog has had time to process
-      setTimeout(() => {
-        if (!document.body.classList.contains('printing-active')) {
-            articleNode.classList.remove('printable-source');
-        }
-      }, 2000);
-
     } else {
       toast({
         variant: 'destructive',

@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const recipeSchema = z.object({
@@ -24,4 +25,14 @@ export const generatedRecipeSchema = z.object({
         (data) => data.startsWith('data:image/'),
         'Invalid image format. Must be a data URI.'
     ),
-})
+});
+
+export const imageSchema = z.object({
+  file: z
+    .any()
+    .refine((file) => file?.size <= MAX_FILE_SIZE, `Max image size is 5MB.`)
+    .refine(
+      (file) => ACCEPTED_IMAGE_TYPES.includes(file?.type),
+      "Only .jpg, .jpeg, .png and .webp formats are supported."
+    ),
+});
