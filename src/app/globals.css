@@ -58,6 +58,13 @@
   }
 }
 
+@layer utilities {
+    .print-only {
+        display: none;
+    }
+}
+
+
 @media print {
   @page {
     size: auto;
@@ -75,8 +82,20 @@
   .no-print,
   header,
   footer,
-  nav {
+  nav,
+  .no-print * {
     display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  .prose-black {
+    color: #000 !important;
+  }
+  .prose-black p, .prose-black li {
+    color: #000 !important;
   }
 
   article {
@@ -98,21 +117,13 @@
 
   img {
     max-width: 50% !important;
-    display: block;
+    display: block !important;
     margin-left: auto;
     margin-right: auto;
     page-break-inside: avoid;
   }
 
-  .prose {
-    color: #000 !important;
-  }
-
   ul, p {
     color: #000 !important;
-  }
-  
-  .print-only {
-    display: block !important;
   }
 }

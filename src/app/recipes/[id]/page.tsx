@@ -2,7 +2,7 @@ import { getRecipeById } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { ChefHat, Tag, User, Edit, Clock, Users, UtensilsCrossed, Globe, BarChart, Printer, BookOpen } from 'lucide-react';
+import { ChefHat, Tag, User, Edit, Clock, Users, UtensilsCrossed, Globe, BarChart, BookOpen } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -25,7 +25,12 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   return (
     <article className="container mx-auto max-w-4xl py-8">
-      <div className="space-y-4">
+      <div className="space-y-4 print-only text-center mb-8">
+         <h1 className="text-4xl font-headline font-extrabold tracking-tight lg:text-5xl">
+            {recipe.title}
+         </h1>
+      </div>
+      <div className="space-y-4 no-print">
         <div className="text-center">
             <h1 className="text-4xl font-headline font-extrabold tracking-tight lg:text-5xl">
             {recipe.title}
@@ -90,7 +95,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         </div>
       </div>
 
-      <div className="my-8 overflow-hidden rounded-lg shadow-lg">
+      <div className="my-8 overflow-hidden rounded-lg shadow-lg print:shadow-none print:border print:rounded-none print:my-4">
         <Image
           src={recipe.imageUrl}
           alt={recipe.title}
@@ -103,9 +108,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
       </div>
 
       <div className="mx-auto max-w-2xl">
-        <div className="my-8 rounded-lg border bg-card p-6">
+        <div className="my-8 rounded-lg border bg-card p-6 print:border-none print:p-0 print:bg-transparent print:my-4">
             <div className="flex items-center gap-3">
-                <ChefHat className="h-8 w-8 text-primary"/>
+                <ChefHat className="h-8 w-8 text-primary print:hidden"/>
                 <h2 className="text-2xl font-headline font-semibold">Chef's Summary</h2>
             </div>
             <p className="mt-3 text-muted-foreground">
@@ -114,9 +119,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
         </div>
 
         {recipe.story && (
-          <div className="my-8 rounded-lg border bg-card p-6">
+          <div className="my-8 rounded-lg border bg-card p-6 print:border-none print:p-0 print:bg-transparent print:my-4">
               <div className="flex items-center gap-3">
-                  <BookOpen className="h-8 w-8 text-primary"/>
+                  <BookOpen className="h-8 w-8 text-primary print:hidden"/>
                   <h2 className="text-2xl font-headline font-semibold">Family Story</h2>
               </div>
               <p className="mt-3 text-muted-foreground prose prose-stone dark:prose-invert max-w-none prose-p:text-muted-foreground">
@@ -125,7 +130,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
           </div>
         )}
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-3 print:grid-cols-1">
           <div className="md:col-span-1">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-headline font-semibold">Ingredients</h2>
@@ -134,7 +139,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
             <ul className="space-y-2 text-muted-foreground">
               {recipe.ingredients.split('\n').map((line, i) => (
                 <li key={i} className="flex items-start">
-                  <span className="mr-2 mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  <span className="mr-2 mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary print:bg-black" />
                   <span>{line}</span>
                 </li>
               ))}
@@ -144,7 +149,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
           <div className="md:col-span-2">
             <h2 className="text-2xl font-headline font-semibold">Instructions</h2>
             <Separator className="my-4" />
-            <div className="prose prose-stone dark:prose-invert max-w-none prose-p:text-muted-foreground prose-li:text-muted-foreground">
+            <div className="prose prose-stone dark:prose-invert max-w-none prose-p:text-muted-foreground prose-li:text-muted-foreground print:prose-black">
               {recipe.instructions
                 .split('\n')
                 .map((paragraph, i) => (

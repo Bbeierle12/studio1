@@ -9,7 +9,7 @@ export function PrintRecipeButton() {
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handlePrint}>
+    <Button variant="outline" size="sm" onClick={handlePrint} className="no-print">
       <Printer className="mr-2 h-4 w-4" />
       Print
     </Button>
