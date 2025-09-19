@@ -6,14 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Loader2, Lock } from 'lucide-react';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export function LoginForm() {
   const { toast } = useToast();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,39 +22,37 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+      const result = await signIn('credentials', {
+        email,
+        password,
+        action: isSignUp ? 'signup' : 'login',
+        redirect: false,
+      });
+
+      if (result?.error) {
         toast({
-          title: 'Account Created',
-          description: 'You have been successfully signed up and logged in.',
+          variant: 'destructive',
+          title: isSignUp ? 'Sign Up Failed' : 'Sign In Failed',
+          description: result.error === 'CredentialsSignin' 
+            ? 'Invalid email or password. Please try again.'
+            : 'An unexpected error occurred. Please try again.',
         });
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
         toast({
-          title: 'Signed In',
-          description: 'Welcome back!',
+          title: isSignUp ? 'Account Created' : 'Signed In',
+          description: isSignUp 
+            ? 'You have been successfully signed up and logged in.'
+            : 'Welcome back!',
         });
+        router.push('/');
+        router.refresh();
       }
-      // On success, the AuthProvider will handle the redirect
     } catch (error: any) {
       console.error(error);
-      let description = 'An unexpected error occurred. Please try again.';
-      switch (error.code) {
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-          description = 'Invalid email or password. Please try again.';
-          break;
-        case 'auth/email-already-in-use':
-          description = 'An account with this email already exists. Please sign in.';
-          break;
-        case 'auth/weak-password':
-          description = 'The password is too weak. Please use at least 6 characters.';
-          break;
-      }
       toast({
         variant: 'destructive',
         title: isSignUp ? 'Sign Up Failed' : 'Sign In Failed',
-        description: description,
+        description: 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setLoading(false);

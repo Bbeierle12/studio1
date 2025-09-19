@@ -6,8 +6,7 @@ import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library, ShoppingCart, Sun
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
+import { signOut, useSession } from 'next-auth/react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,11 +32,12 @@ function getInitials(name?: string | null) {
 export function Header() {
   const pathname = usePathname();
   const { user, loading } = useAuth();
+  const { data: session } = useSession();
   const { setTheme, theme } = useTheme();
   const { unit, toggleUnit } = useUnit();
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await signOut();
   };
 
   const navLinks = [
@@ -109,17 +109,17 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? 'User'} />
-                    <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+                    <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? 'User'} />
+                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
+                      {session?.user?.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>

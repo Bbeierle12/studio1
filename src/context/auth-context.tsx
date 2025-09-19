@@ -1,14 +1,11 @@
 'use client';
 
-import { createContext, useContext, ReactNode, useEffect } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
-import type { User as FirebaseUser } from 'firebase/auth';
-import { createSession, clearSession } from '@/app/actions';
-import { usePathname, useRouter } from 'next/navigation';
+import { createContext, useContext, ReactNode } from 'react';
+import { useSession } from 'next-auth/react';
+import type { User } from '@/lib/types';
 
 type AuthContextType = {
-  user: FirebaseUser | null | undefined;
+  user: User | null;
   loading: boolean;
 };
 
@@ -18,31 +15,15 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, loading, error] = useAuthState(auth);
-  const pathname = usePathname();
-  const router = useRouter();
+  const { data: session, status } = useSession();
+  
+  const user: User | null = session?.user ? {
+    id: (session.user as any).id,
+    name: session.user.name || session.user.email?.split('@')[0] || 'User',
+    avatarUrl: session.user.image || `https://i.pravatar.cc/150?u=${session.user.email}`
+  } : null;
 
-  useEffect(() => {
-    async function handleAuth() {
-        if (user) {
-            const idToken = await user.getIdToken();
-            await createSession(idToken);
-        } else if (!loading) {
-            await clearSession();
-        }
-    }
-    
-    // Only run this logic on the client
-    if (typeof window !== 'undefined') {
-        handleAuth();
-    }
-  }, [user, loading]);
-
-  useEffect(() => {
-    if (error) {
-        console.error("Auth Error:", error);
-    }
-  }, [error])
+  const loading = status === 'loading';
 
   return (
     <AuthContext.Provider value={{ user, loading }}>

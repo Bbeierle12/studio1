@@ -7,20 +7,16 @@ import { summarizeRecipe } from '@/ai/flows/recipe-summarization';
 import { generateRecipe } from '@/ai/flows/generate-recipe-flow';
 import { convertIngredients } from '@/ai/flows/convert-ingredients-flow';
 import { recipeSchema, generatedRecipeSchema } from '@/lib/schemas';
-import { auth } from '@/lib/firebase-admin';
-import { cookies } from 'next/headers';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import type { Recipe } from '@/lib/types';
 
 async function getUserId() {
   try {
-    const sessionCookie = cookies().get('session')?.value;
-    if (!sessionCookie) {
-      return null;
-    }
-    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
-    return decodedClaims.uid;
+    const session = await getServerSession(authOptions);
+    return (session?.user as any)?.id || null;
   } catch (error) {
-    console.error('Error verifying session cookie:', error);
+    console.error('Error getting user session:', error);
     return null;
   }
 }
@@ -178,7 +174,7 @@ export async function updateRecipeAction(
       story,
       imageUrl: 'https://placehold.co/600x400/FFFFFF/FFFFFF',
       imageHint: '',
-      userId: recipeToUpdate?.userId || userId
+      userId: recipeToUpdate?.userId || userId || undefined
     });
 
   } catch (error) {
@@ -250,17 +246,4 @@ export async function convertIngredientsAction(ingredients: string, targetUnit: 
         console.error('Error converting ingredients with AI:', error);
         return { error: 'Failed to convert ingredients. Please try again.' };
     }
-}
-
-
-export async function createSession(idToken: string) {
-  const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-  const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
-  cookies().set('session', sessionCookie, { maxAge: expiresIn, httpOnly: true, secure: true });
-  revalidatePath('/');
-}
-
-export async function clearSession() {
-    cookies().delete('session');
-    revalidatePath('/');
 }

@@ -9,6 +9,7 @@ import { PrintDialog } from '@/components/print-dialog';
 import { ThemeProvider } from '@/context/theme-context';
 import { UnitProvider } from '@/context/unit-context';
 import { SavedRecipesProvider } from '@/context/saved-recipes-context';
+import { ClientSessionProvider } from '@/components/client-session-provider';
 
 export const metadata: Metadata = {
   title: 'Our Family Table',
@@ -31,29 +32,31 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <ShoppingListProvider>
-              <SavedRecipesProvider>
-                <UnitProvider>
-                  <PrintProvider>
-                    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-                      <Header />
-                      {children}
-                    </div>
-                    <Toaster />
-                    <PrintDialog />
-                  </PrintProvider>
-                </UnitProvider>
-              </SavedRecipesProvider>
-            </ShoppingListProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <ClientSessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthProvider>
+              <ShoppingListProvider>
+                <SavedRecipesProvider>
+                  <UnitProvider>
+                    <PrintProvider>
+                      <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+                        <Header />
+                        {children}
+                      </div>
+                      <Toaster />
+                      <PrintDialog />
+                    </PrintProvider>
+                  </UnitProvider>
+                </SavedRecipesProvider>
+              </ShoppingListProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </ClientSessionProvider>
       </body>
     </html>
   );

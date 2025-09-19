@@ -1,21 +1,12 @@
 'use server';
 
 /**
- * @fileOverview A recipe summarization AI agent.
- *
- * - summarizeRecipe - A function that handles the recipe summarization process.
- * - SummarizeRecipeInput - The input type for the summarizeRecipe function.
- * - SummarizeRecipeOutput - The return type for the summarizeRecipe function.
+ * @fileOverview A recipe summarization AI agent using Vercel AI SDK.
  */
 
-import {genkit} from 'genkit';
-import {z} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
-
-const ai = genkit({
-    plugins: [googleAI()],
-    model: 'googleai/gemini-2.5-flash',
-});
+import { openai } from '@ai-sdk/openai';
+import { generateObject } from 'ai';
+import { z } from 'zod';
 
 const SummarizeRecipeInputSchema = z.object({
   recipeName: z.string().describe('The name of the recipe.'),
@@ -30,28 +21,22 @@ const SummarizeRecipeOutputSchema = z.object({
 export type SummarizeRecipeOutput = z.infer<typeof SummarizeRecipeOutputSchema>;
 
 export async function summarizeRecipe(input: SummarizeRecipeInput): Promise<SummarizeRecipeOutput> {
-  return summarizeRecipeFlow(input);
-}
+  try {
+    const { object } = await generateObject({
+      model: openai('gpt-3.5-turbo'),
+      schema: SummarizeRecipeOutputSchema,
+      prompt: `You are an expert recipe summarizer. Please provide a concise summary of the recipe, highlighting its key aspects.
 
-const summarizeRecipePrompt = ai.definePrompt({
-  name: 'summarizeRecipePrompt',
-  input: {schema: SummarizeRecipeInputSchema},
-  output: {schema: SummarizeRecipeOutputSchema},
-  prompt: `You are an expert recipe summarizer. Please provide a concise summary of the recipe, highlighting its key aspects.
+Recipe Name: ${input.recipeName}
+Ingredients: ${input.ingredients}
+Instructions: ${input.instructions}
 
-Recipe Name: {{{recipeName}}}
-Ingredients: {{{ingredients}}}
-Instructions: {{{instructions}}}`,
-});
+Provide a summary that captures the essence of this recipe in 1-2 sentences.`,
+    });
 
-const summarizeRecipeFlow = ai.defineFlow(
-  {
-    name: 'summarizeRecipeFlow',
-    inputSchema: SummarizeRecipeInputSchema,
-    outputSchema: SummarizeRecipeOutputSchema,
-  },
-  async input => {
-    const {output} = await summarizeRecipePrompt(input);
-    return output!;
+    return object;
+  } catch (error) {
+    console.error('Error summarizing recipe:', error);
+    return { summary: 'A delicious family recipe.' };
   }
-);
+}
