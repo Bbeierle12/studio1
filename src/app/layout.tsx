@@ -8,6 +8,7 @@ import { PrintProvider } from '@/context/print-context';
 import { PrintDialog } from '@/components/print-dialog';
 import { ThemeProvider } from '@/context/theme-context';
 import { UnitProvider } from '@/context/unit-context';
+import { SavedRecipesProvider } from '@/context/saved-recipes-context';
 
 export const metadata: Metadata = {
   title: 'Our Family Table',
@@ -38,16 +39,18 @@ export default function RootLayout({
         >
           <AuthProvider>
             <ShoppingListProvider>
-              <UnitProvider>
-                <PrintProvider>
-                  <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-                    <Header />
-                    {children}
-                  </div>
-                  <Toaster />
-                  <PrintDialog />
-                </PrintProvider>
-              </UnitProvider>
+              <SavedRecipesProvider>
+                <UnitProvider>
+                  <PrintProvider>
+                    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+                      <Header />
+                      {children}
+                    </div>
+                    <Toaster />
+                    <PrintDialog />
+                  </PrintProvider>
+                </UnitProvider>
+              </SavedRecipesProvider>
             </ShoppingListProvider>
           </AuthProvider>
         </ThemeProvider>

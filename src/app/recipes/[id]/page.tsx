@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { DeleteRecipeButton } from '@/components/delete-recipe-button';
 import { PrintRecipeButton } from '@/components/print-recipe-button';
 import { IngredientList } from '@/components/ingredient-list';
+import type { Recipe } from '@/lib/types';
+import { SaveRecipeButton } from '@/components/save-recipe-button';
 
 type RecipePageProps = {
   params: {
@@ -84,6 +86,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
         </div>
         <div className="flex justify-center gap-2 no-print">
             <PrintRecipeButton />
+             <SaveRecipeButton recipe={recipe} />
             <Button asChild variant="outline" size="sm">
                 <Link href={`/recipes/${recipe.id}/edit`}>
                     <Edit className="mr-2 h-4 w-4" />

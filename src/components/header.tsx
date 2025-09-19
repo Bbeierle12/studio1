@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library, ShoppingCart, Sun, Moon, Scale } from 'lucide-react';
+import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library, ShoppingCart, Sun, Moon, Scale, Bookmark } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
@@ -44,7 +44,8 @@ export function Header() {
     { href: '/', label: 'Home', icon: Home },
     { href: '/recipes', label: 'Browse', icon: CookingPot },
     { href: '/collections', label: 'Collections', icon: Library },
-    { href: '/recipes/new', label: 'Add Recipe', icon: PlusCircle },
+    { href: '/saved', label: 'Saved', icon: Bookmark },
+    { href: '/recipes/new', label: 'Add Recipe', icon: PlusCircle, className: 'hidden sm:flex' },
   ];
   
   const toggleTheme = () => {
@@ -64,8 +65,8 @@ export function Header() {
             Our Family Table
           </span>
         </Link>
-        <nav className="flex flex-1 items-center space-x-6 text-sm font-medium">
-          {navLinks.map(({ href, label, icon: Icon }) => {
+        <nav className="flex flex-1 items-center space-x-4 text-sm font-medium">
+          {navLinks.map(({ href, label, icon: Icon, className: linkClassName }) => {
             const isActive =
               href === '/' ? pathname === href : pathname.startsWith(href);
             return (
@@ -74,7 +75,8 @@ export function Header() {
                 href={href}
                 className={cn(
                   'flex items-center gap-2 transition-colors hover:text-foreground/80',
-                  isActive ? 'text-foreground' : 'text-foreground/60'
+                  isActive ? 'text-foreground' : 'text-foreground/60',
+                  linkClassName
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -84,6 +86,12 @@ export function Header() {
           })}
         </nav>
         <div className="flex items-center justify-end gap-2">
+          <Button asChild variant="outline" size="sm" className="sm:hidden">
+             <Link href="/recipes/new">
+                <PlusCircle className="h-4 w-4" />
+                <span className="sr-only">Add Recipe</span>
+             </Link>
+          </Button>
           <ShoppingList />
            <Button variant="ghost" size="icon" onClick={toggleUnit} aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}>
             <Scale className="h-[1.2rem] w-[1.2rem]" />
