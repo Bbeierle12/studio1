@@ -60,13 +60,13 @@ export function PrintDialog() {
             Review the content below. Click "Print" to open the print dialog.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="flex-grow border rounded-md overflow-hidden relative bg-white dark:bg-transparent">
-          <ScrollArea className="h-full">
-            <div
-              className="p-8 prose prose-stone dark:prose-invert max-w-none prose-p:text-card-foreground prose-li:text-card-foreground prose-headings:text-card-foreground"
-              dangerouslySetInnerHTML={{ __html: printContent }}
+        <div className="flex-grow border rounded-md overflow-hidden relative bg-white">
+            <iframe
+                ref={printFrameRef}
+                title="Print Content"
+                className="w-full h-full"
+                srcDoc={`<!DOCTYPE html><html><head><style>${styles}</style></head><body class="dark p-8">${printContent}</body></html>`}
             />
-          </ScrollArea>
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
@@ -82,15 +82,6 @@ export function PrintDialog() {
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
-
-        {/* Hidden Iframe for printing */}
-        <iframe
-          key={iframeKey}
-          ref={printFrameRef}
-          title="Print Content"
-          className="absolute w-0 h-0 -left-full -top-full"
-          srcDoc={`<!DOCTYPE html><html><head><style>${styles}</style></head><body class="dark">${printContent}</body></html>`}
-        />
       </AlertDialogContent>
     </AlertDialog>
   );
