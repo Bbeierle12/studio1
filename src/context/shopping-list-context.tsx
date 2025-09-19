@@ -13,6 +13,7 @@ type ShoppingListContextType = {
   toggleItem: (index: number) => void;
   clearList: () => void;
   getItemsCount: () => { total: number; unchecked: number };
+  getListAsText: (options?: { includeChecked?: boolean }) => string;
 };
 
 const ShoppingListContext = createContext<ShoppingListContextType | undefined>(undefined);
@@ -38,8 +39,16 @@ export function ShoppingListProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const addIngredients = useCallback((newItems: string[]) => {
-    const itemsToAdd: ShoppingListItem[] = newItems.map(name => ({ name, checked: false }));
-    setItems(prevItems => [...prevItems, ...itemsToAdd]);
+    const itemsToAdd: ShoppingListItem[] = newItems
+        .filter(name => name.trim() !== '') // Ensure no empty items are added
+        .map(name => ({ name, checked: false }));
+
+    // Prevent duplicates
+    setItems(prevItems => {
+        const existingItems = new Set(prevItems.map(i => i.name.toLowerCase()));
+        const uniqueNewItems = itemsToAdd.filter(newItem => !existingItems.has(newItem.name.toLowerCase()));
+        return [...prevItems, ...uniqueNewItems];
+    });
   }, []);
 
   const toggleItem = useCallback((index: number) => {
@@ -60,7 +69,15 @@ export function ShoppingListProvider({ children }: { children: ReactNode }) {
     return { total, unchecked };
   }, [items]);
 
-  const value = { items, addIngredients, toggleItem, clearList, getItemsCount };
+  const getListAsText = useCallback((options: { includeChecked?: boolean } = {}) => {
+    const { includeChecked = false } = options;
+    return items
+      .filter(item => includeChecked || !item.checked)
+      .map(item => item.name)
+      .join('\n');
+  }, [items]);
+
+  const value = { items, addIngredients, toggleItem, clearList, getItemsCount, getListAsText };
 
   return (
     <ShoppingListContext.Provider value={value}>
