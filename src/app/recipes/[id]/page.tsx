@@ -1,14 +1,13 @@
 import { getRecipeById } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { Badge } from '@/components/ui/badge';
 import { ChefHat, Tag, User, Edit, Clock, Users, UtensilsCrossed, Globe, BarChart, BookOpen } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { DeleteRecipeButton } from '@/components/delete-recipe-button';
 import { PrintRecipeButton } from '@/components/print-recipe-button';
-import { AddToShoppingListButton } from '@/components/add-to-shopping-list-button';
+import { IngredientList } from '@/components/ingredient-list';
 
 type RecipePageProps = {
   params: {
@@ -132,19 +131,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
         <div className="grid gap-8 md:grid-cols-3 print:grid-cols-1">
           <div className="md:col-span-1">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-headline font-semibold">Ingredients</h2>
-            </div>
-            <Separator className="my-4" />
-            <ul className="space-y-2 text-muted-foreground">
-              {recipe.ingredients.split('\n').map((line, i) => (
-                <li key={i} className="flex items-start">
-                  <span className="mr-2 mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary print:bg-black" />
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ul>
-             <AddToShoppingListButton ingredients={recipe.ingredients} />
+            <IngredientList ingredients={recipe.ingredients} />
           </div>
           <div className="md:col-span-2">
             <h2 className="text-2xl font-headline font-semibold">Instructions</h2>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library, ShoppingCart, Sun, Moon } from 'lucide-react';
+import { CookingPot, Home, PlusCircle, LogOut, LogIn, Library, ShoppingCart, Sun, Moon, Scale } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
@@ -19,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShoppingList } from './shopping-list';
 import { useTheme } from 'next-themes';
+import { useUnit } from '@/context/unit-context';
 
 function getInitials(name?: string | null) {
   if (!name) return 'U';
@@ -33,6 +34,7 @@ export function Header() {
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const { setTheme, theme } = useTheme();
+  const { unit, toggleUnit } = useUnit();
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -83,6 +85,10 @@ export function Header() {
         </nav>
         <div className="flex items-center justify-end gap-2">
           <ShoppingList />
+           <Button variant="ghost" size="icon" onClick={toggleUnit} aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}>
+            <Scale className="h-[1.2rem] w-[1.2rem]" />
+            <span className="sr-only">Toggle Units</span>
+          </Button>
           <Button variant="ghost" size="icon" onClick={toggleTheme}>
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />

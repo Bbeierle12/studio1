@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { addRecipe as saveRecipe, updateRecipe, deleteRecipe, getRecipeById } from '@/lib/data';
 import { summarizeRecipe } from '@/ai/flows/recipe-summarization';
 import { generateRecipe } from '@/ai/flows/generate-recipe-flow';
+import { convertIngredients } from '@/ai/flows/convert-ingredients-flow';
 import { recipeSchema, generatedRecipeSchema } from '@/lib/schemas';
 import { auth } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
@@ -239,6 +240,16 @@ export async function generateRecipeAction(formData: FormData) {
     console.error('Error generating recipe with AI:', error);
     redirect('/recipes/generate?error=ai_failed');
   }
+}
+
+export async function convertIngredientsAction(ingredients: string, targetUnit: 'metric' | 'imperial') {
+    try {
+        const result = await convertIngredients({ ingredients, targetUnit });
+        return { convertedIngredients: result.convertedIngredients };
+    } catch (error) {
+        console.error('Error converting ingredients with AI:', error);
+        return { error: 'Failed to convert ingredients. Please try again.' };
+    }
 }
 
 
