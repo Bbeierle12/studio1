@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { usePrint } from '@/context/print-context';
 import { Printer, X } from 'lucide-react';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 
 export function PrintDialog() {
@@ -20,22 +20,21 @@ export function PrintDialog() {
   const printContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // This ensures the component only renders on the client, preventing hydration errors.
     setIsClient(true);
   }, []);
 
-  const handlePrint = useCallback(() => {
-    if (printContainerRef.current) {
-        // The CSS will handle showing only this content
-        window.print();
-    } else {
-        console.error("Could not find content to print.");
-    }
-  }, []);
+  const handlePrint = () => {
+    // The CSS media queries will handle showing only the printable-content div.
+    window.print();
+  };
 
   const handleOpenChange = (open: boolean) => {
     setPrintOpen(open);
   };
   
+  // Return null if not on the client or if the dialog is not open.
+  // This prevents any server-side rendering attempts of the dialog.
   if (!isClient) {
     return null;
   }
