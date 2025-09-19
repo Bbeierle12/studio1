@@ -41,7 +41,7 @@ export default function Home() {
     <div className="flex-grow">
       <div className="absolute inset-0 top-[65px] opacity-10">
         <Image
-          src="https://picsum.photos/seed/gnomes/1920/1080"
+          src="https://placehold.co/1920x1080/FFFFFF/FFFFFF"
           alt="Gnomes in a kitchen sketch background"
           fill
           className="object-cover"

@@ -97,7 +97,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
       <div className="my-8 overflow-hidden rounded-lg shadow-lg print:shadow-none print:border print:rounded-none print:my-4">
         <Image
-          src={recipe.imageUrl}
+          src="https://placehold.co/1200x675/FFFFFF/FFFFFF"
           alt={recipe.title}
           width={1200}
           height={675}

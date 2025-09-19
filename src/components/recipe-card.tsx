@@ -28,7 +28,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         <CardContent className="flex-grow p-0">
           <div className="aspect-video overflow-hidden">
             <Image
-              src={recipe.imageUrl}
+              src="https://placehold.co/600x400/FFFFFF/FFFFFF"
               alt={recipe.title}
               width={600}
               height={400}

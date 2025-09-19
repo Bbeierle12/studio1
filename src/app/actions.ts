@@ -97,7 +97,7 @@ export async function addRecipeAction(
       tags: tagsArray,
       summary: summaryResult.summary,
       story,
-      imageUrl: '',
+      imageUrl: 'https://placehold.co/600x400/FFFFFF/FFFFFF',
       imageHint: '',
       userId
     });
@@ -175,7 +175,7 @@ export async function updateRecipeAction(
       tags: tagsArray,
       summary: summaryResult.summary,
       story,
-      imageUrl: '',
+      imageUrl: 'https://placehold.co/600x400/FFFFFF/FFFFFF',
       imageHint: '',
       userId: recipeToUpdate?.userId || userId
     });

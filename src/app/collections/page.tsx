@@ -8,7 +8,7 @@ import type { Recipe } from '@/lib/types';
 
 async function getCoverImageForTag(tag: string, recipes: Recipe[]) {
     const recipeWithTag = recipes.find(recipe => recipe.tags.includes(tag));
-    return recipeWithTag ? { url: recipeWithTag.imageUrl, hint: recipeWithTag.imageHint } : { url: 'https://picsum.photos/seed/collection/600/400', hint: 'food collection' };
+    return recipeWithTag ? { url: recipeWithTag.imageUrl, hint: recipeWithTag.imageHint } : { url: 'https://placehold.co/600x400/FFFFFF/FFFFFF', hint: 'food collection' };
 }
 
 export default async function CollectionsPage() {
@@ -43,7 +43,7 @@ export default async function CollectionsPage() {
                         <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:border-primary/50">
                             <div className="relative aspect-video overflow-hidden">
                                 <Image
-                                    src={collection.coverImage}
+                                    src="https://placehold.co/600x400/FFFFFF/FFFFFF"
                                     alt={collection.name}
                                     width={600}
                                     height={400}
