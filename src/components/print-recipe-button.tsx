@@ -23,8 +23,12 @@ export function PrintRecipeButton() {
       });
       triggerPrint(articleNode.innerHTML);
       
-      // Clean up the class after triggering the print
-      setTimeout(() => articleNode.classList.remove('printable-source'), 500);
+      // Clean up the class after triggering the print dialog has had time to process
+      setTimeout(() => {
+        if (!document.body.classList.contains('printing-active')) {
+            articleNode.classList.remove('printable-source');
+        }
+      }, 2000);
 
     } else {
       toast({

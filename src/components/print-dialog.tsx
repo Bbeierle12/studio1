@@ -31,11 +31,10 @@ export function PrintDialog() {
     const printableElement = document.querySelector('.printable-source');
     
     if (printableElement) {
-      // Add a class to the element we want to print
-      printableElement.classList.add('printable-content');
-      
       // Add a class to the body to hide other elements
       document.body.classList.add('printing-active');
+      // Add a class to the element we want to print
+      printableElement.classList.add('printable-content');
       
       window.print();
       
@@ -49,6 +48,15 @@ export function PrintDialog() {
   };
 
   const handleOpenChange = (open: boolean) => {
+    if (!open) {
+        // If closing, ensure cleanup happens
+        const printableElement = document.querySelector('.printable-source');
+        if (printableElement) {
+            printableElement.classList.remove('printable-content');
+            printableElement.classList.remove('printable-source');
+        }
+        document.body.classList.remove('printing-active');
+    }
     setPrintOpen(open);
   }
 
