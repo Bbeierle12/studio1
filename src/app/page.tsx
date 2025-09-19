@@ -1,41 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
-import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const { user, loading } = useAuth();
-  const { toast } = useToast();
-  const router = useRouter();
-
-  useEffect(() => {
-    const email = window.localStorage.getItem('emailForSignIn');
-    if (isSignInWithEmailLink(auth, window.location.href) && email) {
-      signInWithEmailLink(auth, email, window.location.href)
-        .then((result) => {
-          toast({
-            title: 'Successfully Signed In',
-            description: `Welcome back, ${result.user.email}!`,
-          });
-          window.localStorage.removeItem('emailForSignIn');
-          router.push('/');
-        })
-        .catch((error) => {
-          toast({
-            variant: 'destructive',
-            title: 'Sign In Failed',
-            description: 'The sign-in link is invalid or has expired. Please try again.',
-          });
-        });
-    }
-  }, [toast, router]);
 
   return (
     <div className="flex-grow">
