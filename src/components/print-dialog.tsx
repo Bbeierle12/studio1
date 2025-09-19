@@ -3,7 +3,6 @@
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -12,71 +11,98 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { usePrint } from '@/context/print-context';
-import { Printer, X } from 'lucide-react';
-import { useRef, useEffect, useState } from 'react';
+import { Printer, X, ArrowRight } from 'lucide-react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { Button } from './ui/button';
-import { ScrollArea } from './ui/scroll-area';
 
 export function PrintDialog() {
   const { isPrintOpen, setPrintOpen, printContent } = usePrint();
   const printFrameRef = useRef<HTMLIFrameElement>(null);
   const [styles, setStyles] = useState('');
+  const [step, setStep] = useState(1);
 
+  // Fetch and store stylesheet content when component mounts.
   useEffect(() => {
-    // Fetch and store stylesheet content when component mounts.
     const fetchStyles = async () => {
-      const stylesheets = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
-      const stylePromises = stylesheets.map(sheet =>
-        fetch(sheet.href)
-          .then(res => res.text())
-          .catch(err => {
-            console.error(`Could not fetch stylesheet: ${sheet.href}`, err);
-            return '';
-          })
-      );
+      // Find all link and style tags in the head
+      const styleSheets = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
+      const stylePromises = Array.from(styleSheets).map(sheet => {
+          if (sheet.tagName === 'STYLE') {
+              return Promise.resolve(sheet.innerHTML);
+          }
+          if ('href' in sheet && (sheet as HTMLLinkElement).href) {
+              return fetch((sheet as HTMLLinkElement).href)
+                  .then(res => res.text())
+                  .catch(err => {
+                      console.error(`Could not fetch stylesheet: ${(sheet as HTMLLinkElement).href}`, err);
+                      return '';
+                  });
+          }
+          return Promise.resolve('');
+      });
       const styleContents = await Promise.all(stylePromises);
       setStyles(styleContents.join('\n'));
     };
 
     fetchStyles();
   }, []);
+  
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      // Reset to step 1 when the dialog is closed
+      setTimeout(() => setStep(1), 200); 
+    }
+    setPrintOpen(open);
+  }
 
-  const handlePrint = () => {
+  const handlePrint = useCallback(() => {
     const printFrame = printFrameRef.current;
     if (printFrame && printFrame.contentWindow) {
       printFrame.contentWindow.focus();
       printFrame.contentWindow.print();
     }
-  };
+  }, []);
+
+  // Full HTML doc to ensure proper rendering in the iframe
+  const printHtml = `<!DOCTYPE html><html><head><style>${styles}</style></head><body class="dark p-8">${printContent}</body></html>`;
 
   return (
-    <AlertDialog open={isPrintOpen} onOpenChange={setPrintOpen}>
+    <AlertDialog open={isPrintOpen} onOpenChange={handleOpenChange}>
       <AlertDialogContent className="max-w-3xl h-[90vh] flex flex-col">
         <AlertDialogHeader>
           <AlertDialogTitle>Print Preview</AlertDialogTitle>
           <AlertDialogDescription>
-            Review the content below. Click "Print" to open the print dialog.
+            {step === 1 
+              ? 'Review the content below. Click "Continue" to proceed to printing.'
+              : 'Click "Print" to open your browser\'s print dialog.'}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex-grow border rounded-md overflow-hidden relative bg-white">
-            <iframe
-                ref={printFrameRef}
-                title="Print Content"
-                className="w-full h-full"
-                srcDoc={`<!DOCTYPE html><html><head><style>${styles}</style></head><body class="dark p-8">${printContent}</body></html>`}
-            />
+          <iframe
+            ref={printFrameRef}
+            title="Print Content"
+            className="w-full h-full"
+            srcDoc={printHtml}
+          />
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel asChild>
+           <AlertDialogCancel asChild>
             <Button variant="ghost">
               <X className="mr-2 h-4 w-4" />
               Close
             </Button>
           </AlertDialogCancel>
-          <Button onClick={handlePrint}>
-            <Printer className="mr-2 h-4 w-4" />
-            Print
-          </Button>
+          {step === 1 ? (
+             <Button onClick={() => setStep(2)}>
+              <ArrowRight className="mr-2 h-4 w-4" />
+              Continue
+            </Button>
+          ) : (
+            <Button onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" />
+              Print
+            </Button>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
