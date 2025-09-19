@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -48,9 +49,6 @@ export function PrintDialog() {
     }
   };
 
-  // Use a key to force re-render of iframe when content changes
-  const iframeKey = Date.now();
-
   return (
     <AlertDialog open={isPrintOpen} onOpenChange={setPrintOpen}>
       <AlertDialogContent className="max-w-3xl h-[90vh] flex flex-col">
@@ -75,12 +73,10 @@ export function PrintDialog() {
               Close
             </Button>
           </AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <Button onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" />
-              Print
-            </Button>
-          </AlertDialogAction>
+          <Button onClick={handlePrint}>
+            <Printer className="mr-2 h-4 w-4" />
+            Print
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
