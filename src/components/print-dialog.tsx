@@ -20,11 +20,11 @@ export function PrintDialog() {
   const printFrameRef = useRef<HTMLIFrameElement>(null);
   const [styles, setStyles] = useState('');
   const [step, setStep] = useState(1);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   // Fetch and store stylesheet content when component mounts.
   useEffect(() => {
     const fetchStyles = async () => {
-      // Find all link and style tags in the head
       const styleSheets = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
       const stylePromises = Array.from(styleSheets).map(sheet => {
           if (sheet.tagName === 'STYLE') {
@@ -49,19 +49,25 @@ export function PrintDialog() {
   
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      // Reset to step 1 when the dialog is closed
-      setTimeout(() => setStep(1), 200); 
+      setTimeout(() => {
+        setStep(1);
+        setIsPrinting(false);
+      }, 200); 
     }
     setPrintOpen(open);
   }
 
   const handlePrint = useCallback(() => {
-    const printFrame = printFrameRef.current;
-    if (printFrame && printFrame.contentWindow) {
-      printFrame.contentWindow.focus();
-      printFrame.contentWindow.print();
-    }
+    setIsPrinting(true);
   }, []);
+  
+  useEffect(() => {
+    if(isPrinting && printFrameRef.current) {
+        printFrameRef.current.focus();
+        printFrameRef.current.contentWindow?.print();
+        setIsPrinting(false); // Reset printing state
+    }
+  }, [isPrinting]);
 
   // Full HTML doc to ensure proper rendering in the iframe
   const printHtml = `<!DOCTYPE html><html><head><style>${styles}</style></head><body class="dark p-8">${printContent}</body></html>`;
@@ -83,7 +89,7 @@ export function PrintDialog() {
             title="Print Content"
             className="w-full h-full"
             srcDoc={printHtml}
-            onLoad={step === 2 ? handlePrint : undefined}
+            onLoad={step === 2 && isPrinting ? handlePrint : undefined}
           />
         </div>
         <AlertDialogFooter>
@@ -99,9 +105,9 @@ export function PrintDialog() {
               Continue
             </Button>
           ) : (
-            <Button onClick={handlePrint}>
+            <Button onClick={handlePrint} disabled={isPrinting}>
               <Printer className="mr-2 h-4 w-4" />
-              Print
+              {isPrinting ? 'Preparing...' : 'Print'}
             </Button>
           )}
         </AlertDialogFooter>
