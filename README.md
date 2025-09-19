@@ -7,12 +7,29 @@ A Next.js application for managing and sharing family recipes with AI-powered fe
 - 🍳 Recipe management with rich metadata (prep time, servings, difficulty, cuisine)
 - 🧑‍🍳 User authentication with NextAuth.js
 - 🤖 AI-powered recipe summarization and generation (OpenAI)
+- 🌦️ **Forecast-to-Feast**: Dynamic weather-based recipe recommendations
 - 📱 Responsive design with Tailwind CSS and Radix UI
 - 🗃️ Database with Prisma and SQLite
 - 🔍 Recipe search and filtering
 - 📋 Meal planning capabilities
 - 🌍 Geographic origin tracking
 - 📝 Recipe variations and family lineage
+
+### Forecast-to-Feast Feature
+
+Our dynamic hero feature uses real-time weather data to recommend the perfect recipes for current conditions:
+
+- **Weather Integration**: Live data including temperature, precipitation, wind, air quality, and sunset times
+- **Smart Recommendations**: Algorithm considers weather signals to suggest appropriate cooking methods
+- **Contextual Explanations**: "Why this?" feature explains the reasoning behind each recommendation
+- **Adaptive UI**: Weather barometer shows current conditions at a glance
+
+**Weather-based Recipe Selection Examples:**
+- Hot (≥85°F) + calm wind → No-cook meals, salads, ceviche
+- Rainy (≥40% chance) or cold (≤55°F) → Soups, stews, baked comfort foods  
+- Poor air quality or windy → Indoor cooking methods (sheet-pan, air-fryer)
+- Golden hour (90+ min to sunset) → Grilling and outdoor cooking
+- Weeknights → Quick 30-minute meals
 
 ## Getting Started
 
@@ -33,7 +50,17 @@ A Next.js application for managing and sharing family recipes with AI-powered fe
    ```bash
    cp .env.example .env.local
    ```
-   Fill in your environment variables (see `.env.example` for required values)
+   Fill in your environment variables:
+   - `DATABASE_URL`: SQLite database path (default: `file:./dev.db`)
+   - `NEXTAUTH_SECRET`: Random string for NextAuth.js session encryption
+   - `OPENAI_API_KEY`: OpenAI API key for AI features (optional)
+   - `NEXT_PUBLIC_OPENWEATHER_API_KEY`: OpenWeatherMap API key for weather features (optional)
+   
+   **Getting an OpenWeatherMap API Key:**
+   1. Sign up at [OpenWeatherMap](https://openweathermap.org/api)
+   2. Subscribe to the free plan (1,000 calls/day)
+   3. Copy your API key to `NEXT_PUBLIC_OPENWEATHER_API_KEY`
+   4. The app will work without this key but won't show weather-based recommendations
 
 4. Set up the database:
    ```bash

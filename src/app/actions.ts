@@ -190,6 +190,7 @@ export async function updateRecipeAction(
 
     await updateRecipe({
       id,
+      slug: recipeToUpdate?.slug || '', // Will be regenerated if title changed
       title,
       contributor,
       prepTime,
@@ -202,8 +203,13 @@ export async function updateRecipeAction(
       tags: tagsArray,
       summary: summaryResult.summary,
       story,
-      imageUrl: 'https://placehold.co/600x400/FFFFFF/FFFFFF',
-      imageHint: '',
+      imageUrl: recipeToUpdate?.imageUrl || 'https://placehold.co/600x400/FFFFFF/FFFFFF',
+      imageHint: recipeToUpdate?.imageHint || '',
+      audioUrl: recipeToUpdate?.audioUrl,
+      originName: recipeToUpdate?.originName,
+      originLat: recipeToUpdate?.originLat,
+      originLng: recipeToUpdate?.originLng,
+      parentId: recipeToUpdate?.parentId,
       userId: recipeToUpdate?.userId || userId || undefined,
     });
   } catch (error) {

@@ -144,7 +144,7 @@ async function generateUniqueSlug(title: string, excludeId?: string): Promise<st
 }
 
 export const addRecipe = async (
-  recipe: Omit<Recipe, 'id'>
+  recipe: Omit<Recipe, 'id' | 'slug'>
 ): Promise<Recipe> => {
   // Generate unique slug from title
   const slug = await generateUniqueSlug(recipe.title);

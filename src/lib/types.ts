@@ -42,3 +42,70 @@ export type Plan = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+// Weather and environmental data types
+export type WeatherData = {
+  feelsLike: number; // Temperature in Fahrenheit
+  temperature: number; // Actual temperature in Fahrenheit
+  humidity: number; // Percentage (0-100)
+  precipitation: number; // Rain probability percentage (0-100)
+  windSpeed: number; // Wind speed in mph
+  aqi: number; // Air Quality Index
+  uvIndex: number; // UV Index
+  visibility: number; // Visibility in miles
+  description: string; // Weather description (e.g., "Clear", "Cloudy")
+  icon: string; // Weather icon code
+};
+
+export type SunData = {
+  sunrise: Date;
+  sunset: Date;
+  minutesToSunset: number;
+  minutesToSunrise: number;
+  isDaytime: boolean;
+};
+
+export type LocationData = {
+  latitude: number;
+  longitude: number;
+  city: string;
+  region: string;
+  country: string;
+  timezone: string;
+};
+
+export type WeatherContext = {
+  weather: WeatherData;
+  sun: SunData;
+  location: LocationData;
+  isWeeknight: boolean; // Monday-Thursday
+  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
+};
+
+// Meal recommendation types
+export type MealTag = 
+  | 'no-cook' | 'chilled' | 'salad' | 'light'
+  | 'grill' | 'summer' | 'bbq'
+  | 'soup' | 'stew' | 'bake' | 'comfort' | 'warm'
+  | 'sheet-pan' | 'air-fryer' | 'stovetop' | 'indoor'
+  | '30-min' | 'quick' | 'one-pot' | 'weeknight'
+  | 'crowd-pleaser' | 'batch-cook' | 'leftovers'
+  | 'fresh' | 'seasonal' | 'hearty' | 'spicy';
+
+export type MealRecommendation = {
+  recipe: Recipe;
+  reason: string; // Explanation for why this recipe was recommended
+  confidence: number; // 0-1 confidence score
+  tags: MealTag[]; // Tags that matched for this recommendation
+};
+
+export type RecommendationContext = {
+  weather: WeatherContext;
+  preferences?: {
+    maxPrepTime?: number;
+    dietary?: string[];
+    cuisines?: string[];
+    excludeIngredients?: string[];
+  };
+  mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+};

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
+import ForecastToFeastHero from '@/components/forecast-to-feast-hero';
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -20,19 +21,27 @@ export default function Home() {
         />
       </div>
       <main className='relative flex h-full grow flex-col items-center justify-center p-8 text-center'>
-        <h1 className='mb-2 font-headline text-6xl font-bold text-white'>
-          Our Family Table
-        </h1>
-        <p className='text-xl text-secondary'>
-          Preserving culinary heritage, one recipe at a time.
-        </p>
-        <div className='mt-8 w-full max-w-md space-y-4'>
+        <div className='mb-8'>
+          <h1 className='mb-2 font-headline text-6xl font-bold text-white'>
+            Our Family Table
+          </h1>
+          <p className='text-xl text-secondary'>
+            Preserving culinary heritage, one recipe at a time.
+          </p>
+        </div>
+
+        {/* Forecast-to-Feast Hero */}
+        <div className='mb-8 w-full max-w-6xl'>
+          <ForecastToFeastHero />
+        </div>
+
+        <div className='w-full max-w-md space-y-4'>
           <Button
             asChild
             className='w-full transform transition-transform hover:scale-105'
             size='lg'
           >
-            <Link href='/recipes'>Browse Recipes</Link>
+            <Link href='/recipes'>Browse All Recipes</Link>
           </Button>
           {!loading && !user && (
             <div className='grid grid-cols-2 gap-4'>
