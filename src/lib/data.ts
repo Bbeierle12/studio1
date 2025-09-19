@@ -13,19 +13,33 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 const mapPrismaUser = (prismaUser: any): User => ({
   id: prismaUser.id,
   name: prismaUser.name || prismaUser.email.split('@')[0],
+  email: prismaUser.email,
   avatarUrl:
     prismaUser.avatarUrl || `https://i.pravatar.cc/150?u=${prismaUser.email}`,
 });
+
+// Function to generate slug from title
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+}
 
 // Convert Prisma recipe to our Recipe type
 const mapPrismaRecipe = (prismaRecipe: any): Recipe => ({
   id: prismaRecipe.id,
   title: prismaRecipe.title,
+  slug: prismaRecipe.slug,
   contributor: prismaRecipe.contributor,
   ingredients: prismaRecipe.ingredients,
   instructions: prismaRecipe.instructions,
   imageUrl: prismaRecipe.imageUrl,
   imageHint: prismaRecipe.imageHint,
+  audioUrl: prismaRecipe.audioUrl,
   tags: JSON.parse(prismaRecipe.tags),
   summary: prismaRecipe.summary,
   story: prismaRecipe.story,
@@ -35,6 +49,12 @@ const mapPrismaRecipe = (prismaRecipe: any): Recipe => ({
   course: prismaRecipe.course as any,
   cuisine: prismaRecipe.cuisine as any,
   difficulty: prismaRecipe.difficulty as any,
+  originName: prismaRecipe.originName,
+  originLat: prismaRecipe.originLat,
+  originLng: prismaRecipe.originLng,
+  parentId: prismaRecipe.parentId,
+  createdAt: prismaRecipe.createdAt,
+  updatedAt: prismaRecipe.updatedAt,
 });
 
 export const getUsers = async (): Promise<User[]> => {
@@ -100,12 +120,39 @@ export const getTags = async (): Promise<string[]> => {
   return Array.from(allTags).sort();
 };
 
+// Function to ensure slug uniqueness
+async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
+  let baseSlug = generateSlug(title);
+  let slug = baseSlug;
+  let counter = 1;
+
+  while (true) {
+    const existingRecipe = await prisma.recipe.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+
+    // If no existing recipe found, or the existing recipe is the one we're updating
+    if (!existingRecipe || (excludeId && existingRecipe.id === excludeId)) {
+      return slug;
+    }
+
+    // If slug exists, try with a counter
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+}
+
 export const addRecipe = async (
   recipe: Omit<Recipe, 'id'>
 ): Promise<Recipe> => {
+  // Generate unique slug from title
+  const slug = await generateUniqueSlug(recipe.title);
+  
   const newRecipe = await prisma.recipe.create({
     data: {
       title: recipe.title,
+      slug,
       contributor: recipe.contributor,
       prepTime: recipe.prepTime,
       servings: recipe.servings,
@@ -119,6 +166,11 @@ export const addRecipe = async (
       story: recipe.story,
       imageUrl: recipe.imageUrl || 'https://placehold.co/600x400/FFFFFF/FFFFFF',
       imageHint: recipe.imageHint || '',
+      audioUrl: recipe.audioUrl,
+      originName: recipe.originName,
+      originLat: recipe.originLat,
+      originLng: recipe.originLng,
+      parentId: recipe.parentId,
       userId: recipe.userId!,
     },
     include: { user: true },
@@ -128,10 +180,22 @@ export const addRecipe = async (
 };
 
 export const updateRecipe = async (recipe: Recipe): Promise<Recipe> => {
+  // Generate new slug if title changed
+  const existingRecipe = await prisma.recipe.findUnique({
+    where: { id: recipe.id },
+    select: { title: true, slug: true },
+  });
+  
+  let slug = recipe.slug;
+  if (existingRecipe && existingRecipe.title !== recipe.title) {
+    slug = await generateUniqueSlug(recipe.title, recipe.id);
+  }
+  
   const updatedRecipe = await prisma.recipe.update({
     where: { id: recipe.id },
     data: {
       title: recipe.title,
+      slug,
       contributor: recipe.contributor,
       prepTime: recipe.prepTime,
       servings: recipe.servings,
@@ -145,6 +209,11 @@ export const updateRecipe = async (recipe: Recipe): Promise<Recipe> => {
       story: recipe.story,
       imageUrl: recipe.imageUrl || 'https://placehold.co/600x400/FFFFFF/FFFFFF',
       imageHint: recipe.imageHint || '',
+      audioUrl: recipe.audioUrl,
+      originName: recipe.originName,
+      originLat: recipe.originLat,
+      originLng: recipe.originLng,
+      parentId: recipe.parentId,
     },
     include: { user: true },
   });

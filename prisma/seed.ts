@@ -3,6 +3,17 @@ import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// Function to generate slug from title
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+}
+
 async function main() {
   console.log('Seeding database...');
 
@@ -24,6 +35,7 @@ async function main() {
   const recipes = [
     {
       title: "Grandma's Classic Lasagna",
+      slug: generateSlug("Grandma's Classic Lasagna"),
       contributor: 'Grandma Maria',
       ingredients:
         '1 lb ground beef\n1/2 cup chopped onion\n2 cloves garlic, minced\n1 (28 ounce) can crushed tomatoes\n2 (6.5 ounce) cans tomato sauce\n1/2 cup water\n2 teaspoons sugar\n1 1/2 teaspoons dried basil leaves\n1/2 teaspoon salt\n1/4 teaspoon black pepper\n12 lasagna noodles\n16 ounces ricotta cheese\n1 egg\n3/4 cup grated Parmesan cheese\n1 pound mozzarella cheese, sliced',
@@ -41,10 +53,14 @@ async function main() {
       course: 'Main',
       cuisine: 'Italian',
       difficulty: 'Medium',
+      originName: 'Sicily, Italy',
+      originLat: 37.5079,
+      originLng: 14.0934,
       userId: user.id,
     },
     {
       title: 'Fluffy Buttermilk Pancakes',
+      slug: generateSlug('Fluffy Buttermilk Pancakes'),
       contributor: 'Uncle Bob',
       ingredients:
         '2 cups all-purpose flour\n2 teaspoons baking powder\n1 teaspoon baking soda\n1/2 teaspoon salt\n3 tablespoons sugar\n2 large eggs, lightly beaten\n3 cups buttermilk\n4 tablespoons unsalted butter, melted',
@@ -62,6 +78,9 @@ async function main() {
       course: 'Breakfast',
       cuisine: 'American',
       difficulty: 'Easy',
+      originName: 'New England, USA',
+      originLat: 43.2081,
+      originLng: -71.5376,
       userId: user.id,
     },
   ];

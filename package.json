@@ -11,7 +11,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "db:reset": "prisma migrate reset --force",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "backfill:slugs": "tsx scripts/backfill-slugs.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.32",

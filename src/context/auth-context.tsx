@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ? {
         id: (session.user as any).id,
         name: session.user.name || session.user.email?.split('@')[0] || 'User',
+        email: session.user.email || '',
         avatarUrl:
           session.user.image ||
           `https://i.pravatar.cc/150?u=${session.user.email}`,
