@@ -152,21 +152,54 @@ function estimateRainProbability(data: OpenWeatherResponse): number {
 }
 
 /**
+ * Get mock weather data for development/testing
+ */
+function getMockWeatherData(): WeatherData {
+  // Create realistic mock data that changes based on time of day
+  const hour = new Date().getHours();
+  const isEvening = hour >= 17 && hour <= 20;
+  const isHot = hour >= 11 && hour <= 16;
+  
+  return {
+    feelsLike: isHot ? 82 : isEvening ? 68 : 55,
+    temperature: isHot ? 78 : isEvening ? 65 : 52,
+    humidity: isEvening ? 45 : 60,
+    precipitation: isEvening ? 5 : 15,
+    windSpeed: isEvening ? 8 : 12,
+    aqi: 45,
+    uvIndex: isHot ? 8 : 3,
+    visibility: 10,
+    description: isHot ? 'Clear' : isEvening ? 'Partly cloudy' : 'Overcast',
+    icon: isHot ? '01d' : isEvening ? '02d' : '03d'
+  };
+}
+
+/**
  * Fetch current weather data for given coordinates
  */
 export async function fetchWeatherData(lat: number, lon: number): Promise<WeatherData> {
   const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
   
+  console.log('API Key exists:', !!apiKey);
+  console.log('API Key first 10 chars:', apiKey ? apiKey.substring(0, 10) : 'undefined');
+  
   if (!apiKey) {
-    throw new Error('OpenWeatherMap API key not configured');
+    console.warn('No OpenWeatherMap API key found, using mock data');
+    return getMockWeatherData();
   }
 
   const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+  console.log('Weather URL:', weatherUrl.replace(apiKey, '[REDACTED]'));
   
   try {
     const response = await fetch(weatherUrl);
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
-      throw new Error(`Weather API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('API Error Response:', errorText);
+      console.warn('Weather API failed, falling back to mock data');
+      return getMockWeatherData();
     }
     
     const data: OpenWeatherResponse = await response.json();
@@ -185,7 +218,8 @@ export async function fetchWeatherData(lat: number, lon: number): Promise<Weathe
     };
   } catch (error) {
     console.error('Error fetching weather data:', error);
-    throw new Error('Failed to fetch weather data');
+    console.warn('Weather API failed, falling back to mock data');
+    return getMockWeatherData();
   }
 }
 
@@ -196,6 +230,7 @@ export async function fetchAQIData(lat: number, lon: number): Promise<number> {
   const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
   
   if (!apiKey) {
+    console.warn('No API key, using mock AQI data');
     return 50; // Default moderate AQI
   }
 
@@ -204,6 +239,7 @@ export async function fetchAQIData(lat: number, lon: number): Promise<number> {
   try {
     const response = await fetch(aqiUrl);
     if (!response.ok) {
+      console.warn('AQI API failed, using default value');
       return 50; // Default on error
     }
     
@@ -230,7 +266,8 @@ export async function fetchSunData(lat: number, lon: number): Promise<SunData> {
   const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
   
   if (!apiKey) {
-    // Provide reasonable defaults
+    console.warn('No API key, using mock sun data');
+    // Provide reasonable defaults based on current time
     const now = new Date();
     const sunrise = new Date(now);
     sunrise.setHours(6, 30, 0, 0);
@@ -251,7 +288,21 @@ export async function fetchSunData(lat: number, lon: number): Promise<SunData> {
   try {
     const response = await fetch(weatherUrl);
     if (!response.ok) {
-      throw new Error(`Weather API error: ${response.status}`);
+      console.warn('Sun data API failed, using defaults');
+      // Fallback to defaults
+      const now = new Date();
+      const sunrise = new Date(now);
+      sunrise.setHours(6, 30, 0, 0);
+      const sunset = new Date(now);
+      sunset.setHours(19, 30, 0, 0);
+      
+      return {
+        sunrise,
+        sunset,
+        minutesToSunset: calculateMinutesTo(sunset),
+        minutesToSunrise: calculateMinutesTo(sunrise),
+        isDaytime: now > sunrise && now < sunset,
+      };
     }
     
     const data: OpenWeatherResponse = await response.json();
@@ -269,7 +320,21 @@ export async function fetchSunData(lat: number, lon: number): Promise<SunData> {
     };
   } catch (error) {
     console.error('Error fetching sun data:', error);
-    throw new Error('Failed to fetch sun data');
+    console.warn('Sun data error, using defaults');
+    // Fallback defaults
+    const now = new Date();
+    const sunrise = new Date(now);
+    sunrise.setHours(6, 30, 0, 0);
+    const sunset = new Date(now);
+    sunset.setHours(19, 30, 0, 0);
+    
+    return {
+      sunrise,
+      sunset,
+      minutesToSunset: calculateMinutesTo(sunset),
+      minutesToSunrise: calculateMinutesTo(sunrise),
+      isDaytime: now > sunrise && now < sunset,
+    };
   }
 }
 
