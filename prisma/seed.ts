@@ -17,19 +17,52 @@ function generateSlug(title: string): string {
 async function main() {
   console.log('Seeding database...');
 
-  // Create a test user
+  // Create test users
   const hashedPassword = await hash('password123', 12);
 
-  const user = await prisma.user.create({
-    data: {
+  const users = [
+    {
       email: 'test@example.com',
       password: hashedPassword,
       name: 'Test User',
       avatarUrl: 'https://i.pravatar.cc/150?u=test@example.com',
     },
-  });
+    {
+      email: 'demo@familyrecipes.com',
+      password: hashedPassword,
+      name: 'Demo User',
+      avatarUrl: 'https://i.pravatar.cc/150?u=demo@familyrecipes.com',
+    },
+    {
+      email: 'chef@example.com',
+      password: hashedPassword,
+      name: 'Chef Demo',
+      avatarUrl: 'https://i.pravatar.cc/150?u=chef@example.com',
+    }
+  ];
 
-  console.log('Created user:', user.email);
+  // Create users and get the first one for recipes
+  const createdUsers = [];
+  for (const userData of users) {
+    try {
+      const user = await prisma.user.create({
+        data: userData,
+      });
+      createdUsers.push(user);
+      console.log('Created user:', user.email);
+    } catch (error) {
+      console.log('User already exists:', userData.email);
+      // If user exists, find and add to our list
+      const existingUser = await prisma.user.findUnique({
+        where: { email: userData.email }
+      });
+      if (existingUser) {
+        createdUsers.push(existingUser);
+      }
+    }
+  }
+
+  const user = createdUsers[0]; // Use first user for recipes
 
   // Create some sample recipes
   const recipes = [
