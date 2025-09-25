@@ -1,4 +1,77 @@
-import type { WeatherData, SunData, LocationData, WeatherContext } from './types';
+import type { WeatherData, SunData, LocationData, WeatherContext, SeasonalInfo } from './types';
+
+/**
+ * Determine current season based on date and hemisphere
+ */
+function getSeason(date: Date, isNorthernHemisphere: boolean = true): 'spring' | 'summer' | 'fall' | 'winter' {
+  const month = date.getMonth() + 1; // 1-12
+  const day = date.getDate();
+  
+  if (isNorthernHemisphere) {
+    // Northern hemisphere seasons
+    if ((month === 3 && day >= 20) || month === 4 || month === 5 || (month === 6 && day < 21)) {
+      return 'spring';
+    } else if ((month === 6 && day >= 21) || month === 7 || month === 8 || (month === 9 && day < 22)) {
+      return 'summer';
+    } else if ((month === 9 && day >= 22) || month === 10 || month === 11 || (month === 12 && day < 21)) {
+      return 'fall';
+    } else {
+      return 'winter';
+    }
+  } else {
+    // Southern hemisphere seasons (opposite)
+    if ((month === 3 && day >= 20) || month === 4 || month === 5 || (month === 6 && day < 21)) {
+      return 'fall';
+    } else if ((month === 6 && day >= 21) || month === 7 || month === 8 || (month === 9 && day < 22)) {
+      return 'winter';
+    } else if ((month === 9 && day >= 22) || month === 10 || month === 11 || (month === 12 && day < 21)) {
+      return 'spring';
+    } else {
+      return 'summer';
+    }
+  }
+}
+
+/**
+ * Get seasonal information including produce and cooking preferences
+ */
+function getSeasonalInfo(season: 'spring' | 'summer' | 'fall' | 'winter', month: number): SeasonalInfo {
+  const seasonalData: Record<string, SeasonalInfo> = {
+    spring: {
+      season: 'spring',
+      producePeak: ['asparagus', 'artichokes', 'peas', 'lettuce', 'spinach', 'radishes', 'spring onions', 'strawberries'],
+      produceAvailable: ['carrots', 'broccoli', 'cauliflower', 'kale', 'leeks', 'mushrooms', 'potatoes'],
+      cookingMethods: ['steaming', 'sautéing', 'grilling', 'roasting', 'fresh salads'],
+      flavors: ['fresh herbs', 'lemon', 'garlic', 'light vinaigrettes', 'olive oil'],
+      holidayInfluences: month === 3 || month === 4 ? ['easter', 'passover'] : undefined
+    },
+    summer: {
+      season: 'summer',
+      producePeak: ['tomatoes', 'zucchini', 'corn', 'berries', 'stone fruits', 'bell peppers', 'eggplant', 'cucumbers', 'basil'],
+      produceAvailable: ['lettuce', 'spinach', 'green beans', 'carrots', 'onions', 'potatoes'],
+      cookingMethods: ['grilling', 'no-cook', 'chilled', 'light sautéing', 'fresh preparation'],
+      flavors: ['fresh herbs', 'citrus', 'light seasonings', 'cold soups', 'fresh fruit'],
+    },
+    fall: {
+      season: 'fall',
+      producePeak: ['pumpkin', 'squash', 'apples', 'pears', 'sweet potatoes', 'brussels sprouts', 'cranberries', 'pomegranates'],
+      produceAvailable: ['carrots', 'onions', 'potatoes', 'cabbage', 'kale', 'broccoli', 'cauliflower'],
+      cookingMethods: ['roasting', 'braising', 'baking', 'stewing', 'soup making'],
+      flavors: ['warm spices', 'cinnamon', 'nutmeg', 'sage', 'thyme', 'apple cider', 'maple'],
+      holidayInfluences: month >= 10 ? ['halloween', 'thanksgiving'] : undefined
+    },
+    winter: {
+      season: 'winter',
+      producePeak: ['citrus fruits', 'root vegetables', 'winter squash', 'kale', 'collards', 'leeks', 'potatoes'],
+      produceAvailable: ['onions', 'carrots', 'cabbage', 'brussels sprouts', 'apples', 'pears'],
+      cookingMethods: ['braising', 'slow cooking', 'stewing', 'baking', 'roasting', 'soup making'],
+      flavors: ['warming spices', 'ginger', 'cinnamon', 'hearty herbs', 'rich broths', 'comfort seasonings'],
+      holidayInfluences: month === 12 || month === 1 ? ['christmas', 'new year'] : undefined
+    }
+  };
+
+  return seasonalData[season];
+}
 
 // OpenWeatherMap API interfaces
 interface OpenWeatherResponse {
@@ -425,6 +498,9 @@ export async function getWeatherContext(coords?: GeolocationCoords): Promise<Wea
     
     const now = new Date();
     const timeOfDay = getTimeOfDay(now, sunData.sunrise, sunData.sunset);
+    const isNorthernHemisphere = location.latitude > 0;
+    const season = getSeason(now, isNorthernHemisphere);
+    const month = now.getMonth() + 1;
     
     return {
       weather: weatherData,
@@ -432,6 +508,9 @@ export async function getWeatherContext(coords?: GeolocationCoords): Promise<Wea
       location: locationData,
       isWeeknight: isWeeknight(),
       timeOfDay,
+      season,
+      month,
+      date: now,
     };
   } catch (error) {
     console.error('Error getting weather context:', error);

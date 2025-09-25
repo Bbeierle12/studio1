@@ -8,6 +8,22 @@ import type { WeatherContext, MealRecommendation } from '@/lib/types';
 import { getClientWeatherContext } from '@/lib/weather';
 import { getMealRecommendations, getWeatherSummary } from '@/lib/meal-recommendations';
 
+/**
+ * Get seasonal produce summary for display
+ */
+function getSeasonalProduce(season: 'spring' | 'summer' | 'fall' | 'winter', month: number): string {
+  const seasonalData: Record<string, string[]> = {
+    spring: ['asparagus', 'peas', 'lettuce', 'strawberries', 'artichokes'],
+    summer: ['tomatoes', 'zucchini', 'corn', 'berries', 'stone fruits'],
+    fall: ['pumpkin', 'squash', 'apples', 'sweet potatoes', 'cranberries'],
+    winter: ['citrus fruits', 'root vegetables', 'kale', 'winter squash', 'leeks']
+  };
+  
+  const produce = seasonalData[season] || [];
+  if (produce.length <= 2) return produce.join(' and ');
+  return produce.slice(0, -1).join(', ') + ', and ' + produce[produce.length - 1];
+}
+
 interface ForecastToFeastHeroProps {
   className?: string;
 }
@@ -66,7 +82,7 @@ export default function ForecastToFeastHero({ className = '' }: ForecastToFeastH
           <h2 className="text-xl font-semibold">Weather Data Unavailable</h2>
         </div>
         <p className="text-gray-600 mb-6">
-          We couldn't get current weather conditions for personalized recommendations.
+          We couldn&apos;t get current weather conditions for personalized recommendations.
           Browse our recipe collection instead!
         </p>
       </div>
@@ -83,9 +99,23 @@ export default function ForecastToFeastHero({ className = '' }: ForecastToFeastH
     `}>
       {/* Header with Weather Summary */}
       <div className="mb-6">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-          Forecast-to-Feast
-        </h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
+            Forecast-to-Feast
+          </h1>
+          <div className="text-right">
+            <div className="text-sm text-gray-500">
+              {weatherContext.date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </div>
+            <div className="text-xs text-gray-400 capitalize">
+              {weatherContext.season} • {weatherContext.location.city}
+            </div>
+          </div>
+        </div>
         <p className="text-lg text-gray-600 mb-4">
           {weatherSummary}
         </p>
@@ -127,18 +157,38 @@ export default function ForecastToFeastHero({ className = '' }: ForecastToFeastH
           </div>
         )}
 
-        {/* Weather Explanation */}
+        {/* Weather & Seasonal Explanation */}
         {recommendations.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Lightbulb className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium text-amber-900 mb-1">Why these recipes?</h3>
-                <p className="text-sm text-amber-800">
-                  {recommendations[0].reason}. Our algorithm considers temperature, 
-                  precipitation, wind, air quality, and time of day to suggest the 
-                  most suitable cooking methods and ingredients.
-                </p>
+          <div className="space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Lightbulb className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-medium text-amber-900 mb-1">
+                    Why we&apos;re suggesting {recommendations[0].recipe.title}?
+                  </h3>
+                  <p className="text-sm text-amber-800">
+                    {recommendations[0].reason}. Our algorithm considers temperature, 
+                    precipitation, wind, air quality, time of day, and seasonal produce 
+                    to suggest the most suitable cooking methods and ingredients.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Seasonal Produce Info */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0">🌱</div>
+                <div>
+                  <h3 className="font-medium text-green-900 mb-1">
+                    What&apos;s in Season Now ({weatherContext.season})
+                  </h3>
+                  <p className="text-sm text-green-800">
+                    Peak season: {getSeasonalProduce(weatherContext.season, weatherContext.month)}.
+                    Perfect time to enjoy the freshest flavors at their best quality and price!
+                  </p>
+                </div>
               </div>
             </div>
           </div>

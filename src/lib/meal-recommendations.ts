@@ -3,17 +3,65 @@ import type {
   MealTag, 
   MealRecommendation, 
   RecommendationContext,
-  Recipe 
+  Recipe,
+  SeasonalInfo 
 } from './types';
 import { getRecipes } from './data';
 
 /**
- * Core logic to pick meal tags based on weather context
+ * Get seasonal information for meal recommendations
+ */
+function getSeasonalInfo(season: 'spring' | 'summer' | 'fall' | 'winter', month: number): SeasonalInfo {
+  const seasonalData: Record<string, SeasonalInfo> = {
+    spring: {
+      season: 'spring',
+      producePeak: ['asparagus', 'artichokes', 'peas', 'lettuce', 'spinach', 'radishes', 'spring onions', 'strawberries'],
+      produceAvailable: ['carrots', 'broccoli', 'cauliflower', 'kale', 'leeks', 'mushrooms', 'potatoes'],
+      cookingMethods: ['steaming', 'sautéing', 'grilling', 'roasting', 'fresh salads'],
+      flavors: ['fresh herbs', 'lemon', 'garlic', 'light vinaigrettes', 'olive oil'],
+      holidayInfluences: month === 3 || month === 4 ? ['easter', 'passover'] : undefined
+    },
+    summer: {
+      season: 'summer',
+      producePeak: ['tomatoes', 'zucchini', 'corn', 'berries', 'stone fruits', 'bell peppers', 'eggplant', 'cucumbers', 'basil'],
+      produceAvailable: ['lettuce', 'spinach', 'green beans', 'carrots', 'onions', 'potatoes'],
+      cookingMethods: ['grilling', 'no-cook', 'chilled', 'light sautéing', 'fresh preparation'],
+      flavors: ['fresh herbs', 'citrus', 'light seasonings', 'cold soups', 'fresh fruit'],
+    },
+    fall: {
+      season: 'fall',
+      producePeak: ['pumpkin', 'squash', 'apples', 'pears', 'sweet potatoes', 'brussels sprouts', 'cranberries', 'pomegranates'],
+      produceAvailable: ['carrots', 'onions', 'potatoes', 'cabbage', 'kale', 'broccoli', 'cauliflower'],
+      cookingMethods: ['roasting', 'braising', 'baking', 'stewing', 'soup making'],
+      flavors: ['warm spices', 'cinnamon', 'nutmeg', 'sage', 'thyme', 'apple cider', 'maple'],
+      holidayInfluences: month >= 10 ? ['halloween', 'thanksgiving'] : undefined
+    },
+    winter: {
+      season: 'winter',
+      producePeak: ['citrus fruits', 'root vegetables', 'winter squash', 'kale', 'collards', 'leeks', 'potatoes'],
+      produceAvailable: ['onions', 'carrots', 'cabbage', 'brussels sprouts', 'apples', 'pears'],
+      cookingMethods: ['braising', 'slow cooking', 'stewing', 'baking', 'roasting', 'soup making'],
+      flavors: ['warming spices', 'ginger', 'cinnamon', 'hearty herbs', 'rich broths', 'comfort seasonings'],
+      holidayInfluences: month === 12 || month === 1 ? ['christmas', 'new year'] : undefined
+    }
+  };
+
+  return seasonalData[season];
+}
+
+/**
+ * Core logic to pick meal tags based on weather context and seasonality
  * This is the heart of the Forecast-to-Feast feature
  */
 export function pickMealTags(ctx: WeatherContext): MealTag[] {
   const tags: MealTag[] = [];
-  const { weather, sun, isWeeknight, timeOfDay } = ctx;
+  const { weather, sun, isWeeknight, timeOfDay, season, month } = ctx;
+  
+  // Get seasonal information
+  const seasonalInfo = getSeasonalInfo(season, month);
+  
+  // Always add current season tag
+  tags.push(season);
   
   // Temperature-based logic
   const hot = weather.feelsLike >= 85;
@@ -82,6 +130,51 @@ export function pickMealTags(ctx: WeatherContext): MealTag[] {
     }
   } else if (timeOfDay === 'night' || afterDark) {
     tags.push('comfort', 'warm');
+  }
+  
+  // Seasonal considerations based on current season
+  if (season === 'spring') {
+    tags.push('fresh', 'light');
+    // Spring produce focus
+    if (month >= 4) { // Late spring
+      tags.push('leafy-greens');
+    }
+  } else if (season === 'summer') {
+    tags.push('fresh', 'seasonal');
+    if (hot || warm) {
+      tags.push('stone-fruit', 'berries');
+    }
+  } else if (season === 'fall') {
+    tags.push('seasonal', 'hearty');
+    if (month >= 10) { // Late fall
+      tags.push('squash', 'apples', 'root-vegetables');
+      if (month === 11) { // November - Thanksgiving influence
+        tags.push('holiday');
+      }
+    }
+  } else if (season === 'winter') {
+    tags.push('hearty', 'comfort', 'warm');
+    if (month <= 2 || month === 12) { // Deep winter
+      tags.push('citrus', 'root-vegetables');
+      if (month === 12) { // December - Holiday influence
+        tags.push('holiday');
+      }
+    }
+  }
+  
+  // Seasonal cooking method preferences
+  const preferredMethods = seasonalInfo.cookingMethods;
+  if (preferredMethods.includes('grilling') && !rainy && !windy && goodVisibility) {
+    if (!tags.includes('grill')) tags.push('grill');
+  }
+  if (preferredMethods.includes('no-cook') && (hot || season === 'summer')) {
+    if (!tags.includes('no-cook')) tags.push('no-cook');
+  }
+  if (preferredMethods.includes('soup making') && (cold || rainy || season === 'winter')) {
+    if (!tags.includes('soup')) tags.push('soup');
+  }
+  if (preferredMethods.includes('roasting') && (cool || cold || season === 'fall')) {
+    if (!tags.includes('bake')) tags.push('bake');
   }
   
   // Day of week logic
@@ -314,20 +407,25 @@ export async function getMealRecommendations(
  * Get a quick explanation of current weather-based cooking conditions
  */
 export function getWeatherSummary(ctx: WeatherContext): string {
-  const { weather, sun, isWeeknight } = ctx;
+  const { weather, sun, isWeeknight, season, month, date } = ctx;
+  const seasonalInfo = getSeasonalInfo(season, month);
   
+  // Get seasonal produce that's currently at peak
+  const seasonalProduce = seasonalInfo.producePeak.slice(0, 2).join(' and ');
+  
+  // Build summary based on weather and season
   if (weather.feelsLike >= 85 && sun.minutesToSunset >= 90) {
-    return 'Perfect grilling weather ahead!';
+    return `Perfect ${season} grilling weather with fresh ${seasonalProduce} in season!`;
   } else if (weather.feelsLike >= 85) {
-    return 'Too hot for the kitchen - time for no-cook meals';
+    return `Too hot for cooking - perfect for ${season} no-cook meals with ${seasonalProduce}`;
   } else if (weather.precipitation >= 40) {
-    return 'Rainy day comfort food weather';
+    return `Rainy ${season} day calls for warming comfort food`;
   } else if (weather.feelsLike <= 55) {
-    return 'Chilly weather calls for warming dishes';
+    return `Chilly ${season} weather - time for cozy dishes with ${seasonalProduce}`;
   } else if (isWeeknight) {
-    return 'Quick weeknight meal weather';
+    return `Quick weeknight meals perfect for ${season} with seasonal ${seasonalProduce}`;
   } else {
-    return 'Great cooking weather today';
+    return `Beautiful ${season} weather for cooking with peak-season ${seasonalProduce}`;
   }
 }
 

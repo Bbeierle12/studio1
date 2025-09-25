@@ -145,3 +145,270 @@
     background-color: #000 !important;
   }
 }
+
+/* Hyperrealistic Wood Grain Styles */
+
+/* Base wood color and texture */
+.wood-base {
+  background: linear-gradient(
+    160deg,
+    #d2b48c 0%,
+    #deb887 15%,
+    #f4a460 30%,
+    #d2b48c 45%,
+    #cd853f 60%,
+    #d2b48c 75%,
+    #daa520 90%,
+    #d2b48c 100%
+  );
+}
+
+/* Primary wood grain pattern */
+.wood-grain-primary {
+  background-image: 
+    /* Horizontal grain lines */
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(139, 69, 19, 0.1) 2%,
+      transparent 4%,
+      rgba(160, 82, 45, 0.15) 8%,
+      transparent 10%,
+      rgba(139, 69, 19, 0.08) 15%,
+      transparent 17%,
+      rgba(101, 67, 33, 0.12) 25%,
+      transparent 27%,
+      rgba(139, 69, 19, 0.1) 35%,
+      transparent 37%,
+      rgba(160, 82, 45, 0.18) 45%,
+      transparent 47%,
+      rgba(139, 69, 19, 0.09) 55%,
+      transparent 57%,
+      rgba(101, 67, 33, 0.14) 65%,
+      transparent 67%,
+      rgba(139, 69, 19, 0.11) 75%,
+      transparent 77%,
+      rgba(160, 82, 45, 0.16) 85%,
+      transparent 87%,
+      rgba(139, 69, 19, 0.1) 95%,
+      transparent 97%
+    );
+  background-size: 100% 8px;
+  opacity: 0.7;
+}
+
+/* Secondary wood grain with knots and imperfections */
+.wood-grain-secondary {
+  background-image:
+    /* Wood knots */
+    radial-gradient(ellipse 40px 20px at 15% 20%, rgba(101, 67, 33, 0.3), transparent 70%),
+    radial-gradient(ellipse 25px 15px at 75% 60%, rgba(139, 69, 19, 0.25), transparent 70%),
+    radial-gradient(ellipse 30px 18px at 40% 85%, rgba(160, 82, 45, 0.2), transparent 70%),
+    /* Fine grain texture */
+    repeating-linear-gradient(
+      91deg,
+      transparent,
+      transparent 1px,
+      rgba(139, 69, 19, 0.05) 1px,
+      rgba(139, 69, 19, 0.05) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  opacity: 0.6;
+}
+
+/* Wood highlights for depth */
+.wood-highlights {
+  background-image:
+    linear-gradient(
+      92deg,
+      transparent 0%,
+      rgba(255, 248, 220, 0.1) 10%,
+      transparent 11%,
+      rgba(255, 248, 220, 0.15) 20%,
+      transparent 21%,
+      rgba(255, 248, 220, 0.08) 35%,
+      transparent 36%,
+      rgba(255, 248, 220, 0.12) 50%,
+      transparent 51%,
+      rgba(255, 248, 220, 0.1) 65%,
+      transparent 66%,
+      rgba(255, 248, 220, 0.18) 80%,
+      transparent 81%,
+      rgba(255, 248, 220, 0.09) 95%,
+      transparent 96%
+    );
+  background-size: 100% 12px;
+  opacity: 0.4;
+}
+
+/* Wood shadows for realistic depth */
+.wood-shadows {
+  background-image:
+    linear-gradient(
+      88deg,
+      rgba(101, 67, 33, 0.1) 0%,
+      transparent 2%,
+      rgba(139, 69, 19, 0.08) 8%,
+      transparent 10%,
+      rgba(101, 67, 33, 0.12) 18%,
+      transparent 20%,
+      rgba(139, 69, 19, 0.06) 30%,
+      transparent 32%,
+      rgba(101, 67, 33, 0.1) 42%,
+      transparent 44%,
+      rgba(139, 69, 19, 0.09) 54%,
+      transparent 56%,
+      rgba(101, 67, 33, 0.11) 66%,
+      transparent 68%,
+      rgba(139, 69, 19, 0.07) 78%,
+      transparent 80%,
+      rgba(101, 67, 33, 0.13) 88%,
+      transparent 90%
+    );
+  background-size: 100% 6px;
+  opacity: 0.5;
+}
+
+/* Wood edge beveling effect */
+.wood-edge {
+  box-shadow: 
+    inset 0 1px 3px rgba(255, 248, 220, 0.3),
+    inset 0 -1px 3px rgba(101, 67, 33, 0.2),
+    inset 1px 0 3px rgba(255, 248, 220, 0.2),
+    inset -1px 0 3px rgba(101, 67, 33, 0.15),
+    0 4px 12px rgba(101, 67, 33, 0.3),
+    0 8px 24px rgba(139, 69, 19, 0.2);
+  border: 1px solid rgba(160, 82, 45, 0.3);
+}
+
+/* Wood panel container */
+.wood-panel-container {
+  filter: drop-shadow(0 8px 16px rgba(101, 67, 33, 0.4));
+}
+
+/* Wood panel main styling */
+.wood-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.wood-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(255, 248, 220, 0.6) 0%,
+    rgba(255, 248, 220, 0.3) 50%,
+    rgba(255, 248, 220, 0.6) 100%
+  );
+  z-index: 5;
+}
+
+.wood-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(101, 67, 33, 0.4) 0%,
+    rgba(101, 67, 33, 0.2) 50%,
+    rgba(101, 67, 33, 0.4) 100%
+  );
+  z-index: 5;
+}
+
+/* Wood input styling */
+.wood-input {
+  background: rgba(255, 248, 220, 0.9);
+  border: 2px solid rgba(160, 82, 45, 0.3);
+  color: #8B4513;
+  border-radius: 8px;
+  box-shadow: 
+    inset 0 2px 4px rgba(101, 67, 33, 0.1),
+    0 2px 8px rgba(139, 69, 19, 0.1);
+  transition: all 0.2s ease;
+}
+
+.wood-input:focus {
+  background: rgba(255, 248, 220, 1);
+  border-color: rgba(160, 82, 45, 0.6);
+  box-shadow: 
+    inset 0 2px 4px rgba(101, 67, 33, 0.15),
+    0 0 0 3px rgba(160, 82, 45, 0.1),
+    0 4px 12px rgba(139, 69, 19, 0.15);
+  outline: none;
+}
+
+.wood-input::placeholder {
+  color: rgba(139, 69, 19, 0.6);
+}
+
+/* Wood button styling */
+.wood-button {
+  background: linear-gradient(135deg, 
+    #CD853F 0%, 
+    #D2B48C 25%, 
+    #CD853F 50%, 
+    #B8860B 75%, 
+    #CD853F 100%
+  );
+  border: 2px solid rgba(160, 82, 45, 0.4);
+  color: #654321;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(255, 248, 220, 0.3);
+  box-shadow: 
+    inset 0 1px 3px rgba(255, 248, 220, 0.4),
+    inset 0 -1px 3px rgba(101, 67, 33, 0.2),
+    0 4px 12px rgba(139, 69, 19, 0.3);
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 12px 24px;
+}
+
+.wood-button:hover {
+  background: linear-gradient(135deg, 
+    #D2B48C 0%, 
+    #DEB887 25%, 
+    #D2B48C 50%, 
+    #DAA520 75%, 
+    #D2B48C 100%
+  );
+  box-shadow: 
+    inset 0 1px 3px rgba(255, 248, 220, 0.5),
+    inset 0 -1px 3px rgba(101, 67, 33, 0.3),
+    0 6px 16px rgba(139, 69, 19, 0.4);
+  transform: translateY(-1px);
+  border-color: rgba(160, 82, 45, 0.5);
+}
+
+.wood-button:active {
+  transform: translateY(0);
+  box-shadow: 
+    inset 0 2px 4px rgba(101, 67, 33, 0.3),
+    inset 0 -1px 2px rgba(255, 248, 220, 0.2),
+    0 2px 8px rgba(139, 69, 19, 0.2);
+}
+
+/* Wood text shadow for legibility */
+.wood-text-shadow {
+  text-shadow: 0 1px 2px rgba(255, 248, 220, 0.5);
+}
+
+/* Wood inset effect for icons */
+.wood-inset {
+  box-shadow: 
+    inset 0 2px 4px rgba(101, 67, 33, 0.2),
+    inset 0 -1px 2px rgba(255, 248, 220, 0.3),
+    0 2px 8px rgba(139, 69, 19, 0.2);
+  background: linear-gradient(145deg, 
+    rgba(160, 82, 45, 0.2) 0%,
+    rgba(210, 180, 140, 0.3) 50%,
+    rgba(160, 82, 45, 0.2) 100%
+  );
+}

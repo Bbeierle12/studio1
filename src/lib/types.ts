@@ -80,6 +80,19 @@ export type WeatherContext = {
   location: LocationData;
   isWeeknight: boolean; // Monday-Thursday
   timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
+  season: 'spring' | 'summer' | 'fall' | 'winter';
+  month: number; // 1-12
+  date: Date; // Current date for seasonal calculations
+};
+
+// Seasonal ingredient and cooking types
+export type SeasonalInfo = {
+  season: 'spring' | 'summer' | 'fall' | 'winter';
+  producePeak: string[]; // Peak seasonal produce
+  produceAvailable: string[]; // Available but not peak
+  cookingMethods: string[]; // Preferred cooking methods
+  flavors: string[]; // Seasonal flavor profiles
+  holidayInfluences?: string[]; // Holiday-related preferences
 };
 
 // Meal recommendation types
@@ -90,7 +103,10 @@ export type MealTag =
   | 'sheet-pan' | 'air-fryer' | 'stovetop' | 'indoor'
   | '30-min' | 'quick' | 'one-pot' | 'weeknight'
   | 'crowd-pleaser' | 'batch-cook' | 'leftovers'
-  | 'fresh' | 'seasonal' | 'hearty' | 'spicy';
+  | 'fresh' | 'seasonal' | 'hearty' | 'spicy'
+  | 'spring' | 'summer' | 'fall' | 'winter'
+  | 'citrus' | 'root-vegetables' | 'leafy-greens' | 'stone-fruit'
+  | 'squash' | 'berries' | 'apples' | 'pumpkin' | 'holiday';
 
 export type MealRecommendation = {
   recipe: Recipe;
