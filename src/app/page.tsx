@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
 import WoodGrainLogin from '@/components/glassmorphism-login';
 import MediaUpload from '@/components/media-upload';
+import VoiceAssistant from '@/components/voice-assistant';
+import { useState } from 'react';
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -103,7 +105,12 @@ export default function Home() {
             </TabsList>
             
             <TabsContent value="home" className="space-y-4">
-              <div className='space-y-3'>
+              <div className='space-y-6'>
+                {/* Voice Assistant */}
+                <div className='w-full max-w-md mx-auto'>
+                  <VoiceAssistant />
+                </div>
+                
                 <Button
                   asChild
                   className='w-full max-w-md mx-auto transform transition-transform hover:scale-105'
