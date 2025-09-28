@@ -2,6 +2,12 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  env: {
+    // Map Vercel environment variables to expected names
+    DATABASE_URL: process.env.family_recipes_DATABASE_URL || process.env.DATABASE_URL || 'file:./dev.db',
+    NEXTAUTH_SECRET: process.env.family_recipes_NEXTAUTH_SECRET || process.env.NEXTAUTH_SECRET,
+    OPENAI_API_KEY: process.env.family_recipes_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+  },
   eslint: {
     // Ignore ESLint during builds for deployment
     ignoreDuringBuilds: true,

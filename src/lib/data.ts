@@ -5,7 +5,19 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+// Create Prisma client with better error handling
+const createPrismaClient = () => {
+  try {
+    return new PrismaClient({
+      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    });
+  } catch (error) {
+    console.error('Failed to initialize Prisma client:', error);
+    throw error;
+  }
+};
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
@@ -66,32 +78,38 @@ export const getRecipes = async ({
   query,
   tag,
 }: { query?: string; tag?: string } = {}): Promise<Recipe[]> => {
-  const where: any = {};
+  try {
+    const where: any = {};
 
-  if (query) {
-    const lowerCaseQuery = query.toLowerCase();
-    where.OR = [
-      { title: { contains: lowerCaseQuery, mode: 'insensitive' } },
-      { ingredients: { contains: lowerCaseQuery, mode: 'insensitive' } },
-      { summary: { contains: lowerCaseQuery, mode: 'insensitive' } },
-    ];
+    if (query) {
+      const lowerCaseQuery = query.toLowerCase();
+      where.OR = [
+        { title: { contains: lowerCaseQuery, mode: 'insensitive' } },
+        { ingredients: { contains: lowerCaseQuery, mode: 'insensitive' } },
+        { summary: { contains: lowerCaseQuery, mode: 'insensitive' } },
+      ];
+    }
+
+    const recipes = await prisma.recipe.findMany({
+      where,
+      include: { user: true },
+      orderBy: { title: 'asc' },
+    });
+
+    let filteredRecipes = recipes.map(mapPrismaRecipe);
+
+    if (tag) {
+      filteredRecipes = filteredRecipes.filter(recipe =>
+        recipe.tags.includes(tag.toLowerCase())
+      );
+    }
+
+    return filteredRecipes;
+  } catch (error) {
+    console.error('Database error in getRecipes:', error);
+    // Return empty array if database is not available
+    return [];
   }
-
-  const recipes = await prisma.recipe.findMany({
-    where,
-    include: { user: true },
-    orderBy: { title: 'asc' },
-  });
-
-  let filteredRecipes = recipes.map(mapPrismaRecipe);
-
-  if (tag) {
-    filteredRecipes = filteredRecipes.filter(recipe =>
-      recipe.tags.includes(tag.toLowerCase())
-    );
-  }
-
-  return filteredRecipes;
 };
 
 export const getRecipeById = async (
@@ -107,17 +125,28 @@ export const getRecipeById = async (
 };
 
 export const getTags = async (): Promise<string[]> => {
-  const recipes = await prisma.recipe.findMany({
-    select: { tags: true },
-  });
+  try {
+    const recipes = await prisma.recipe.findMany({
+      select: { tags: true },
+    });
 
-  const allTags = new Set<string>();
-  recipes.forEach(recipe => {
-    const tags = JSON.parse(recipe.tags);
-    tags.forEach((tag: string) => allTags.add(tag));
-  });
+    const allTags = new Set<string>();
+    recipes.forEach(recipe => {
+      try {
+        const tags = JSON.parse(recipe.tags || '[]');
+        tags.forEach((tag: string) => allTags.add(tag));
+      } catch (parseError) {
+        console.error('Error parsing tags for recipe:', parseError);
+        // Continue processing other recipes
+      }
+    });
 
-  return Array.from(allTags).sort();
+    return Array.from(allTags).sort();
+  } catch (error) {
+    console.error('Database error in getTags:', error);
+    // Return empty array if database is not available
+    return [];
+  }
 };
 
 // Function to ensure slug uniqueness
@@ -225,4 +254,16 @@ export const deleteRecipe = async (id: string): Promise<void> => {
   await prisma.recipe.delete({
     where: { id },
   });
+};
+
+// Database health check function
+export const checkDatabaseConnection = async (): Promise<boolean> => {
+  try {
+    await prisma.$connect();
+    await prisma.$queryRaw`SELECT 1`;
+    return true;
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    return false;
+  }
 };

@@ -43,6 +43,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/react-dropzone": "^4.2.2",
+    "@vercel/analytics": "^1.5.0",
     "ai": "^5.0.47",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
