@@ -1,17 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
+import { z } from 'zod';
+import { 
+  withErrorHandler, 
+  createSuccessResponse, 
+  ApiError,
+  validateRequestBody 
+} from '@/lib/api-utils';
 
-export async function POST(request: NextRequest) {
-  try {
-    const { question, context } = await request.json();
+const CookingQuestionSchema = z.object({
+  question: z.string().min(1, 'Question is required').max(500, 'Question too long'),
+  context: z.string().optional(),
+});
 
-    if (!question) {
-      return NextResponse.json({ error: 'Question is required' }, { status: 400 });
-    }
+type CookingQuestionRequest = z.infer<typeof CookingQuestionSchema>;
 
-    // Create a cooking-focused system prompt
-    const systemPrompt = `You are Chef Assistant, a helpful AI cooking companion designed to help people while they cook. 
+interface CookingAssistantResponse {
+  answer: string;
+  context?: string;
+  fallback?: boolean;
+}
+
+async function handleCookingAssistant(request: NextRequest) {
+  const body = await request.json();
+  const { question, context } = validateRequestBody<CookingQuestionRequest>(
+    CookingQuestionSchema,
+    body
+  );
+
+  // Create a cooking-focused system prompt
+  const systemPrompt = `You are Chef Assistant, a helpful AI cooking companion designed to help people while they cook. 
 
 You are especially helpful when someone has dirty hands and needs voice assistance. Keep responses concise but informative - ideal for speaking aloud.
 
@@ -28,6 +47,7 @@ Keep responses under 100 words when possible, and always prioritize food safety.
 
 ${context ? `Context: The user is currently working with: ${context}` : ''}`;
 
+  try {
     const result = await generateText({
       model: openai('gpt-4-turbo'),
       system: systemPrompt,
@@ -53,35 +73,41 @@ ${context ? `Context: The user is currently working with: ${context}` : ''}`;
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      answer: answer,
-      context: context
-    });
+    const responseData: CookingAssistantResponse = {
+      answer,
+      context,
+    };
+
+    return createSuccessResponse(responseData);
 
   } catch (error) {
-    console.error('Cooking assistant error:', error);
+    console.error('OpenAI API error:', error);
     
-    // Fallback responses for common questions when AI fails
-    const question_lower = (await request.json()).question?.toLowerCase() || '';
+    // Provide fallback responses when AI service fails
+    const fallbackAnswer = getFallbackAnswer(question);
     
-    let fallbackAnswer = '';
-    
-    if (question_lower.includes('substitute')) {
-      fallbackAnswer = "Common substitutions include: butter for oil in baking, milk for buttermilk with lemon juice, or egg with applesauce. What ingredient do you need to substitute?";
-    } else if (question_lower.includes('temperature')) {
-      fallbackAnswer = "Most ovens should be preheated. Chicken should reach 165°F internal temperature, and beef varies by preference. What are you cooking?";
-    } else if (question_lower.includes('how long')) {
-      fallbackAnswer = "Cooking times vary by method and thickness. Check for doneness signs like color, texture, or use a thermometer. What dish are you preparing?";
-    } else {
-      fallbackAnswer = "I'm having trouble with that question right now. Try asking about cooking techniques, ingredient substitutions, or timing help.";
-    }
-
-    return NextResponse.json({
-      success: true,
+    const responseData: CookingAssistantResponse = {
       answer: fallbackAnswer,
-      context: null,
-      fallback: true
-    });
+      context: undefined,
+      fallback: true,
+    };
+
+    return createSuccessResponse(responseData);
   }
 }
+
+function getFallbackAnswer(question: string): string {
+  const questionLower = question.toLowerCase();
+  
+  if (questionLower.includes('substitute')) {
+    return "Common substitutions include: butter for oil in baking, milk for buttermilk with lemon juice, or egg with applesauce. What ingredient do you need to substitute?";
+  } else if (questionLower.includes('temperature')) {
+    return "Most ovens should be preheated. Chicken should reach 165°F internal temperature, and beef varies by preference. What are you cooking?";
+  } else if (questionLower.includes('how long')) {
+    return "Cooking times vary by method and thickness. Check for doneness signs like color, texture, or use a thermometer. What dish are you preparing?";
+  } else {
+    return "I'm having trouble with that question right now. Try asking about cooking techniques, ingredient substitutions, or timing help.";
+  }
+}
+
+export const POST = withErrorHandler(handleCookingAssistant);

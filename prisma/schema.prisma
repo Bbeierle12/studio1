@@ -20,6 +20,9 @@ model User {
   plans     Plan[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([createdAt])
 }
 
 model Recipe {
@@ -27,13 +30,13 @@ model Recipe {
   title        String
   slug         String    @unique
   contributor  String
-  prepTime     Int?
-  servings     Int?
+  prepTime     Int?      // Minutes - positive values only
+  servings     Int?      // Number of servings - positive values only  
   course       String?
   cuisine      String?
-  difficulty   String?
-  ingredients  String
-  instructions String
+  difficulty   String?   // Easy, Medium, Hard
+  ingredients  String    // JSON string array
+  instructions String    // JSON string array
   tags         String    // JSON string array
   summary      String
   story        String?
@@ -51,6 +54,13 @@ model Recipe {
   plans        Plan[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([course])
+  @@index([cuisine])
+  @@index([difficulty])
+  @@index([tags])
 }
 
 model Plan {
@@ -64,4 +74,7 @@ model Plan {
   updatedAt  DateTime @updatedAt
 
   @@unique([recipeId, plannedFor, userId])
+  @@index([userId])
+  @@index([plannedFor])
+  @@index([recipeId])
 }

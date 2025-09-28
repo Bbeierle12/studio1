@@ -13,13 +13,14 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
         action: { label: 'Action', type: 'text' }, // login or signup
+        name: { label: 'Name', type: 'text' }, // for signup
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        const { email, password, action } = credentials;
+        const { email, password, action, name } = credentials;
 
         try {
           if (action === 'signup') {
@@ -32,13 +33,22 @@ export const authOptions: NextAuthOptions = {
               throw new Error('User already exists');
             }
 
+            // Validate required fields for signup
+            if (!name || name.trim().length < 2) {
+              throw new Error('Name is required and must be at least 2 characters');
+            }
+
+            if (password.length < 8) {
+              throw new Error('Password must be at least 8 characters');
+            }
+
             // Create new user
             const hashedPassword = await hash(password, 12);
             const user = await prisma.user.create({
               data: {
-                email,
+                email: email.toLowerCase().trim(),
                 password: hashedPassword,
-                name: email.split('@')[0], // Use email prefix as default name
+                name: name.trim(),
               },
             });
 
@@ -50,7 +60,7 @@ export const authOptions: NextAuthOptions = {
           } else {
             // Login existing user
             const user = await prisma.user.findUnique({
-              where: { email },
+              where: { email: email.toLowerCase().trim() },
             });
 
             if (!user) {
@@ -77,6 +87,7 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: '/login',
@@ -85,14 +96,26 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token.id && session.user) {
+      if (token && session.user) {
         (session.user as any).id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
       }
       return session;
+    },
+  },
+  events: {
+    async signIn({ user, account, profile, isNewUser }) {
+      console.log('User signed in:', { userId: user.id, email: user.email });
+    },
+    async signOut({ token }) {
+      console.log('User signed out:', { userId: token?.id });
     },
   },
 };
