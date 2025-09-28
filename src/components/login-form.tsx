@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-export function LoginForm() {
+function LoginFormInner() {
   const [formData, setFormData] = useState<LoginForm>({
     email: '',
     password: '',
@@ -168,7 +168,7 @@ export function LoginForm() {
 
       <div className='text-center text-sm text-muted-foreground space-y-2'>
         <p>
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link 
             href={`/register${redirect !== '/' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
             className='font-medium text-primary hover:underline'
@@ -179,5 +179,13 @@ export function LoginForm() {
         {/* Future: Add "Forgot password?" link here */}
       </div>
     </form>
+  );
+}
+
+export function LoginForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginFormInner />
+    </Suspense>
   );
 }
