@@ -149,6 +149,16 @@ function LoginFormInner() {
         {errors.password && (
           <p className='text-sm text-red-500'>{errors.password}</p>
         )}
+        
+        {/* Forgot Password Link */}
+        <div className="text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            Forgot your password?
+          </Link>
+        </div>
       </div>
 
       <Button
@@ -162,22 +172,9 @@ function LoginFormInner() {
             Signing in...
           </>
         ) : (
-          'Sign In'
+          'Sign in'
         )}
       </Button>
-
-      <div className='text-center text-sm text-muted-foreground space-y-2'>
-        <p>
-          Don&apos;t have an account?{' '}
-          <Link 
-            href={`/register${redirect !== '/' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
-            className='font-medium text-primary hover:underline'
-          >
-            Create one here
-          </Link>
-        </p>
-        {/* Future: Add "Forgot password?" link here */}
-      </div>
     </form>
   );
 }

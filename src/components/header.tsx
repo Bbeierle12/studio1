@@ -55,14 +55,17 @@ export function Header() {
   const navLinks = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/recipes', label: 'Browse', icon: CookingPot },
-    { href: '/collections', label: 'Collections', icon: Library },
-    { href: '/saved', label: 'Saved', icon: Bookmark },
-    {
-      href: '/recipes/new',
-      label: 'Add Recipe',
-      icon: PlusCircle,
-      className: 'hidden sm:flex',
-    },
+    // Authenticated-only links
+    ...(user ? [
+      { href: '/collections', label: 'Collections', icon: Library },
+      { href: '/saved', label: 'Saved', icon: Bookmark },
+      {
+        href: '/recipes/new',
+        label: 'Add Recipe',
+        icon: PlusCircle,
+        className: 'hidden sm:flex',
+      },
+    ] : []),
   ];
 
   const toggleTheme = () => {
@@ -105,12 +108,14 @@ export function Header() {
           )}
         </nav>
         <div className='flex items-center justify-end gap-2'>
-          <Button asChild variant='outline' size='sm' className='sm:hidden'>
-            <Link href='/recipes/new'>
-              <PlusCircle className='h-4 w-4' />
-              <span className='sr-only'>Add Recipe</span>
-            </Link>
-          </Button>
+          {user && (
+            <Button asChild variant='outline' size='sm' className='sm:hidden'>
+              <Link href='/recipes/new'>
+                <PlusCircle className='h-4 w-4' />
+                <span className='sr-only'>Add Recipe</span>
+              </Link>
+            </Button>
+          )}
           <ShoppingList />
           <Button
             variant='ghost'
@@ -166,7 +171,7 @@ export function Header() {
             <Button asChild variant='secondary' size='sm'>
               <Link href='/login'>
                 <LogIn className='mr-2 h-4 w-4' />
-                Log In
+                Sign in
               </Link>
             </Button>
           )}

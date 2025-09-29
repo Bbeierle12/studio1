@@ -121,9 +121,9 @@ function RegisterForm() {
           <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary'>
             <ChefHat className='h-8 w-8 text-primary-foreground' />
           </div>
-          <CardTitle className='text-3xl font-headline'>Join Our Family Table</CardTitle>
+          <CardTitle className='text-3xl font-headline'>Create your account</CardTitle>
           <CardDescription>
-            Create your account to start sharing and preserving family recipes
+            Start sharing and preserving family recipes.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -206,10 +206,10 @@ function RegisterForm() {
               {isLoading ? (
                 <>
                   <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Creating Account...
+                  Creating account...
                 </>
               ) : (
-                'Create Account'
+                'Create account'
               )}
             </Button>
           </form>
@@ -228,8 +228,7 @@ function RegisterForm() {
 
           <div className='mt-4 text-xs text-center text-muted-foreground'>
             <p>
-              By creating an account, you agree to preserve culinary traditions and
-              share the joy of family cooking.
+              By creating an account, you agree to preserve culinary traditions and share the joy of family cooking.
             </p>
           </div>
         </CardContent>

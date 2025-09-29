@@ -35,15 +35,37 @@ export default function LoginPage() {
 
   return (
     <div className='container mx-auto flex h-full flex-col items-center justify-center py-8'>
-      <Card className='w-full max-w-sm'>
+      <Card className='w-full max-w-md'>
         <CardHeader className='text-center'>
-          <CardTitle className='text-3xl font-headline'>Welcome</CardTitle>
+          <CardTitle className='text-3xl font-headline'>Welcome back</CardTitle>
           <CardDescription>
-            Sign in or create an account to get started.
+            Sign in to access your family recipes.
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Demo Credentials Notice */}
+          <div className="mb-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
+            <p className="text-sm font-medium text-amber-800 mb-2">Demo Credentials:</p>
+            <div className="text-sm text-amber-700 space-y-1">
+              <p><strong>Email:</strong> demo@familyrecipes.com</p>
+              <p><strong>Password:</strong> password123</p>
+            </div>
+          </div>
+          
           <LoginForm />
+          
+          <div className='mt-6 text-center'>
+            <Separator className="my-4" />
+            <p className='text-sm text-muted-foreground'>
+              Don&apos;t have an account?{' '}
+              <Link
+                href='/register'
+                className='font-medium text-primary hover:underline'
+              >
+                Create one here
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

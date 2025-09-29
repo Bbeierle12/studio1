@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
-import WoodGrainLogin from '@/components/glassmorphism-login';
 import MediaUpload from '@/components/media-upload';
 import VoiceAssistant from '@/components/voice-assistant';
 import { useState } from 'react';
@@ -21,28 +20,50 @@ export default function Home() {
         <div className="cobblestone-arch"></div>
         <div className="vine-overlay"></div>
         <div className="vine-details"></div>
-        
+
         {/* Content container */}
         <div className="relative z-20 flex items-center justify-center min-h-[80vh] p-4">
-          <div className="text-center">
-            <h1 className='mb-2 font-headline text-6xl font-bold text-white drop-shadow-lg'>
-              Our Family Table
-            </h1>
-            <p className='text-xl text-secondary drop-shadow-md mb-8'>
-              Preserving culinary heritage, one recipe at a time.
-            </p>
-            <WoodGrainLogin />
+          <div className="text-center space-y-8">
+            <div>
+              <h1 className='mb-2 font-headline text-6xl font-bold text-white drop-shadow-lg'>
+                Our Family Table
+              </h1>
+              <p className='text-xl text-secondary drop-shadow-md mb-8'>
+                Preserving culinary heritage, one recipe at a time.
+              </p>
+            </div>
+            
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button asChild size="lg" className="w-full sm:w-auto text-lg px-8 py-6">
+                <Link href="/register">
+                  Start Preserving Recipes
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto text-lg px-8 py-6 bg-white/10 backdrop-blur border-white/30 text-white hover:bg-white/20">
+                <Link href="/login">
+                  Sign In
+                </Link>
+              </Button>
+            </div>
+
+            {/* Demo/Guest Access */}
+            <div className="pt-6">
+              <Button asChild variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10">
+                <Link href="/recipes">
+                  Browse Recipes as Guest
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
-        
+
         <footer className='absolute bottom-8 w-full text-center text-sm text-white drop-shadow-md z-20'>
           <p>© 2024 Our Family Table. All Rights Reserved.</p>
         </footer>
       </div>
     );
-  }
-
-  // Loading state
+  }  // Loading state
   if (loading) {
     return (
       <div className='flex-grow'>
