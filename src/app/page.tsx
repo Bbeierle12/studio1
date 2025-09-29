@@ -46,15 +46,6 @@ export default function Home() {
                 </Link>
               </Button>
             </div>
-
-            {/* Demo/Guest Access */}
-            <div className="pt-6">
-              <Button asChild variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10">
-                <Link href="/recipes">
-                  Browse Recipes as Guest
-                </Link>
-              </Button>
-            </div>
           </div>
         </div>
 
