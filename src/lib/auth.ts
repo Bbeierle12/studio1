@@ -24,39 +24,9 @@ export const authOptions: NextAuthOptions = {
 
         try {
           if (action === 'signup') {
-            // Check if user already exists
-            const existingUser = await prisma.user.findUnique({
-              where: { email },
-            });
-
-            if (existingUser) {
-              throw new Error('User already exists');
-            }
-
-            // Validate required fields for signup
-            if (!name || name.trim().length < 2) {
-              throw new Error('Name is required and must be at least 2 characters');
-            }
-
-            if (password.length < 8) {
-              throw new Error('Password must be at least 8 characters');
-            }
-
-            // Create new user
-            const hashedPassword = await hash(password, 12);
-            const user = await prisma.user.create({
-              data: {
-                email: email.toLowerCase().trim(),
-                password: hashedPassword,
-                name: name.trim(),
-              },
-            });
-
-            return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-            };
+            // Registration is now handled by the /api/register endpoint
+            // This branch should not be used anymore
+            throw new Error('Please use the registration form');
           } else {
             // Login existing user
             const user = await prisma.user.findUnique({

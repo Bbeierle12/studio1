@@ -79,7 +79,7 @@ function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -88,17 +88,45 @@ function RegisterForm() {
     setServerError('');
 
     try {
-      // Use NextAuth signIn with credentials provider for registration
-      const result = await signIn('credentials', {
+      // Use our custom registration API endpoint
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.fieldErrors) {
+          // Handle field-specific validation errors
+          const fieldErrorMap: Partial<Record<keyof RegistrationForm, string>> = {};
+          data.fieldErrors.forEach((fieldError: { field: string; message: string }) => {
+            fieldErrorMap[fieldError.field as keyof RegistrationForm] = fieldError.message;
+          });
+          setErrors(fieldErrorMap);
+        } else {
+          setServerError(data.error || 'Registration failed. Please try again.');
+        }
+        return;
+      }
+
+      // Registration successful, now sign in the user
+      const signInResult = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
-        action: 'signup',
-        name: formData.name,
+        action: 'login',
         redirect: false,
       });
 
-      if (result?.error) {
-        setServerError('Registration failed. Email may already be in use.');
+      if (signInResult?.error) {
+        setServerError('Account created successfully, but sign-in failed. Please try signing in manually.');
       } else {
         toast({
           title: 'Welcome to Our Family Table!',
@@ -108,13 +136,11 @@ function RegisterForm() {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setServerError('An unexpected error occurred. Please try again.');
+      setServerError('An unexpected error occurred. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  return (
+  };  return (
     <div className='container mx-auto flex h-full flex-col items-center justify-center py-8'>
       <Card className='w-full max-w-md'>
         <CardHeader className='text-center'>
