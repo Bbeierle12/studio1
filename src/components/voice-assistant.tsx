@@ -130,13 +130,13 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '' }
         // Load voices
         const loadVoices = () => {
           const voices = synthesisRef.current?.getVoices() || [];
-          const preferredVoice = voices.find(voice => 
+          const preferredVoice = voices.find((voice: SpeechSynthesisVoice) => 
             voice.name.includes('Samantha') || // macOS
             voice.name.includes('Microsoft Zira') || // Windows
             voice.name.includes('Google US English Female') // Chrome
-          ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+          ) || voices.find((voice: SpeechSynthesisVoice) => voice.lang.startsWith('en')) || voices[0];
           
-          setVoiceSettings(prev => ({ ...prev, voice: preferredVoice }));
+          setVoiceSettings((prev: typeof voiceSettings) => ({ ...prev, voice: preferredVoice }));
         };
         
         if (synthesisRef.current.getVoices().length > 0) {
@@ -353,7 +353,7 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '' }
 
   // Add message to conversation
   const addMessage = (type: 'user' | 'assistant', text: string) => {
-    setMessages(prev => [...prev, { type, text, timestamp: new Date() }]);
+    setMessages((prev: AssistantMessage[]) => [...prev, { type, text, timestamp: new Date() }]);
   };
 
   // Text-to-speech function
@@ -568,7 +568,7 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '' }
           <CardContent className="p-4">
             <h3 className="text-lg font-semibold mb-4 text-gray-700">Conversation</h3>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {messages.slice(-5).map((message, index) => (
+              {messages.slice(-5).map((message: AssistantMessage, index: number) => (
                 <div
                   key={index}
                   className={`flex ${message.type === 'user' ? 'justify-start' : 'justify-start'}`}
