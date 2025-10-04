@@ -43,15 +43,6 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Demo Credentials Notice */}
-          <div className="mb-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
-            <p className="text-sm font-medium text-amber-800 mb-2">Demo Credentials:</p>
-            <div className="text-sm text-amber-700 space-y-1">
-              <p><strong>Email:</strong> demo@familyrecipes.com</p>
-              <p><strong>Password:</strong> password123</p>
-            </div>
-          </div>
-          
           <LoginForm />
           
           <div className='mt-6 text-center'>

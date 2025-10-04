@@ -118,17 +118,6 @@ export default function WoodGrainLogin({ className = '' }: WoodGrainLoginProps) 
               <p className="text-amber-800/80 text-sm">
                 {isLogin ? 'Sign in to access your family recipes' : 'Create your account to get started'}
               </p>
-              
-              {/* Demo Credentials Notice */}
-              {isLogin && (
-                <div className="mt-4 p-3 bg-amber-100/50 rounded-md border border-amber-200">
-                  <p className="text-xs text-amber-800 font-medium mb-1">Demo Credentials:</p>
-                  <p className="text-xs text-amber-700">
-                    <strong>Email:</strong> demo@familyrecipes.com<br />
-                    <strong>Password:</strong> password123
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Form */}
