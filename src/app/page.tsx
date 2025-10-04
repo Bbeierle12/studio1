@@ -8,14 +8,23 @@ import { useAuth } from '@/context/auth-context';
 import MediaUpload from '@/components/media-upload';
 import VoiceAssistant from '@/components/voice-assistant';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const router = useRouter();
   const [weather, setWeather] = useState<{
     temperature: number;
     condition: string;
     humidity?: number;
   } | null>(null);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   // Fetch weather on component mount
   useEffect(() => {
@@ -58,80 +67,23 @@ export default function Home() {
     }
   }, [user]);
 
-  // Show cobblestone arch background when user is not logged in
-  if (!loading && !user) {
-    return (
-      <div className='cobblestone-arch-background flex-grow'>
-        {/* Cobblestone arch with vines overlay */}
-        <div className="cobblestone-arch"></div>
-        <div className="vine-overlay"></div>
-        <div className="vine-details"></div>
-
-        {/* Content container */}
-        <div className="relative z-20 flex items-center justify-center min-h-[80vh] p-4">
-          <div className="text-center space-y-8">
-            <div>
-              <h1 className='mb-2 font-headline text-6xl font-bold text-white drop-shadow-lg'>
-                Our Family Table
-              </h1>
-              <p className='text-xl text-secondary drop-shadow-md mb-8'>
-                Preserving culinary heritage, one recipe at a time.
-              </p>
-            </div>
-            
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button asChild size="lg" className="w-full sm:w-auto text-lg px-8 py-6">
-                <Link href="/register">
-                  Start Preserving Recipes
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto text-lg px-8 py-6 bg-white/10 backdrop-blur border-white/30 text-white hover:bg-white/20">
-                <Link href="/login">
-                  Sign In
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <footer className='absolute bottom-8 w-full text-center text-sm text-white drop-shadow-md z-20'>
-          <p>© 2024 Our Family Table. All Rights Reserved.</p>
-        </footer>
-      </div>
-    );
-  }  // Loading state
+  // Show loading state
   if (loading) {
     return (
-      <div className='flex-grow'>
-        <div className='absolute inset-0 top-[65px] opacity-10'>
-          <Image
-            src='https://placehold.co/1920x1080/FFFFFF/FFFFFF'
-            alt='Gnomes in a kitchen sketch background'
-            fill
-            className='object-cover'
-            data-ai-hint='gnomes kitchen'
-          />
+      <div className='flex min-h-[80vh] items-center justify-center'>
+        <div className='animate-pulse text-lg text-muted-foreground'>
+          Loading...
         </div>
-        <main className='relative flex h-full grow flex-col items-center justify-center p-8 text-center'>
-          <div className='w-full max-w-md space-y-4'>
-            <Button
-              className='w-full transform transition-transform hover:scale-105'
-              size='lg'
-              disabled
-            >
-              Loading...
-            </Button>
-          </div>
-        </main>
-        <footer className='absolute bottom-8 w-full text-center text-sm text-secondary'>
-          <p>© 2024 Our Family Table. All Rights Reserved.</p>
-        </footer>
       </div>
     );
   }
 
-  // Regular background for logged in users
+  // If not authenticated, redirect is happening
+  if (!user) {
+    return null;
+  }
+
+  // Authenticated user - show main dashboard
   return (
     <div className='flex-grow'>
       <div className='absolute inset-0 top-[65px] opacity-10'>

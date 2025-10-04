@@ -184,54 +184,67 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
     }
   }, [isListening, currentRecipe, unit, addIngredients, getItemsCount, getListAsText, setUnit]);
 
-  // Process voice commands with AI
+  // Process voice commands with AI - Enhanced routing system
   const processVoiceCommand = async (command: string): Promise<string> => {
     const lowerCommand = command.toLowerCase();
     
-    // Weather-based recipe suggestions
-    if (lowerCommand.includes('what should i cook') || 
-        lowerCommand.includes('recipe suggestion') || 
-        lowerCommand.includes('what to make') ||
-        lowerCommand.includes('what should i make')) {
-      return handleWeatherBasedSuggestion();
+    // Priority command routing system
+    const commandRoutes = [
+      { 
+        patterns: ['what should i cook', 'recipe suggestion', 'what to make', 'what should i make'], 
+        handler: () => handleWeatherBasedSuggestion() 
+      },
+      { 
+        patterns: ['timer', 'set'], 
+        condition: () => lowerCommand.includes('minute') || lowerCommand.includes('hour'), 
+        handler: () => handleTimerCommand(lowerCommand) 
+      },
+      { 
+        patterns: ['read'], 
+        condition: () => lowerCommand.includes('ingredients') || lowerCommand.includes('recipe') || lowerCommand.includes('instructions'), 
+        handler: () => handleRecipeReadingCommand(lowerCommand) 
+      },
+      { 
+        patterns: ['convert', 'how many cups', 'tablespoon', 'teaspoon', 'gram', 'ounce', 'fahrenheit', 'celsius'], 
+        handler: () => handleConversionCommand(lowerCommand) 
+      },
+      { 
+        patterns: ['next step', 'previous step', 'repeat step', 'repeat instruction'], 
+        handler: () => handleRecipeNavigationCommand(lowerCommand) 
+      },
+      { 
+        patterns: ['shopping list', 'add to shopping', 'add to list'], 
+        handler: () => handleShoppingListCommand(command) 
+      },
+      { 
+        patterns: ['switch to metric', 'switch to imperial', 'change units', 'use metric', 'use imperial'], 
+        handler: () => handleUnitPreferenceCommand(lowerCommand) 
+      },
+    ];
+
+    // Check command routes with priority
+    for (const route of commandRoutes) {
+      const matchesPattern = route.patterns.some(pattern => lowerCommand.includes(pattern));
+      const meetsCondition = !route.condition || route.condition();
+      
+      if (matchesPattern && meetsCondition) {
+        return await route.handler();
+      }
     }
-    
-    // Timer commands
-    if (lowerCommand.includes('timer') || lowerCommand.includes('set') && (lowerCommand.includes('minute') || lowerCommand.includes('hour'))) {
-      return handleTimerCommand(lowerCommand);
-    }
-    
-    // Recipe reading commands
-    if (lowerCommand.includes('read') && (lowerCommand.includes('ingredients') || lowerCommand.includes('recipe'))) {
-      return handleRecipeReadingCommand(lowerCommand);
-    }
-    
-    // Unit conversion commands  
-    if (lowerCommand.includes('convert') || lowerCommand.includes('how many') || lowerCommand.includes('cups') || lowerCommand.includes('tablespoon')) {
-      return handleConversionCommand(lowerCommand);
-    }
-    
-    // Cooking tips and techniques
-    if (lowerCommand.includes('how to') || lowerCommand.includes('what is') || lowerCommand.includes('substitute')) {
+
+    // For complex cooking questions, use AI
+    if (lowerCommand.includes('how to') || 
+        lowerCommand.includes('how do i') ||
+        lowerCommand.includes('what is') || 
+        lowerCommand.includes('why') ||
+        lowerCommand.includes('substitute') ||
+        lowerCommand.includes('can i use') ||
+        lowerCommand.includes('instead of') ||
+        lowerCommand.length > 40) { // Longer questions likely need AI
       return handleCookingQuestionCommand(command);
     }
     
-    // Recipe navigation
-    if (lowerCommand.includes('next step') || lowerCommand.includes('previous step') || lowerCommand.includes('repeat')) {
-      return handleRecipeNavigationCommand(lowerCommand);
-    }
-    
-    // Shopping list commands
-    if (lowerCommand.includes('add to') && lowerCommand.includes('shopping') || lowerCommand.includes('shopping list')) {
-      return handleShoppingListCommand(command);
-    }
-    
-    // Unit preference commands
-    if (lowerCommand.includes('switch to') && (lowerCommand.includes('metric') || lowerCommand.includes('imperial'))) {
-      return handleUnitPreferenceCommand(lowerCommand);
-    }
-    
-    // General cooking AI assistance
+    // Default: AI-powered general response
     return handleGeneralCookingCommand(command);
   };
 
@@ -299,31 +312,66 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
     return `Here are the cooking instructions: ${instructions[0]}. Say 'next step' for the next instruction.`;
   };
 
-  // Unit conversion handler
+  // Unit conversion handler - Enhanced with AI fallback
   const handleConversionCommand = async (command: string): Promise<string> => {
-    // Unit-aware conversions
     const currentSystem = unit;
     
+    // Extract numbers and units
+    const numberMatch = command.match(/(\d+\.?\d*)/);
+    const num = numberMatch ? parseFloat(numberMatch[1]) : 1;
+    
     // Common cooking conversions based on current unit system
-    const conversions: Record<string, string> = {
-      '1 cup to tablespoons': '1 cup equals 16 tablespoons',
-      '1 tablespoon to teaspoons': '1 tablespoon equals 3 teaspoons',
-      '1 pound to ounces': '1 pound equals 16 ounces',
-      '1 cup flour to grams': currentSystem === 'metric' ? '1 cup of flour equals about 120 grams' : '1 cup of flour equals about 4.25 ounces',
-      '1 cup sugar to grams': currentSystem === 'metric' ? '1 cup of sugar equals about 200 grams' : '1 cup of sugar equals about 7 ounces',
-      '1 liter to cups': '1 liter equals about 4.2 cups',
-      '350 fahrenheit to celsius': '350°F equals 175°C',
-      '180 celsius to fahrenheit': '180°C equals 355°F'
+    const conversionMap: Record<string, { ratio: number, result: string }> = {
+      'cup_tablespoon': { ratio: 16, result: 'tablespoons' },
+      'tablespoon_teaspoon': { ratio: 3, result: 'teaspoons' },
+      'pound_ounce': { ratio: 16, result: 'ounces' },
+      'cup_flour_gram': { ratio: 120, result: 'grams' },
+      'cup_sugar_gram': { ratio: 200, result: 'grams' },
+      'liter_cup': { ratio: 4.227, result: 'cups' },
+      'quart_liter': { ratio: 0.946, result: 'liters' },
+      'ounce_gram': { ratio: 28.35, result: 'grams' },
     };
     
-    // Simple matching for common conversions
-    for (const [key, value] of Object.entries(conversions)) {
-      if (command.includes(key.split(' to ')[0]) && command.includes(key.split(' to ')[1])) {
-        return `${value}. Your current unit system is set to ${currentSystem}.`;
+    // Try matching known conversions
+    for (const [key, { ratio, result }] of Object.entries(conversionMap)) {
+      const [from, to] = key.split('_');
+      if (command.toLowerCase().includes(from) && command.toLowerCase().includes(to)) {
+        const converted = (num * ratio).toFixed(2);
+        return `${num} ${from}${num !== 1 ? 's' : ''} equals about ${converted} ${result}. Your current system is ${currentSystem}.`;
       }
     }
     
-    return `I can help with common cooking conversions. Your current unit system is ${currentSystem}. Try asking 'how many tablespoons in a cup' or 'convert 1 cup flour to grams'.`;
+    // Temperature conversions
+    if (command.toLowerCase().includes('fahrenheit') || command.toLowerCase().includes('celsius')) {
+      if (command.toLowerCase().includes('fahrenheit') && command.toLowerCase().includes('celsius')) {
+        const celsius = ((num - 32) * 5 / 9).toFixed(1);
+        return `${num}°F equals ${celsius}°C.`;
+      } else if (command.toLowerCase().includes('celsius') && command.toLowerCase().includes('fahrenheit')) {
+        const fahrenheit = ((num * 9 / 5) + 32).toFixed(1);
+        return `${num}°C equals ${fahrenheit}°F.`;
+      }
+    }
+    
+    // Use AI for complex conversions
+    try {
+      const response = await fetch('/api/cooking-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          question: `Convert cooking measurement: ${command}. Current unit system: ${currentSystem}. Be precise and concise.`,
+          context: 'Provide a cooking conversion'
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.answer;
+      }
+    } catch (error) {
+      console.error('AI conversion error:', error);
+    }
+    
+    return `I can help with cooking conversions. Your current system is ${currentSystem}. Try asking 'how many tablespoons in a cup' or 'convert 350 fahrenheit to celsius'.`;
   };
 
   // Cooking questions handler
@@ -363,6 +411,24 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
 
   // General cooking command handler
   const handleGeneralCookingCommand = async (command: string): Promise<string> => {
+    try {
+      const response = await fetch('/api/cooking-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          question: command,
+          context: currentRecipe ? `Currently cooking: ${currentRecipe.title}` : null 
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.answer;
+      }
+    } catch (error) {
+      console.error('AI assistant error:', error);
+    }
+
     return "I'm your cooking assistant! I can help with timers, reading recipes, unit conversions, and cooking tips. What would you like help with?";
   };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { Loader2, ChefHat } from 'lucide-react';
 import Link from 'next/link';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/auth-context';
 
 const registrationSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50),
@@ -264,6 +265,23 @@ function RegisterForm() {
 }
 
 export default function RegisterPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  if (loading || user) {
+    return (
+      <div className='flex h-full flex-grow items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin' />
+      </div>
+    );
+  }
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <RegisterForm />

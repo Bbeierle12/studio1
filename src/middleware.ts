@@ -1,15 +1,8 @@
 import { withAuth } from 'next-auth/middleware';
 import { type NextRequest } from 'next/server';
 
-const PROTECTED_ROUTES = [
-  '/recipes/new',
-  '/recipes/generate',
-  '/recipes/[^/]+/edit',
-  '/saved',
-  '/collections',
-];
-
-const PUBLIC_ROUTES = ['/login', '/'];
+// Only these routes are public (accessible without login)
+const PUBLIC_ROUTES = ['/login', '/register'];
 
 export default withAuth(
   function middleware(request: NextRequest) {
@@ -21,24 +14,13 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
         
-        // Allow access to public routes
-        if (PUBLIC_ROUTES.includes(pathname) || pathname === '/') {
+        // Allow access to public routes (login and register pages)
+        if (PUBLIC_ROUTES.includes(pathname)) {
           return true;
         }
         
-        // Check if route is protected
-        const isProtectedRoute = PROTECTED_ROUTES.some(route => {
-          const regex = new RegExp(`^${route.replace('[^/]+', '[^/]+')}$`);
-          return regex.test(pathname);
-        });
-        
-        if (isProtectedRoute) {
-          // Require authentication for protected routes
-          return !!token;
-        }
-        
-        // Allow access to other routes
-        return true;
+        // All other routes require authentication
+        return !!token;
       },
     },
     pages: {

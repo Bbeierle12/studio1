@@ -52,21 +52,19 @@ export function Header() {
     await signOut();
   };
 
-  const navLinks = [
+  // All navigation links - only show when user is authenticated
+  const navLinks = user ? [
     { href: '/', label: 'Home', icon: Home },
     { href: '/recipes', label: 'Browse', icon: CookingPot },
-    // Authenticated-only links
-    ...(user ? [
-      { href: '/collections', label: 'Collections', icon: Library },
-      { href: '/saved', label: 'Saved', icon: Bookmark },
-      {
-        href: '/recipes/new',
-        label: 'Add Recipe',
-        icon: PlusCircle,
-        className: 'hidden sm:flex',
-      },
-    ] : []),
-  ];
+    { href: '/collections', label: 'Collections', icon: Library },
+    { href: '/saved', label: 'Saved', icon: Bookmark },
+    {
+      href: '/recipes/new',
+      label: 'Add Recipe',
+      icon: PlusCircle,
+      className: 'hidden sm:flex',
+    },
+  ] : [];
 
   const toggleTheme = () => {
     if (theme === 'light') {
