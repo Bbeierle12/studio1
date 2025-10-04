@@ -34,21 +34,53 @@ export default function WoodGrainLogin({ className = '' }: WoodGrainLoginProps) 
     setError('');
 
     try {
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        action: isLogin ? 'login' : 'signup',
-        redirect: false,
-      });
+      if (isLogin) {
+        // Login flow
+        const result = await signIn('credentials', {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        });
 
-      if (result?.error) {
-        setError(result.error === 'CredentialsSignin' 
-          ? 'Invalid email or password' 
-          : result.error
-        );
-      } else if (result?.ok) {
-        // Success - NextAuth will handle the redirect
-        window.location.reload();
+        if (result?.error) {
+          setError(result.error === 'CredentialsSignin' 
+            ? 'Invalid email or password' 
+            : result.error
+          );
+        } else if (result?.ok) {
+          // Success - NextAuth will handle the redirect
+          window.location.reload();
+        }
+      } else {
+        // Sign up flow - use /api/register endpoint
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          setError(data.error || 'Failed to create account');
+          return;
+        }
+
+        // Auto-login after successful signup
+        const result = await signIn('credentials', {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        });
+
+        if (result?.error) {
+          setError(result.error);
+        } else if (result?.ok) {
+          window.location.reload();
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred');
