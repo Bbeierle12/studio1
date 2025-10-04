@@ -564,19 +564,25 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '' }
 
       {/* Recent Messages */}
       {messages.length > 0 && (
-        <Card>
-          <CardContent className="p-3">
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {messages.slice(-3).map((message, index) => (
+        <Card className="border-2">
+          <CardContent className="p-4">
+            <h3 className="text-lg font-semibold mb-4 text-gray-700">Conversation</h3>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {messages.slice(-5).map((message, index) => (
                 <div
                   key={index}
-                  className={`text-sm p-2 rounded ${
-                    message.type === 'user'
-                      ? 'bg-blue-100 text-blue-900 ml-4'
-                      : 'bg-green-100 text-green-900 mr-4'
-                  }`}
+                  className={`flex ${message.type === 'user' ? 'justify-start' : 'justify-start'}`}
                 >
-                  <strong>{message.type === 'user' ? 'You' : 'Assistant'}:</strong> {message.text}
+                  <div
+                    className={`text-base p-4 rounded-lg shadow-sm max-w-[90%] ${
+                      message.type === 'user'
+                        ? 'bg-blue-100 text-blue-900'
+                        : 'bg-green-100 text-green-900'
+                    }`}
+                  >
+                    <strong className="block mb-1 text-sm">{message.type === 'user' ? 'You' : 'Assistant'}:</strong> 
+                    <span className="block">{message.text}</span>
+                  </div>
                 </div>
               ))}
             </div>

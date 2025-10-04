@@ -119,7 +119,7 @@ export default function Home() {
             <TabsContent value="home" className="space-y-4">
               <div className='space-y-6'>
                 {/* Voice Assistant */}
-                <div className='w-full max-w-md mx-auto'>
+                <div className='w-full max-w-3xl mx-auto'>
                   <VoiceAssistant />
                 </div>
                 
