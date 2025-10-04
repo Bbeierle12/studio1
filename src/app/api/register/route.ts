@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/data';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50),
@@ -66,17 +64,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle database connection errors
-    if (error instanceof Error && error.message.includes('connect')) {
-      return NextResponse.json(
-        { error: 'Database connection failed. Please try again later.' },
-        { status: 503 }
-      );
+    // Handle Prisma errors
+    if (error instanceof Error) {
+      // Database connection errors
+      if (error.message.includes('connect') || error.message.includes('DATABASE_URL')) {
+        console.error('Database connection error:', error.message);
+        return NextResponse.json(
+          { error: 'Database connection failed. Please try again later or contact support.' },
+          { status: 503 }
+        );
+      }
+
+      // Prisma unique constraint violations
+      if (error.message.includes('Unique constraint')) {
+        return NextResponse.json(
+          { error: 'An account with this email address already exists.' },
+          { status: 400 }
+        );
+      }
+
+      // Log the actual error message for debugging
+      console.error('Registration error details:', error.message);
     }
 
     // Handle other errors
     return NextResponse.json(
-      { error: 'Registration failed. Please try again.' },
+      { error: 'Registration failed. Please try again or contact support if the problem persists.' },
       { status: 500 }
     );
   }
