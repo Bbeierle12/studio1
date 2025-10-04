@@ -7,10 +7,56 @@ import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
 import MediaUpload from '@/components/media-upload';
 import VoiceAssistant from '@/components/voice-assistant';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const [weather, setWeather] = useState<{
+    temperature: number;
+    condition: string;
+    humidity?: number;
+  } | null>(null);
+
+  // Fetch weather on component mount
+  useEffect(() => {
+    async function fetchWeather() {
+      try {
+        // Get user's location
+        if ('geolocation' in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords;
+              
+              // Mock weather data for now (replace with real API call)
+              // You can integrate with OpenWeatherMap, WeatherAPI, etc.
+              const mockWeather = {
+                temperature: 72,
+                condition: 'Sunny',
+                humidity: 45
+              };
+              
+              setWeather(mockWeather);
+            },
+            (error) => {
+              console.error('Error getting location:', error);
+              // Set default weather if location fails
+              setWeather({
+                temperature: 70,
+                condition: 'Clear',
+                humidity: 50
+              });
+            }
+          );
+        }
+      } catch (error) {
+        console.error('Failed to fetch weather:', error);
+      }
+    }
+    
+    if (user) {
+      fetchWeather();
+    }
+  }, [user]);
 
   // Show cobblestone arch background when user is not logged in
   if (!loading && !user) {
@@ -118,10 +164,8 @@ export default function Home() {
             
             <TabsContent value="home" className="space-y-4">
               <div className='space-y-6'>
-                {/* Voice Assistant */}
-                <div className='w-full max-w-3xl mx-auto'>
-                  <VoiceAssistant />
-                </div>
+                {/* Voice Assistant - Now with Weather Awareness! */}
+                <VoiceAssistant weather={weather} />
                 
                 <Button
                   asChild
