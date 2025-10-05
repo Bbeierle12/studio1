@@ -551,7 +551,7 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
       <>
         {/* Floating Action Button */}
         {showFloatingButton && (
-          <div className="fixed bottom-6 right-6 z-50">
+          <div className="fixed top-20 left-6 z-50">
             <Button
               onClick={toggleMinimized}
               className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-br from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white transition-all duration-300 hover:scale-110"
@@ -575,7 +575,7 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
 
         {/* Minimized Widget */}
         {!isMinimized && (
-          <div className="fixed bottom-6 right-6 z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-4 w-80 border-2 border-orange-500">
+          <div className="fixed top-20 left-6 z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-4 w-80 border-2 border-orange-500">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-orange-500" />
@@ -650,7 +650,7 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-2 border-orange-500">
+    <div className="fixed top-20 left-6 z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-2 border-orange-500">
       <div className="w-96 max-h-[600px] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
