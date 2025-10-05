@@ -14,6 +14,7 @@ import {
   Moon,
   Scale,
   Bookmark,
+  Shield,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -52,6 +53,9 @@ export function Header() {
     await signOut();
   };
 
+  // Check if user is admin
+  const isAdmin = user?.role && ['SUPPORT_ADMIN', 'CONTENT_ADMIN', 'SUPER_ADMIN'].includes(user.role);
+
   // All navigation links - only show when user is authenticated
   const navLinks = user ? [
     { href: '/', label: 'Home', icon: Home },
@@ -64,6 +68,12 @@ export function Header() {
       icon: PlusCircle,
       className: 'hidden sm:flex',
     },
+    ...(isAdmin ? [{
+      href: '/admin',
+      label: 'Admin',
+      icon: Shield,
+      className: 'text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300',
+    }] : []),
   ] : [];
 
   const toggleTheme = () => {

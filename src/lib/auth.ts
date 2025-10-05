@@ -40,10 +40,23 @@ export const authOptions: NextAuthOptions = {
               return null;
             }
 
+            // Check if user is active
+            if (!user.isActive) {
+              throw new Error('Account is suspended');
+            }
+
+            // Update last login
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { lastLogin: new Date() },
+            });
+
             return {
               id: user.id,
               email: user.email,
               name: user.name,
+              role: user.role,
+              isActive: user.isActive,
             };
           }
         } catch (error) {
@@ -66,6 +79,8 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
+        token.role = (user as any).role || 'USER';
+        token.isActive = (user as any).isActive !== false;
       }
       return token;
     },
@@ -74,6 +89,8 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id as string;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
+        (session.user as any).role = token.role || 'USER';
+        (session.user as any).isActive = token.isActive !== false;
       }
       return session;
     },

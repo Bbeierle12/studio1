@@ -1,5 +1,5 @@
 import { withAuth } from 'next-auth/middleware';
-import { type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 // Only these routes are public (accessible without login)
 const PUBLIC_ROUTES = ['/login', '/register'];
@@ -17,6 +17,12 @@ export default withAuth(
         // Allow access to public routes (login and register pages)
         if (PUBLIC_ROUTES.includes(pathname)) {
           return true;
+        }
+        
+        // Check if route is admin
+        if (pathname.startsWith('/admin')) {
+          const role = token?.role as string;
+          return ['SUPPORT_ADMIN', 'CONTENT_ADMIN', 'SUPER_ADMIN'].includes(role || '');
         }
         
         // All other routes require authentication
