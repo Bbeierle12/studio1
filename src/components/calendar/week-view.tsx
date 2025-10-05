@@ -8,15 +8,31 @@ import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { AddMealDialog } from './add-meal-dialog';
 
+interface Recipe {
+  id: string;
+  title: string;
+  slug: string;
+  course: string | null;
+  cuisine: string | null;
+  difficulty: string | null;
+  prepTime: number | null;
+  servings: number | null;
+  tags: string;
+  summary: string;
+  imageUrl: string;
+  ingredients: string;
+}
+
 interface WeekViewProps {
   currentDate: Date;
   mealPlan: MealPlan;
   weatherForecast: WeatherForecast[];
+  recipes?: Recipe[];
 }
 
 const MEAL_TYPES: MealType[] = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
 
-export function WeekView({ currentDate, mealPlan, weatherForecast }: WeekViewProps) {
+export function WeekView({ currentDate, mealPlan, weatherForecast, recipes = [] }: WeekViewProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showAddMeal, setShowAddMeal] = useState(false);
   
@@ -137,6 +153,7 @@ export function WeekView({ currentDate, mealPlan, weatherForecast }: WeekViewPro
           date={selectedDate}
           mealPlan={mealPlan}
           weather={getWeatherForDate(weatherForecast, selectedDate)}
+          recipes={recipes}
         />
       )}
     </>

@@ -12,8 +12,24 @@ import { useMealPlan } from '@/hooks/use-meal-plan';
 import { useWeather } from '@/hooks/use-weather';
 import { CreateMealPlanDialog } from './calendar/create-meal-plan-dialog';
 import { GenerateMealPlanDialog } from './calendar/generate-meal-plan-dialog';
+import { useQuery } from '@tanstack/react-query';
 
 type CalendarView = 'month' | 'week' | 'day';
+
+interface Recipe {
+  id: string;
+  title: string;
+  slug: string;
+  course: string | null;
+  cuisine: string | null;
+  difficulty: string | null;
+  prepTime: number | null;
+  servings: number | null;
+  tags: string;
+  summary: string;
+  imageUrl: string;
+  ingredients: string;
+}
 
 export function MealPlanningCalendar() {
   const [view, setView] = useState<CalendarView>('month');
@@ -26,6 +42,17 @@ export function MealPlanningCalendar() {
     activeMealPlan?.startDate,
     activeMealPlan?.endDate
   );
+  
+  // Fetch user's recipes
+  const { data: recipes = [], isLoading: recipesLoading } = useQuery<Recipe[]>({
+    queryKey: ['recipes'],
+    queryFn: async () => {
+      const res = await fetch('/api/recipes');
+      if (!res.ok) throw new Error('Failed to fetch recipes');
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   // Navigate to previous period
   const handlePrevious = () => {
@@ -203,6 +230,7 @@ export function MealPlanningCalendar() {
               currentDate={currentDate}
               mealPlan={activeMealPlan}
               weatherForecast={weatherForecast || []}
+              recipes={recipes}
             />
           )}
           
@@ -211,6 +239,7 @@ export function MealPlanningCalendar() {
               currentDate={currentDate}
               mealPlan={activeMealPlan}
               weatherForecast={weatherForecast || []}
+              recipes={recipes}
             />
           )}
           
@@ -219,6 +248,7 @@ export function MealPlanningCalendar() {
               currentDate={currentDate}
               mealPlan={activeMealPlan}
               weatherForecast={weatherForecast || []}
+              recipes={recipes}
             />
           )}
         </div>

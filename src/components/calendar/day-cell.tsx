@@ -7,6 +7,21 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { AddMealDialog } from './add-meal-dialog';
 
+interface Recipe {
+  id: string;
+  title: string;
+  slug: string;
+  course: string | null;
+  cuisine: string | null;
+  difficulty: string | null;
+  prepTime: number | null;
+  servings: number | null;
+  tags: string;
+  summary: string;
+  imageUrl: string;
+  ingredients: string;
+}
+
 interface DayCellProps {
   date: Date;
   meals: PlannedMeal[];
@@ -15,6 +30,7 @@ interface DayCellProps {
   isToday: boolean;
   mealPlan: MealPlan;
   view: 'month' | 'week' | 'day';
+  recipes?: Recipe[];
 }
 
 const weatherIcons: Record<string, any> = {
@@ -40,7 +56,8 @@ export function DayCell({
   isCurrentMonth,
   isToday,
   mealPlan,
-  view
+  view,
+  recipes = []
 }: DayCellProps) {
   const [showAddMeal, setShowAddMeal] = useState(false);
   
@@ -127,6 +144,7 @@ export function DayCell({
         date={date}
         mealPlan={mealPlan}
         weather={weather}
+        recipes={recipes}
       />
     </>
   );

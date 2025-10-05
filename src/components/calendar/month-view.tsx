@@ -4,13 +4,29 @@ import { MealPlan, WeatherForecast, PlannedMeal } from '@/lib/types';
 import { DayCell } from './day-cell';
 import { getWeatherForDate } from '@/hooks/use-weather';
 
+interface Recipe {
+  id: string;
+  title: string;
+  slug: string;
+  course: string | null;
+  cuisine: string | null;
+  difficulty: string | null;
+  prepTime: number | null;
+  servings: number | null;
+  tags: string;
+  summary: string;
+  imageUrl: string;
+  ingredients: string;
+}
+
 interface MonthViewProps {
   currentDate: Date;
   mealPlan: MealPlan;
   weatherForecast: WeatherForecast[];
+  recipes?: Recipe[];
 }
 
-export function MonthView({ currentDate, mealPlan, weatherForecast }: MonthViewProps) {
+export function MonthView({ currentDate, mealPlan, weatherForecast, recipes = [] }: MonthViewProps) {
   // Get days in month
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -90,6 +106,7 @@ export function MonthView({ currentDate, mealPlan, weatherForecast }: MonthViewP
               isToday={isToday}
               mealPlan={mealPlan}
               view="month"
+              recipes={recipes}
             />
           );
         })}
