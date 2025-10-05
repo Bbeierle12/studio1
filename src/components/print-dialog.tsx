@@ -13,6 +13,7 @@ import { usePrint } from '@/context/print-context';
 import { Printer, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
+import DOMPurify from 'dompurify';
 
 export function PrintDialog() {
   const { isPrintOpen, setPrintOpen, printContent } = usePrint();
@@ -40,13 +41,18 @@ export function PrintDialog() {
   }
 
   // This hidden div gets populated with the print content and is the only thing shown via print CSS
-  const PrintArea = () => (
-    <div
-      ref={printContainerRef}
-      className='printable-content'
-      dangerouslySetInnerHTML={{ __html: printContent }}
-    />
-  );
+  const PrintArea = () => {
+    // Sanitize HTML to prevent XSS attacks
+    const sanitizedContent = DOMPurify.sanitize(printContent);
+    
+    return (
+      <div
+        ref={printContainerRef}
+        className='printable-content'
+        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+      />
+    );
+  };
 
   return (
     <>
@@ -65,7 +71,7 @@ export function PrintDialog() {
           <div className='flex-grow border rounded-md overflow-y-auto bg-white p-4 h-[60vh]'>
             <div
               className='prose prose-sm max-w-none'
-              dangerouslySetInnerHTML={{ __html: printContent }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(printContent) }}
             />
           </div>
 

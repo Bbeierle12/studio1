@@ -31,7 +31,7 @@
 
 ### 5. Super Admin Account Created
 - ✅ Email: `admin@ourfamilytable.com`
-- ✅ Password: `Admin123!`
+- ✅ Password: `[Set securely - must meet 12+ char requirements]`
 - ✅ Role: SUPER_ADMIN
 - ✅ Status: Active
 
@@ -42,7 +42,7 @@
 2. Click "Sign In"
 3. Use credentials:
    - **Email**: `admin@ourfamilytable.com`
-   - **Password**: `Admin123!`
+   - **Password**: Your secure admin password (12+ chars with uppercase, lowercase, numbers, special chars)
 
 ### Step 2: Access Admin Dashboard
 1. After logging in, look for the **"Admin"** link in the navigation (orange Shield icon)
@@ -283,7 +283,7 @@ You now have a fully functional admin system with:
 ---
 
 **Server**: http://localhost:9002
-**Admin Login**: admin@ourfamilytable.com / Admin123!
+**Admin Login**: admin@ourfamilytable.com / [Your secure password]
 **Admin Dashboard**: http://localhost:9002/admin
 
-**Remember to change the default password!** 🔐
+**⚠️ SECURITY NOTICE**: Use a strong password with 12+ characters including uppercase, lowercase, numbers, and special characters. Never use default passwords in production! 🔐

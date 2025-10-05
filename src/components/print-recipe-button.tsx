@@ -5,6 +5,7 @@ import { Printer } from 'lucide-react';
 import { usePrint } from '@/context/print-context';
 import { useToast } from '@/hooks/use-toast';
 import { useCallback } from 'react';
+import DOMPurify from 'dompurify';
 
 export function PrintRecipeButton() {
   const { triggerPrint } = usePrint();
@@ -18,8 +19,9 @@ export function PrintRecipeButton() {
         title: 'Preparing Print View',
         description: 'The print preview dialog is opening.',
       });
-      // Pass the raw HTML to the print context
-      triggerPrint(articleNode.innerHTML);
+      // Sanitize HTML before passing to print context to prevent XSS
+      const sanitizedHTML = DOMPurify.sanitize(articleNode.innerHTML);
+      triggerPrint(sanitizedHTML);
     } else {
       toast({
         variant: 'destructive',
