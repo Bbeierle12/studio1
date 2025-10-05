@@ -17,6 +17,7 @@ import {
   Bookmark,
   Shield,
   Settings,
+  CalendarDays,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -83,6 +84,7 @@ export function Header() {
   const navLinks = user ? [
     { href: '/', label: 'Home', icon: Home },
     { href: '/recipes', label: 'Browse', icon: CookingPot },
+    { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays },
     { href: '/collections', label: 'Collections', icon: Library },
     { href: '/saved', label: 'Saved', icon: Bookmark },
     {
