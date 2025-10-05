@@ -1,10 +1,8 @@
 import { getRecipes, getTags } from '@/lib/data';
 import { RecipeCard } from '@/components/recipe-card';
 import { RecipeFilter } from '@/components/recipe-filter';
-import ForecastToFeastHero from '@/components/forecast-to-feast-hero';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type RecipesPageProps = {
   searchParams?: {
@@ -27,45 +25,30 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
           Browse Recipes
         </h1>
         <p className='text-muted-foreground'>
-          Discover our family&apos;s cherished recipes and weather-smart recommendations.
+          Discover our family&apos;s cherished recipes.
         </p>
       </div>
 
-      <Tabs defaultValue="weather-smart" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="weather-smart">Weather-Smart Picks</TabsTrigger>
-          <TabsTrigger value="all-recipes">All Recipes</TabsTrigger>
-        </TabsList>
+      <div className="space-y-6">
+        <RecipeFilter tags={tags} />
         
-        <TabsContent value="weather-smart">
-          <div className="space-y-6">
-            <ForecastToFeastHero />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="all-recipes">
-          <div className="space-y-6">
-            <RecipeFilter tags={tags} />
-            
-            <Suspense fallback={<RecipeGridSkeleton />}>
-              {recipes.length > 0 ? (
-                <div className='mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-                  {recipes.map(recipe => (
-                    <RecipeCard key={recipe.id} recipe={recipe} />
-                  ))}
-                </div>
-              ) : (
-                <div className='mt-16 text-center'>
-                  <h3 className='text-xl font-semibold'>No Recipes Found</h3>
-                  <p className='text-muted-foreground mt-2'>
-                    Try adjusting your search or filter criteria.
-                  </p>
-                </div>
-              )}
-            </Suspense>
-          </div>
-        </TabsContent>
-      </Tabs>
+        <Suspense fallback={<RecipeGridSkeleton />}>
+          {recipes.length > 0 ? (
+            <div className='mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+              {recipes.map(recipe => (
+                <RecipeCard key={recipe.id} recipe={recipe} />
+              ))}
+            </div>
+          ) : (
+            <div className='mt-16 text-center'>
+              <h3 className='text-xl font-semibold'>No Recipes Found</h3>
+              <p className='text-muted-foreground mt-2'>
+                Try adjusting your search or filter criteria.
+              </p>
+            </div>
+          )}
+        </Suspense>
+      </div>
     </div>
   );
 }

@@ -7,29 +7,23 @@ A Next.js application for managing and sharing family recipes with AI-powered fe
 - 🍳 Recipe management with rich metadata (prep time, servings, difficulty, cuisine)
 - 🧑‍🍳 User authentication with NextAuth.js
 - 🤖 AI-powered recipe summarization and generation (OpenAI)
-- 🌦️ **Forecast-to-Feast**: Dynamic weather-based recipe recommendations
+- 📅 **Meal Planning Calendar**: Plan meals with weather-based suggestions
 - 📱 Responsive design with Tailwind CSS and Radix UI
-- 🗃️ Database with Prisma and SQLite
+- 🗃️ Database with Prisma and PostgreSQL
 - 🔍 Recipe search and filtering
-- 📋 Meal planning capabilities
 - 🌍 Geographic origin tracking
 - 📝 Recipe variations and family lineage
+- 🛒 Shopping list generation
 
-### Forecast-to-Feast Feature
+### Meal Planning Calendar
 
-Our dynamic hero feature uses real-time weather data to recommend the perfect recipes for current conditions:
+Plan your meals ahead with our integrated calendar system:
 
-- **Weather Integration**: Live data including temperature, precipitation, wind, air quality, and sunset times
-- **Smart Recommendations**: Algorithm considers weather signals to suggest appropriate cooking methods
-- **Contextual Explanations**: "Why this?" feature explains the reasoning behind each recommendation
-- **Adaptive UI**: Weather barometer shows current conditions at a glance
-
-**Weather-based Recipe Selection Examples:**
-- Hot (≥85°F) + calm wind → No-cook meals, salads, ceviche
-- Rainy (≥40% chance) or cold (≤55°F) → Soups, stews, baked comfort foods  
-- Poor air quality or windy → Indoor cooking methods (sheet-pan, air-fryer)
-- Golden hour (90+ min to sunset) → Grilling and outdoor cooking
-- Weeknights → Quick 30-minute meals
+- **Calendar Views**: Month, Week, and Day views for flexible planning
+- **Weather Integration**: See weather forecasts alongside your meal plans
+- **Meal Organization**: Organize by meal type (Breakfast, Lunch, Dinner, Snack)
+- **Color-Coded Interface**: Easy visual distinction between meal types
+- **Quick Actions**: Add, edit, and organize meals with intuitive dialogs
 
 ## Getting Started
 

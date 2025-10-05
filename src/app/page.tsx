@@ -148,7 +148,7 @@ export default function Home() {
                   className='w-full max-w-md mx-auto transform transition-transform hover:scale-105'
                   size='lg'
                 >
-                  <Link href='/recipes'>Browse Weather-Smart Recipes</Link>
+                  <Link href='/recipes'>Browse Recipes</Link>
                 </Button>
                 
                 <div className='grid grid-cols-2 gap-3 max-w-md mx-auto'>
@@ -175,7 +175,7 @@ export default function Home() {
             
             <TabsContent value="browse">
               <div className="text-center">
-                <p className="text-white mb-4">Weather-based recipe recommendations coming soon!</p>
+                <p className="text-white mb-4">Explore our collection of family recipes!</p>
                 <Button asChild>
                   <Link href='/recipes'>Browse All Recipes</Link>
                 </Button>
