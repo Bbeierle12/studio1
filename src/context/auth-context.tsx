@@ -7,15 +7,17 @@ import type { User } from '@/lib/types';
 type AuthContextType = {
   user: User | null;
   loading: boolean;
+  updateProfile: (data: Partial<User>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  updateProfile: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
 
   const user: User | null = session?.user
     ? {
@@ -33,8 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loading = status === 'loading';
 
+  const updateProfile = async (data: Partial<User>) => {
+    // Trigger session refresh to get updated user data
+    await update();
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

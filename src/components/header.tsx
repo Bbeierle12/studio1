@@ -1,7 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } fr      icon: Bookmark,
+      className: 'hidden sm:flex',
+    },
+    {
+      href: '/settings',
+      label: 'Settings',
+      icon: Settings,
+      className: 'hidden sm:flex',
+    },
+    ...(isAdmin ? [{
+      href: '/admin',
+      label: 'Admin',
+      icon: Shield,
+      className: 'text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300',
+    }] : []),
+  ] : [];onents/ui/button';
 import {
   CookingPot,
   Home,
@@ -15,6 +30,7 @@ import {
   Scale,
   Bookmark,
   Shield,
+  Settings,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -66,6 +82,12 @@ export function Header() {
       href: '/recipes/new',
       label: 'Add Recipe',
       icon: PlusCircle,
+      className: 'hidden sm:flex',
+    },
+    {
+      href: '/settings',
+      label: 'Settings',
+      icon: Settings,
       className: 'hidden sm:flex',
     },
     ...(isAdmin ? [{

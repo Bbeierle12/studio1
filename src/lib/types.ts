@@ -32,6 +32,7 @@ export type User = {
   name: string;
   email: string;
   avatarUrl?: string;
+  bio?: string;
   role?: UserRole;
   isActive?: boolean;
   lastLogin?: Date;
