@@ -6,7 +6,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
 import MediaUpload from '@/components/media-upload';
-import VoiceAssistant from '@/components/voice-assistant';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -116,9 +115,6 @@ export default function Home() {
             
             <TabsContent value="home" className="space-y-4">
               <div className='space-y-6'>
-                {/* Voice Assistant - Now with Weather Awareness! */}
-                <VoiceAssistant weather={weather} />
-                
                 <Button
                   asChild
                   className='w-full max-w-md mx-auto transform transition-transform hover:scale-105'

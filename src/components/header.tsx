@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,6 +34,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShoppingList } from './shopping-list';
 import { useTheme } from 'next-themes';
 import { useUnit } from '@/context/unit-context';
+import VoiceAssistant from './voice-assistant';
 
 function getInitials(name?: string | null) {
   if (!name) return 'U';
@@ -49,6 +51,26 @@ export function Header() {
   const { data: session } = useSession();
   const { setTheme, theme } = useTheme();
   const { unit, toggleUnit } = useUnit();
+  
+  // Weather state for voice assistant
+  const [weather, setWeather] = useState<{
+    temperature: number;
+    condition: string;
+    humidity?: number;
+  } | null>(null);
+
+  // Fetch weather when user logs in
+  useEffect(() => {
+    if (user) {
+      // Mock weather data - can be replaced with real API
+      const mockWeather = {
+        temperature: 72,
+        condition: 'Sunny',
+        humidity: 45,
+      };
+      setWeather(mockWeather);
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut();
@@ -192,6 +214,9 @@ export function Header() {
           )}
         </div>
       </div>
+      
+      {/* Voice Assistant - Only visible when logged in */}
+      {user && <VoiceAssistant weather={weather} />}
     </header>
   );
 }
