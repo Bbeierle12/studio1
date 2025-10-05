@@ -25,11 +25,16 @@ export type Recipe = {
   updatedAt?: Date;
 };
 
+export type UserRole = 'USER' | 'SUPPORT_ADMIN' | 'CONTENT_ADMIN' | 'SUPER_ADMIN';
+
 export type User = {
   id: string;
   name: string;
   email: string;
   avatarUrl?: string;
+  role?: UserRole;
+  isActive?: boolean;
+  lastLogin?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 };

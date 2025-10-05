@@ -11,19 +11,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  SUPPORT_ADMIN
+  CONTENT_ADMIN
+  SUPER_ADMIN
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   password  String
   name      String?
   avatarUrl String?
+  role      UserRole  @default(USER)
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
   recipes   Recipe[]
   plans     Plan[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  auditLogs AuditLog[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([email])
   @@index([createdAt])
+  @@index([role])
 }
 
 model Recipe {
@@ -78,4 +90,51 @@ model Plan {
   @@index([userId])
   @@index([plannedFor])
   @@index([recipeId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action      String   // CREATE, UPDATE, DELETE, VIEW, etc.
+  entityType  String   // User, Recipe, Collection, Settings, etc.
+  entityId    String?
+  changes     Json?    // Before/after values for updates
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@index([entityType])
+  @@index([action])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  category    String   // General, API, Email, Security, etc.
+  description String?
+  dataType    String   @default("string") // string, number, boolean, json
+  isPublic    Boolean  @default(false)
+  updatedBy   String
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  
+  @@index([category])
+  @@index([key])
+}
+
+model FeatureFlag {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  enabled           Boolean  @default(false)
+  description       String?
+  rolloutPercentage Int      @default(100)
+  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  
+  @@index([name])
+  @@index([enabled])
 }

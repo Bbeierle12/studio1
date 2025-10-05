@@ -25,6 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatarUrl:
           session.user.image ||
           `https://i.pravatar.cc/150?u=${session.user.email}`,
+        role: (session.user as any).role || 'USER',
+        isActive: (session.user as any).isActive !== false,
+        lastLogin: (session.user as any).lastLogin ? new Date((session.user as any).lastLogin) : undefined,
       }
     : null;
 
