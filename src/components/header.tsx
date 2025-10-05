@@ -1,22 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } fr      icon: Bookmark,
-      className: 'hidden sm:flex',
-    },
-    {
-      href: '/settings',
-      label: 'Settings',
-      icon: Settings,
-      className: 'hidden sm:flex',
-    },
-    ...(isAdmin ? [{
-      href: '/admin',
-      label: 'Admin',
-      icon: Shield,
-      className: 'text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300',
-    }] : []),
-  ] : [];onents/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   CookingPot,
   Home,
