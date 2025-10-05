@@ -19,20 +19,23 @@ enum UserRole {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  password  String
-  name      String?
-  avatarUrl String?
-  bio       String?
-  role      UserRole  @default(USER)
-  isActive  Boolean   @default(true)
-  lastLogin DateTime?
-  recipes   Recipe[]
-  plans     Plan[]
-  auditLogs AuditLog[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            String          @id @default(cuid())
+  email         String          @unique
+  password      String
+  name          String?
+  avatarUrl     String?
+  bio           String?
+  role          UserRole        @default(USER)
+  isActive      Boolean         @default(true)
+  lastLogin     DateTime?
+  recipes       Recipe[]
+  plans         Plan[]
+  mealPlans     MealPlan[]      @relation("UserMealPlans")
+  shoppingLists ShoppingList[]  @relation("UserShoppingLists")
+  mealTemplates MealTemplate[]  @relation("UserMealTemplates")
+  auditLogs     AuditLog[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@index([email])
   @@index([createdAt])
@@ -66,6 +69,7 @@ model Recipe {
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   plans        Plan[]
+  plannedMeals PlannedMeal[] @relation("PlannedMealRecipes")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -91,6 +95,96 @@ model Plan {
   @@index([userId])
   @@index([plannedFor])
   @@index([recipeId])
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+model MealPlan {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation("UserMealPlans", fields: [userId], references: [id], onDelete: Cascade)
+  name      String        // e.g., "Summer Week 1", "Low-Carb July"
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean       @default(true)
+  meals     PlannedMeal[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([startDate])
+  @@index([isActive])
+}
+
+model PlannedMeal {
+  id                String    @id @default(cuid())
+  mealPlanId        String
+  mealPlan          MealPlan  @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  date              DateTime
+  mealType          MealType
+  recipeId          String?
+  recipe            Recipe?   @relation("PlannedMealRecipes", fields: [recipeId], references: [id], onDelete: SetNull)
+  customMealName    String?   // For meals without a recipe
+  servings          Int       @default(4)
+  notes             String?
+  isCompleted       Boolean   @default(false)
+  weatherAtPlanning Json?     // Store weather snapshot: { temp: number, condition: string, precipitation: number }
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([mealPlanId])
+  @@index([date])
+  @@index([recipeId])
+  @@index([mealType])
+}
+
+model ShoppingList {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserShoppingLists", fields: [userId], references: [id], onDelete: Cascade)
+  mealPlanId  String?  // Optional: can be standalone or linked to meal plan
+  name        String   @default("Shopping List")
+  items       Json     // Array of { ingredient: string, quantity: string, unit: string, recipeIds: string[], isChecked: boolean, category: string }
+  generatedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([mealPlanId])
+}
+
+model MealTemplate {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserMealTemplates", fields: [userId], references: [id], onDelete: Cascade)
+  name      String   // e.g., "Typical Monday", "Weekend Breakfast"
+  meals     Json     // Array of { mealType: MealType, recipeId: string, servings: number }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model WeatherCache {
+  id          String   @id @default(cuid())
+  date        DateTime @unique
+  latitude    Float
+  longitude   Float
+  temperature Json     // { high: number, low: number, current: number }
+  condition   String   // sunny, cloudy, rainy, etc.
+  description String?  // Detailed description
+  precipitation Float  @default(0) // Percentage
+  humidity    Int?
+  windSpeed   Float?
+  icon        String?  // Weather icon code
+  fetchedAt   DateTime @default(now())
+  
+  @@index([date])
+  @@index([fetchedAt])
 }
 
 model AuditLog {

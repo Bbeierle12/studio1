@@ -17,6 +17,7 @@ export default function Home() {
     condition: string;
     humidity?: number;
   } | null>(null);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -24,6 +25,19 @@ export default function Home() {
       router.push('/login');
     }
   }, [user, loading, router]);
+
+  // Safety timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('Loading timeout reached, forcing session refresh');
+        setLoadingTimeout(true);
+        router.refresh();
+      }
+    }, 5000); // 5 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [loading, router]);
 
   // Fetch weather on component mount
   useEffect(() => {
@@ -67,12 +81,26 @@ export default function Home() {
   }, [user]);
 
   // Show loading state
-  if (loading) {
+  if (loading && !loadingTimeout) {
     return (
       <div className='flex min-h-[80vh] items-center justify-center'>
         <div className='animate-pulse text-lg text-muted-foreground'>
           Loading...
         </div>
+      </div>
+    );
+  }
+
+  // If loading timed out, show error state
+  if (loadingTimeout) {
+    return (
+      <div className='flex min-h-[80vh] flex-col items-center justify-center gap-4'>
+        <div className='text-lg text-muted-foreground'>
+          Session loading timed out. Please try refreshing the page.
+        </div>
+        <Button onClick={() => window.location.reload()}>
+          Refresh Page
+        </Button>
       </div>
     );
   }

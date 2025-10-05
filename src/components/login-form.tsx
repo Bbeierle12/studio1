@@ -87,13 +87,17 @@ function LoginFormInner() {
         } else {
           setServerError('An unexpected error occurred. Please try again.');
         }
-      } else {
+      } else if (result?.ok) {
         toast({
           title: 'Welcome back!',
           description: 'You have been successfully signed in.',
         });
-        router.push(redirect);
-        router.refresh();
+        
+        // Wait a bit for the session to be established before redirecting
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Use window.location for a full page reload to ensure session is properly loaded
+        window.location.href = redirect;
       }
     } catch (error: any) {
       console.error('Login error:', error);

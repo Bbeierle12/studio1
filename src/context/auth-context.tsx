@@ -19,6 +19,9 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, status, update } = useSession();
 
+  // Debug logging
+  console.log('AuthProvider - status:', status, 'session:', session);
+
   const user: User | null = session?.user
     ? {
         id: (session.user as any).id,

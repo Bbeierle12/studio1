@@ -131,3 +131,102 @@ export type RecommendationContext = {
   };
   mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
 };
+
+// Meal Planning Types
+export type MealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+
+export type PlannedMeal = {
+  id: string;
+  mealPlanId: string;
+  date: Date;
+  mealType: MealType;
+  recipeId?: string | null;
+  recipe?: Recipe | null;
+  customMealName?: string | null;
+  servings: number;
+  notes?: string | null;
+  isCompleted: boolean;
+  weatherAtPlanning?: {
+    temp: number;
+    condition: string;
+    precipitation: number;
+  } | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type MealPlan = {
+  id: string;
+  userId: string;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  isActive: boolean;
+  meals?: PlannedMeal[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ShoppingListItem = {
+  ingredient: string;
+  quantity: string;
+  unit: string;
+  recipeIds: string[];
+  isChecked: boolean;
+  category: string;
+};
+
+export type ShoppingList = {
+  id: string;
+  userId: string;
+  mealPlanId?: string | null;
+  name: string;
+  items: ShoppingListItem[];
+  generatedAt: Date;
+  updatedAt: Date;
+};
+
+export type MealTemplate = {
+  id: string;
+  userId: string;
+  name: string;
+  meals: {
+    mealType: MealType;
+    recipeId: string;
+    servings: number;
+  }[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type WeatherForecast = {
+  date: Date;
+  temperature: {
+    high: number;
+    low: number;
+    current: number;
+  };
+  condition: string;
+  description?: string;
+  precipitation: number;
+  humidity?: number;
+  windSpeed?: number;
+  icon?: string;
+};
+
+export type MealPlanGenerationParams = {
+  startDate: Date;
+  endDate: Date;
+  preferences?: {
+    dietaryRestrictions?: string[];
+    avoidIngredients?: string[];
+    favoriteRecipes?: string[];
+    cookingTimeLimit?: number;
+    budget?: 'low' | 'medium' | 'high';
+  };
+  constraints?: {
+    maxRepeatsPerWeek?: number;
+    requiredVariety?: number;
+    preferredCuisines?: string[];
+  };
+};
