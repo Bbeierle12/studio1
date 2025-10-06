@@ -28,6 +28,7 @@ model User {
   role          UserRole        @default(USER)
   isActive      Boolean         @default(true)
   lastLogin     DateTime?
+  openaiApiKey  String?         // Encrypted API key for OpenAI services
   recipes       Recipe[]
   plans         Plan[]
   mealPlans     MealPlan[]      @relation("UserMealPlans")

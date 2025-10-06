@@ -24,7 +24,8 @@ import {
   Save,
   Eye,
   EyeOff,
-  Camera
+  Camera,
+  Key
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -59,6 +60,11 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [measurementUnit, setMeasurementUnit] = useState<'imperial' | 'metric'>('imperial');
 
+  // API Keys state
+  const [openaiApiKey, setOpenaiApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [isApiKeySaving, setIsApiKeySaving] = useState(false);
+
   useEffect(() => {
     if (!user) {
       router.push('/login');
@@ -84,7 +90,25 @@ export default function SettingsPage() {
       setCollectionShares(prefs.collections ?? true);
       setWeeklyDigest(prefs.digest ?? false);
     }
+
+    // Load API Keys
+    loadApiKeys();
   }, [user, router, unit]);
+
+  const loadApiKeys = async () => {
+    try {
+      const response = await fetch('/api/user/api-keys');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.openaiApiKey) {
+          // Show masked version
+          setOpenaiApiKey(data.openaiApiKey);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load API keys:', error);
+    }
+  };
 
   const handleProfileUpdate = async () => {
     setIsProfileSaving(true);
@@ -213,6 +237,35 @@ export default function SettingsPage() {
     });
   };
 
+  const handleApiKeyUpdate = async () => {
+    setIsApiKeySaving(true);
+    try {
+      const response = await fetch('/api/user/api-keys', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ openaiApiKey }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'API Keys Updated',
+          description: 'Your API keys have been securely saved.',
+        });
+        await loadApiKeys();
+      } else {
+        throw new Error('Failed to update API keys');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update API keys. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsApiKeySaving(false);
+    }
+  };
+
   if (!user) {
     return null;
   }
@@ -227,7 +280,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Profile
@@ -235,6 +288,10 @@ export default function SettingsPage() {
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
             Security
+          </TabsTrigger>
+          <TabsTrigger value="api-keys" className="flex items-center gap-2">
+            <Key className="h-4 w-4" />
+            API Keys
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
@@ -440,6 +497,81 @@ export default function SettingsPage() {
               >
                 <Lock className="h-4 w-4 mr-2" />
                 {isPasswordSaving ? 'Changing Password...' : 'Change Password'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* API Keys Tab */}
+        <TabsContent value="api-keys">
+          <Card>
+            <CardHeader>
+              <CardTitle>API Key Configuration</CardTitle>
+              <CardDescription>
+                Manage your API keys for AI-powered features. Keys are encrypted and stored securely.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* OpenAI API Key */}
+              <div className="space-y-2">
+                <Label htmlFor="openaiApiKey">OpenAI API Key</Label>
+                <div className="relative">
+                  <Input
+                    id="openaiApiKey"
+                    type={showApiKey ? 'text' : 'password'}
+                    value={openaiApiKey}
+                    onChange={(e) => setOpenaiApiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                  >
+                    {showApiKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-sm text-gray-500">
+                  Used for AI recipe generation and voice features. Get your key from{' '}
+                  <a
+                    href="https://platform.openai.com/api-keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    OpenAI Platform
+                  </a>
+                </p>
+              </div>
+
+              {/* Info Box */}
+              <div className="p-4 border border-blue-200 dark:border-blue-900 rounded-lg bg-blue-50 dark:bg-blue-950">
+                <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Security Notice
+                </h3>
+                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 list-disc list-inside">
+                  <li>API keys are encrypted before storage</li>
+                  <li>Keys are only accessible to your account</li>
+                  <li>Never share your API keys with others</li>
+                  <li>Revoke compromised keys immediately from the provider</li>
+                </ul>
+              </div>
+
+              <Button
+                onClick={handleApiKeyUpdate}
+                disabled={isApiKeySaving}
+                className="w-full"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {isApiKeySaving ? 'Saving...' : 'Save API Keys'}
               </Button>
             </CardContent>
           </Card>
