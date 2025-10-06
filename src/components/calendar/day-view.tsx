@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Cloud, Thermometer, Droplets, Wind, Edit2, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { AddMealDialog } from './add-meal-dialog';
+import { WeatherSuggestions } from './weather-suggestions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useMealPlan } from '@/hooks/use-meal-plan';
 import { cn } from '@/lib/utils';
+import { Sparkles } from 'lucide-react';
 
 interface Recipe {
   id: string;
@@ -133,6 +135,36 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
                   </div>
                 )}
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Weather-Based Suggestions */}
+        {weather && recipes.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                Suggested for Today
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WeatherSuggestions
+                recipes={recipes}
+                weather={{
+                  temperature: weather.temperature.current || weather.temperature.high,
+                  condition: weather.condition,
+                  precipitation: weather.precipitation,
+                  humidity: weather.humidity
+                }}
+                onSelectRecipe={(recipe) => {
+                  // Auto-add to dinner if it's a main course, otherwise to lunch
+                  const mealType: MealType = recipe.course === 'Main' ? 'DINNER' : 'LUNCH';
+                  setSelectedMealType(mealType);
+                  setShowAddMeal(true);
+                }}
+                limit={3}
+              />
             </CardContent>
           </Card>
         )}

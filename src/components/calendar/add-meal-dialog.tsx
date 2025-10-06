@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { MealPlan, WeatherForecast, MealType, PlannedMeal } from '@/lib/types';
 import { useMealPlan } from '@/hooks/use-meal-plan';
 import { RecipeSelector } from './recipe-selector';
+import { WeatherSuggestions } from './weather-suggestions';
 import { Loader2, Trash2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -56,7 +57,7 @@ export function AddMealDialog({
   const isEditMode = !!existingMeal;
   
   // Form state
-  const [activeTab, setActiveTab] = useState<'custom' | 'recipe'>('custom');
+  const [activeTab, setActiveTab] = useState<'custom' | 'recipe' | 'suggested'>('custom');
   const [mealType, setMealType] = useState<MealType>(defaultMealType);
   const [customMealName, setCustomMealName] = useState('');
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -199,12 +200,15 @@ export function AddMealDialog({
               </Select>
             </div>
             
-            {/* Tabs: Custom Meal vs Recipe */}
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'custom' | 'recipe')}>
-              <TabsList className="grid w-full grid-cols-2">
+            {/* Tabs: Custom Meal vs Recipe vs Suggested */}
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'custom' | 'recipe' | 'suggested')}>
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="custom">Custom Meal</TabsTrigger>
                 <TabsTrigger value="recipe" disabled={recipes.length === 0}>
                   From Recipe {recipes.length === 0 && '(No recipes)'}
+                </TabsTrigger>
+                <TabsTrigger value="suggested" disabled={recipes.length === 0 || !weather}>
+                  Suggested
                 </TabsTrigger>
               </TabsList>
               
@@ -232,6 +236,33 @@ export function AddMealDialog({
                     <p className="text-sm font-semibold">Selected: {selectedRecipe.title}</p>
                     <p className="text-xs text-muted-foreground mt-1">{selectedRecipe.summary}</p>
                   </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="suggested" className="mt-4">
+                {weather ? (
+                  <WeatherSuggestions
+                    recipes={recipes}
+                    weather={{
+                      temperature: weather.temperature.current || weather.temperature.high,
+                      condition: weather.condition,
+                      precipitation: weather.precipitation,
+                      humidity: weather.humidity
+                    }}
+                    mealType={mealType}
+                    onSelectRecipe={(recipe) => {
+                      setSelectedRecipe(recipe);
+                      setActiveTab('recipe');
+                      if (recipe.servings) {
+                        setServings(recipe.servings);
+                      }
+                    }}
+                    limit={5}
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Weather data not available
+                  </p>
                 )}
               </TabsContent>
             </Tabs>
