@@ -62,7 +62,7 @@ function maskApiKey(key: string): string {
   return '****' + key.slice(-4);
 }
 
-// GET - Retrieve API keys (masked)
+// GET - Retrieve API keys (masked) - Admin Only
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -85,20 +85,43 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if user is admin
+    if (!user.role || user.role === 'USER') {
+      return NextResponse.json(
+        { error: 'Forbidden: Admin access required' },
+        { status: 403 }
+      );
+    }
+
     // Return masked version
     const response: any = {};
     if (user.openaiApiKey) {
       try {
-        const decrypted = decryptApiKey(user.openaiApiKey);
-        response.openaiApiKey = maskApiKey(decrypted);
+        // Check if encryption secret is set
+        if (!process.env.API_KEY_ENCRYPTION_SECRET) {
+          console.warn('API_KEY_ENCRYPTION_SECRET not set, cannot decrypt');
+          response.openaiApiKey = '****'; // Show masked placeholder
+        } else {
+          const decrypted = decryptApiKey(user.openaiApiKey);
+          response.openaiApiKey = maskApiKey(decrypted);
+        }
       } catch (error) {
         console.error('Failed to decrypt API key:', error);
+        // Return masked placeholder on error
+        response.openaiApiKey = '****';
       }
     }
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching API keys:', error);
+    
+    // Check if it's a database column error
+    if (error.code === 'P2022' || error.message?.includes('openaiApiKey')) {
+      // Column doesn't exist yet, return empty response
+      return NextResponse.json({});
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -121,15 +144,32 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { openaiApiKey } = body;
 
+    // Check if encryption secret is set
+    if (!process.env.API_KEY_ENCRYPTION_SECRET) {
+      console.error('API_KEY_ENCRYPTION_SECRET is not configured');
+      return NextResponse.json(
+        { error: 'API key storage is not configured. Please contact support.' },
+        { status: 503 }
+      );
+    }
+
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true }
-    });
+      select: { id: true, role: true }
+    }) as any;
 
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
+      );
+    }
+
+    // Check if user is admin
+    if (!user.role || user.role === 'USER') {
+      return NextResponse.json(
+        { error: 'Forbidden: Admin access required' },
+        { status: 403 }
       );
     }
 
@@ -141,22 +181,52 @@ export async function PATCH(request: NextRequest) {
         // Remove API key
         updateData.openaiApiKey = null;
       } else {
-        // Encrypt and store
-        updateData.openaiApiKey = encryptApiKey(openaiApiKey);
+        // Validate API key format (basic check)
+        if (typeof openaiApiKey !== 'string' || openaiApiKey.length < 10) {
+          return NextResponse.json(
+            { error: 'Invalid API key format' },
+            { status: 400 }
+          );
+        }
+        
+        try {
+          // Encrypt and store
+          updateData.openaiApiKey = encryptApiKey(openaiApiKey);
+        } catch (encryptError) {
+          console.error('Encryption error:', encryptError);
+          return NextResponse.json(
+            { error: 'Failed to encrypt API key' },
+            { status: 500 }
+          );
+        }
       }
     }
 
     // Update user
-    await prisma.user.update({
-      where: { id: user.id },
-      data: updateData
-    });
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: updateData
+      });
+    } catch (dbError: any) {
+      console.error('Database error:', dbError);
+      
+      // Check if it's a column not found error
+      if (dbError.code === 'P2022' || dbError.message?.includes('openaiApiKey')) {
+        return NextResponse.json(
+          { error: 'Database migration required. Please contact support.' },
+          { status: 503 }
+        );
+      }
+      
+      throw dbError;
+    }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating API keys:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }

@@ -238,6 +238,16 @@ export default function SettingsPage() {
   };
 
   const handleApiKeyUpdate = async () => {
+    // Validate before sending
+    if (!openaiApiKey || openaiApiKey.trim() === '') {
+      toast({
+        title: 'Error',
+        description: 'Please enter an API key.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsApiKeySaving(true);
     try {
       const response = await fetch('/api/user/api-keys', {
@@ -246,6 +256,8 @@ export default function SettingsPage() {
         body: JSON.stringify({ openaiApiKey }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         toast({
           title: 'API Keys Updated',
@@ -253,12 +265,18 @@ export default function SettingsPage() {
         });
         await loadApiKeys();
       } else {
-        throw new Error('Failed to update API keys');
+        // Show specific error message from backend
+        toast({
+          title: 'Error',
+          description: data.error || 'Failed to update API keys. Please try again.',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
+      console.error('API key update error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update API keys. Please try again.',
+        description: 'Failed to update API keys. Please check your connection and try again.',
         variant: 'destructive',
       });
     } finally {
@@ -280,7 +298,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className={`grid w-full ${user.role && user.role !== 'USER' ? 'grid-cols-6' : 'grid-cols-5'}`}>
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Profile
@@ -289,10 +307,12 @@ export default function SettingsPage() {
             <Lock className="h-4 w-4" />
             Security
           </TabsTrigger>
-          <TabsTrigger value="api-keys" className="flex items-center gap-2">
-            <Key className="h-4 w-4" />
-            API Keys
-          </TabsTrigger>
+          {user.role && user.role !== 'USER' && (
+            <TabsTrigger value="api-keys" className="flex items-center gap-2">
+              <Key className="h-4 w-4" />
+              API Keys
+            </TabsTrigger>
+          )}
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
             Notifications
@@ -502,16 +522,20 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* API Keys Tab */}
-        <TabsContent value="api-keys">
-          <Card>
-            <CardHeader>
-              <CardTitle>API Key Configuration</CardTitle>
-              <CardDescription>
-                Manage your API keys for AI-powered features. Keys are encrypted and stored securely.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        {/* API Keys Tab - Admin Only */}
+        {user.role && user.role !== 'USER' && (
+          <TabsContent value="api-keys">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  API Key Configuration
+                  <Badge className="bg-orange-500 text-white">Admin Only</Badge>
+                </CardTitle>
+                <CardDescription>
+                  Manage API keys for AI-powered features. Keys are encrypted and stored securely.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
               {/* OpenAI API Key */}
               <div className="space-y-2">
                 <Label htmlFor="openaiApiKey">OpenAI API Key</Label>
@@ -576,6 +600,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+        )}
 
         {/* Notifications Tab */}
         <TabsContent value="notifications">
