@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, Download, Wand2 } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Plus, Download, Wand2, ShoppingCart, BookTemplate } from 'lucide-react';
 import { MonthView } from './calendar/month-view';
 import { WeekView } from './calendar/week-view';
 import { DayView } from './calendar/day-view';
@@ -12,7 +12,10 @@ import { useMealPlan } from '@/hooks/use-meal-plan';
 import { useWeather } from '@/hooks/use-weather';
 import { CreateMealPlanDialog } from './calendar/create-meal-plan-dialog';
 import { GenerateMealPlanDialog } from './calendar/generate-meal-plan-dialog';
+import { ShoppingListDialog } from './calendar/shopping-list-dialog';
+import { MealTemplateDialog } from './calendar/meal-template-dialog';
 import { useQuery } from '@tanstack/react-query';
+import { MealTemplate } from '@/hooks/use-meal-templates';
 
 type CalendarView = 'month' | 'week' | 'day';
 
@@ -36,8 +39,10 @@ export function MealPlanningCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [showShoppingList, setShowShoppingList] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
-  const { activeMealPlan, mealPlans, isLoading } = useMealPlan();
+  const { activeMealPlan, mealPlans, isLoading, addMeal } = useMealPlan();
   const { weatherForecast, isLoading: weatherLoading } = useWeather(
     activeMealPlan?.startDate,
     activeMealPlan?.endDate
@@ -83,6 +88,26 @@ export function MealPlanningCalendar() {
   // Go to today
   const handleToday = () => {
     setCurrentDate(new Date());
+  };
+
+  // Load template into meal plan
+  const handleLoadTemplate = async (template: MealTemplate, targetDate: Date) => {
+    if (!activeMealPlan) return;
+
+    for (const templateMeal of template.meals) {
+      const mealDate = new Date(targetDate);
+      
+      await addMeal({
+        mealPlanId: activeMealPlan.id,
+        meal: {
+          date: mealDate,
+          mealType: templateMeal.mealType,
+          recipeId: templateMeal.recipeId,
+          customMealName: templateMeal.customMealName,
+          servings: templateMeal.servings,
+        }
+      });
+    }
   };
 
   // Format date header based on view
@@ -136,6 +161,25 @@ export function MealPlanningCalendar() {
           >
             <Wand2 className="h-4 w-4 mr-2" />
             Auto-Generate
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowShoppingList(true)}
+            disabled={!activeMealPlan}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Shopping List
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowTemplates(true)}
+          >
+            <BookTemplate className="h-4 w-4 mr-2" />
+            Templates
           </Button>
 
           <Button
@@ -265,6 +309,24 @@ export function MealPlanningCalendar() {
         onOpenChange={setShowGenerateDialog}
         mealPlan={activeMealPlan}
       />
+
+      {activeMealPlan && (
+        <>
+          <ShoppingListDialog
+            open={showShoppingList}
+            onOpenChange={setShowShoppingList}
+            mealPlan={activeMealPlan}
+          />
+
+          <MealTemplateDialog
+            mealPlan={activeMealPlan}
+            recipes={recipes}
+            onLoadTemplate={handleLoadTemplate}
+          >
+            <div style={{ display: 'none' }} /> {/* Controlled by button */}
+          </MealTemplateDialog>
+        </>
+      )}
     </div>
   );
 }
