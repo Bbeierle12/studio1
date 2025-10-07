@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { z } from 'zod';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/data';
 import { 
   withErrorHandler, 
   createSuccessResponse, 
   ApiError,
   validateRequestBody 
 } from '@/lib/api-utils';
+import { 
+  createUserOpenAI, 
+  getModelName, 
+  withRetry, 
+  OpenAIError 
+} from '@/lib/openai-utils';
 
 const CookingQuestionSchema = z.object({
   question: z.string().min(1, 'Question is required').max(500, 'Question too long'),
@@ -23,6 +31,22 @@ interface CookingAssistantResponse {
 }
 
 async function handleCookingAssistant(request: NextRequest) {
+  // Get user session
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    throw ApiError.unauthorized('Please sign in to use the cooking assistant');
+  }
+
+  // Get user from database
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
+
+  if (!user) {
+    throw ApiError.notFound('User');
+  }
+
   const body = await request.json();
   const { question, context } = validateRequestBody<CookingQuestionRequest>(
     CookingQuestionSchema,
@@ -48,12 +72,16 @@ Keep responses under 100 words when possible, and always prioritize food safety.
 ${context ? `Context: The user is currently working with: ${context}` : ''}`;
 
   try {
-    const result = await generateText({
-      model: openai('gpt-4-turbo'),
+    // Get user-specific OpenAI instance
+    const openaiClient = await createUserOpenAI(user.id);
+    const modelName = getModelName(undefined, 'gpt-4-turbo');
+    
+    const result = await withRetry(() => generateText({
+      model: openaiClient(modelName),
       system: systemPrompt,
       prompt: question,
       temperature: 0.7, // Balanced creativity and accuracy
-    });
+    }));
 
     // Clean up the response for better voice synthesis
     let answer = result.text
@@ -82,6 +110,27 @@ ${context ? `Context: The user is currently working with: ${context}` : ''}`;
 
   } catch (error) {
     console.error('OpenAI API error:', error);
+    
+    // Handle specific OpenAI errors
+    if (error instanceof OpenAIError) {
+      if (error.code === 'NO_KEY' || error.code === 'INVALID_KEY') {
+        const responseData: CookingAssistantResponse = {
+          answer: "I need an OpenAI API key to help you. Please configure your API key in Settings.",
+          context: undefined,
+          fallback: true,
+        };
+        return createSuccessResponse(responseData);
+      }
+      
+      if (error.code === 'QUOTA_EXCEEDED') {
+        const responseData: CookingAssistantResponse = {
+          answer: "I'm experiencing high demand right now. Please try again in a moment.",
+          context: undefined,
+          fallback: true,
+        };
+        return createSuccessResponse(responseData);
+      }
+    }
     
     // Provide fallback responses when AI service fails
     const fallbackAnswer = getFallbackAnswer(question);

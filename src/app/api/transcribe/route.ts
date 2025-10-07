@@ -1,9 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/data';
+import { createUserOpenAI, getModelName, withRetry } from '@/lib/openai-utils';
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please sign in' },
+        { status: 401 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const isHandwritten = formData.get('isHandwritten') === 'true';
@@ -38,8 +62,12 @@ Please provide a confidence score (1-10) for how clearly you could read the hand
 
 Format the output as a structured recipe with clear sections.`;
 
-    const result = await generateText({
-      model: openai('gpt-4-turbo'),
+    // Get user-specific OpenAI instance
+    const openaiClient = await createUserOpenAI(user.id);
+    const modelName = getModelName(undefined, 'gpt-4-turbo');
+
+    const result = await withRetry(() => generateText({
+      model: openaiClient(modelName),
       messages: [
         {
           role: 'user',
@@ -55,14 +83,14 @@ Format the output as a structured recipe with clear sections.`;
           ],
         },
       ],
-    });
+    }));
 
     // Parse the response to extract structured data
     const extractedText = result.text;
     
     // Use another AI call to structure the data
-    const structureResult = await generateText({
-      model: openai('gpt-4-turbo'),
+    const structureResult = await withRetry(() => generateText({
+      model: openaiClient(modelName),
       prompt: `Please convert the following recipe text into a structured JSON format:
 
 ${extractedText}
@@ -84,7 +112,7 @@ Return a JSON object with the following structure:
 }
 
 Only include fields that have actual data. If information is missing, omit those fields.`,
-    });
+    }));
 
     let structuredRecipe;
     try {
