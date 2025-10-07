@@ -65,9 +65,18 @@ export function getWeatherForDate(
   forecasts: WeatherForecast[],
   date: Date
 ): WeatherForecast | null {
-  const dateStr = date.toISOString().split('T')[0];
-  return forecasts.find(f => {
-    const forecastDateStr = new Date(f.date).toISOString().split('T')[0];
-    return forecastDateStr === dateStr;
-  }) || null;
+  if (!forecasts || !date) return null;
+  
+  try {
+    const dateStr = date.toISOString().split('T')[0];
+    return forecasts.find(f => {
+      if (!f || !f.date) return false;
+      const forecastDate = typeof f.date === 'string' ? new Date(f.date) : f.date;
+      const forecastDateStr = forecastDate.toISOString().split('T')[0];
+      return forecastDateStr === dateStr;
+    }) || null;
+  } catch (error) {
+    console.error('Error in getWeatherForDate:', error);
+    return null;
+  }
 }
