@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/header';
@@ -12,10 +12,41 @@ import { SavedRecipesProvider } from '@/context/saved-recipes-context';
 import { ClientSessionProvider } from '@/components/client-session-provider';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { QueryProvider } from '@/components/query-provider';
+import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
+import { PWAUpdatePrompt } from '@/components/pwa-update-prompt';
+import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 
 export const metadata: Metadata = {
-  title: 'Our Family Table',
-  description: 'Preserving culinary heritage, one recipe at a time.',
+  title: 'Studio1 Meal Planner',
+  description: 'AI-powered meal planning and recipe management',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Studio1',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'Studio1 Meal Planner',
+    title: 'Studio1 Meal Planner',
+    description: 'AI-powered meal planning and recipe management',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Studio1 Meal Planner',
+    description: 'AI-powered meal planning and recipe management',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#000000',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -36,6 +67,7 @@ export default function RootLayout({
           href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400&display=swap'
           rel='stylesheet'
         />
+        <link rel='apple-touch-icon' href='/icons/icon-192x192.png' />
       </head>
       <body className='font-body antialiased'>
         <ErrorBoundary>
@@ -58,6 +90,8 @@ export default function RootLayout({
                           </div>
                           <Toaster />
                           <PrintDialog />
+                          <PWAInstallPrompt />
+                          <PWAUpdatePrompt />
                         </PrintProvider>
                       </UnitProvider>
                     </SavedRecipesProvider>
@@ -67,6 +101,7 @@ export default function RootLayout({
             </QueryProvider>
           </ClientSessionProvider>
         </ErrorBoundary>
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );

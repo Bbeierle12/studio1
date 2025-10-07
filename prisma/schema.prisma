@@ -34,6 +34,7 @@ model User {
   mealPlans     MealPlan[]      @relation("UserMealPlans")
   shoppingLists ShoppingList[]  @relation("UserShoppingLists")
   mealTemplates MealTemplate[]  @relation("UserMealTemplates")
+  nutritionGoals NutritionGoal[] @relation("UserNutritionGoals")
   auditLogs     AuditLog[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -49,7 +50,7 @@ model Recipe {
   slug         String    @unique
   contributor  String
   prepTime     Int?      // Minutes - positive values only
-  servings     Int?      // Number of servings - positive values only  
+  servings     Int?      // Number of servings - positive values only
   course       String?
   cuisine      String?
   difficulty   String?   // Easy, Medium, Hard
@@ -67,6 +68,15 @@ model Recipe {
   parentId     String?   // Reference to parent recipe for variations
   parent       Recipe?   @relation("RecipeVariations", fields: [parentId], references: [id])
   variations   Recipe[]  @relation("RecipeVariations")
+  // Nutrition information (per serving)
+  servingSize  String?   // e.g., "1 cup", "2 pieces"
+  calories     Int?      // kcal per serving
+  protein      Float?    // grams per serving
+  carbs        Float?    // grams per serving
+  fat          Float?    // grams per serving
+  fiber        Float?    // grams per serving
+  sugar        Float?    // grams per serving
+  sodium       Int?      // mg per serving
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   plans        Plan[]
@@ -230,7 +240,28 @@ model FeatureFlag {
   rolloutPercentage Int      @default(100)
   updatedAt         DateTime @updatedAt
   createdAt         DateTime @default(now())
-  
+
   @@index([name])
   @@index([enabled])
+}
+
+model NutritionGoal {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation("UserNutritionGoals", fields: [userId], references: [id], onDelete: Cascade)
+  name          String?  // e.g., "Weight Loss", "Muscle Gain", "Maintenance"
+  targetCalories Int     // Daily calorie target
+  targetProtein  Float?  // Daily protein target (grams)
+  targetCarbs    Float?  // Daily carbs target (grams)
+  targetFat      Float?  // Daily fat target (grams)
+  targetFiber    Float?  // Daily fiber target (grams)
+  startDate     DateTime
+  endDate       DateTime?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isActive])
+  @@index([startDate])
 }
