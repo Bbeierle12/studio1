@@ -40,6 +40,8 @@ interface MealTemplateDialogProps {
   recipes: Recipe[];
   onLoadTemplate: (template: MealTemplate, targetDate: Date) => Promise<void>;
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function MealTemplateDialog({
@@ -47,8 +49,12 @@ export function MealTemplateDialog({
   recipes,
   onLoadTemplate,
   children,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: MealTemplateDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange !== undefined ? externalOnOpenChange : setInternalOpen;
   const [templateName, setTemplateName] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [loadingTemplateId, setLoadingTemplateId] = useState<string | null>(null);

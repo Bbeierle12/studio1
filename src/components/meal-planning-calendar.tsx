@@ -319,12 +319,12 @@ export function MealPlanningCalendar() {
           />
 
           <MealTemplateDialog
+            open={showTemplates}
+            onOpenChange={setShowTemplates}
             mealPlan={activeMealPlan}
             recipes={recipes}
             onLoadTemplate={handleLoadTemplate}
-          >
-            <div style={{ display: 'none' }} /> {/* Controlled by button */}
-          </MealTemplateDialog>
+          />
         </>
       )}
     </div>
