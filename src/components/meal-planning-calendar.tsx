@@ -44,8 +44,8 @@ export function MealPlanningCalendar() {
 
   const { activeMealPlan, mealPlans, isLoading, addMeal } = useMealPlan();
   const { weatherForecast, isLoading: weatherLoading } = useWeather(
-    activeMealPlan?.startDate,
-    activeMealPlan?.endDate
+    activeMealPlan?.startDate ? new Date(activeMealPlan.startDate) : undefined,
+    activeMealPlan?.endDate ? new Date(activeMealPlan.endDate) : undefined
   );
   
   // Fetch user's recipes
