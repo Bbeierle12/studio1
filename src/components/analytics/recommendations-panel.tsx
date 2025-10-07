@@ -37,7 +37,7 @@ export function RecommendationsPanel({ recommendations }: RecommendationsPanelPr
   }
 
   const getVarietyMessage = (score: number) => {
-    if (score >= 80) return 'Excellent variety! You're doing great with recipe rotation.'
+    if (score >= 80) return 'Excellent variety! You are doing great with recipe rotation.'
     if (score >= 60) return 'Good variety, but consider trying more diverse recipes.'
     return 'Low variety detected. Try rotating through more recipes.'
   }
