@@ -3,6 +3,9 @@ import { RecipeCard } from '@/components/recipe-card';
 import { RecipeFilter } from '@/components/recipe-filter';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Import } from 'lucide-react';
+import Link from 'next/link';
 
 type RecipesPageProps = {
   searchParams?: {
@@ -20,13 +23,23 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
 
   return (
     <div className='container mx-auto py-8'>
-      <div className='mb-8 space-y-2'>
-        <h1 className='text-3xl font-extrabold tracking-tight font-headline lg:text-4xl'>
-          Browse Recipes
-        </h1>
-        <p className='text-muted-foreground'>
-          Discover our family&apos;s cherished recipes.
-        </p>
+      <div className='mb-8'>
+        <div className='flex items-center justify-between'>
+          <div className='space-y-2'>
+            <h1 className='text-3xl font-extrabold tracking-tight font-headline lg:text-4xl'>
+              Browse Recipes
+            </h1>
+            <p className='text-muted-foreground'>
+              Discover our family&apos;s cherished recipes.
+            </p>
+          </div>
+          <Link href="/recipes/import">
+            <Button variant="outline" className="gap-2">
+              <Import className="h-4 w-4" />
+              Import Recipes
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-6">

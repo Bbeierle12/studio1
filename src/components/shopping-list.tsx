@@ -10,8 +10,9 @@ import {
   SheetFooter,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Trash2, Clipboard, Printer } from 'lucide-react';
+import { ShoppingCart, Trash2, Clipboard, Printer, Truck } from 'lucide-react';
 import { useShoppingList } from '@/context/shopping-list-context';
+import { GroceryDeliveryExport } from '@/components/grocery/delivery-export';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { ScrollArea } from './ui/scroll-area';
@@ -129,6 +130,19 @@ export function ShoppingList() {
         <SheetFooter>
           {total > 0 && (
             <div className='grid w-full gap-2'>
+              <GroceryDeliveryExport
+                items={items.map(item => ({
+                  name: item.name,
+                  quantity: '1',
+                  category: item.category,
+                }))}
+                trigger={
+                  <Button variant='default' className='w-full'>
+                    <Truck className='mr-2 h-4 w-4' />
+                    Order Groceries
+                  </Button>
+                }
+              />
               <div className='grid grid-cols-2 gap-2'>
                 <Button variant='outline' onClick={handleCopy}>
                   <Clipboard className='mr-2 h-4 w-4' />
