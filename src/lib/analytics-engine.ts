@@ -1,6 +1,15 @@
 import { prisma } from '@/lib/prisma'
 import { MealType, PlannedMeal, Recipe } from '@prisma/client'
 import { startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth, differenceInDays, format } from 'date-fns'
+import {
+  safeDiv,
+  safePercentage,
+  safeAverage,
+  clamp,
+  hasMinimumSampleSize,
+  safeWeeksFromDays,
+  safeSum,
+} from './math-utils'
 
 // Types for analytics data
 export interface RecipeFrequency {
@@ -179,22 +188,23 @@ export class AnalyticsEngine {
       dayActivity.set(day, (dayActivity.get(day) || 0) + 1)
     })
 
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     let mostActiveDay = 'Monday'
     let maxActivity = 0
     dayActivity.forEach((count, day) => {
       if (count > maxActivity) {
         maxActivity = count
-        mostActiveDay = days[day]
+        mostActiveDay = dayNames[day]
       }
     })
 
-    const weeks = differenceInDays(endDate, startDate) / 7
+    const totalDays = differenceInDays(endDate, startDate)
+    const weeks = safeWeeksFromDays(totalDays) // Guard short ranges
 
     return {
       totalMealsPlanned: allMeals.length,
       uniqueRecipesUsed: uniqueRecipeIds.size,
-      averageMealsPerWeek: Math.round(allMeals.length / weeks),
+      averageMealsPerWeek: Math.round(safeDiv(allMeals.length, weeks)),
       planningStreak: streak,
       mostActiveDay
     }
@@ -326,7 +336,7 @@ export class AnalyticsEngine {
       .map(([cuisine, count]) => ({
         cuisine,
         count,
-        percentage: Math.round((count / total) * 100)
+        percentage: Math.round(safePercentage(count, total)) // Safe percentage with zero check
       }))
       .sort((a, b) => b.count - a.count)
   }
@@ -363,9 +373,9 @@ export class AnalyticsEngine {
       .map(([mealType, data]) => ({
         mealType,
         count: data.count,
-        percentage: Math.round((data.count / total) * 100),
+        percentage: Math.round(safePercentage(data.count, total)), // Safe percentage
         averageCalories: data.calories.length > 0
-          ? Math.round(data.calories.reduce((a, b) => a + b, 0) / data.calories.length)
+          ? Math.round(safeAverage(data.calories)) // Safe average
           : undefined
       }))
       .sort((a, b) => {
@@ -387,7 +397,13 @@ export class AnalyticsEngine {
       }
     })
 
-    const weeklyStats = new Map<string, WeeklyStats>()
+    const weeklyStats = new Map<string, {
+      week: string;
+      totalMeals: number;
+      uniqueRecipes: Set<string>;
+      completedMeals: number;
+      totalDays: Set<string>;
+    }>()
 
     mealPlans.forEach(plan => {
       plan.meals.forEach(meal => {
@@ -405,7 +421,7 @@ export class AnalyticsEngine {
           existing.uniqueRecipes.add(meal.recipeId)
         }
         if (meal.isCompleted) {
-          existing.completedMeals = (existing.completedMeals || 0) + 1
+          existing.completedMeals++
         }
         existing.totalDays.add(format(meal.date, 'yyyy-MM-dd'))
 
@@ -417,9 +433,9 @@ export class AnalyticsEngine {
       .map(week => ({
         week: week.week,
         totalMeals: week.totalMeals,
-        uniqueRecipes: (week.uniqueRecipes as Set<string>).size,
-        averageMealsPerDay: Math.round((week.totalMeals / (week.totalDays as Set<string>).size) * 10) / 10,
-        completionRate: Math.round((week.completedMeals / week.totalMeals) * 100)
+        uniqueRecipes: week.uniqueRecipes.size,
+        averageMealsPerDay: Math.round(safeDiv(week.totalMeals, week.totalDays.size) * 10) / 10, // Safe division with 1dp
+        completionRate: Math.round(safePercentage(week.completedMeals, week.totalMeals)) // Safe percentage
       }))
       .sort((a, b) => a.week.localeCompare(b.week))
       .slice(-12) // Last 12 weeks
@@ -483,37 +499,36 @@ export class AnalyticsEngine {
 
     const totalsArray = Array.from(dailyTotals.values())
 
-    // Calculate averages
-    const averageCalories = Math.round(
-      totalsArray.reduce((sum, day) => sum + day.calories, 0) / totalsArray.length
-    )
-    const averageProtein = Math.round(
-      totalsArray.reduce((sum, day) => sum + day.protein, 0) / totalsArray.length
-    )
-    const averageCarbs = Math.round(
-      totalsArray.reduce((sum, day) => sum + day.carbs, 0) / totalsArray.length
-    )
-    const averageFat = Math.round(
-      totalsArray.reduce((sum, day) => sum + day.fat, 0) / totalsArray.length
-    )
+    // Calculate averages with safe division
+    const averageCalories = Math.round(safeAverage(totalsArray.map(d => d.calories)))
+    const averageProtein = Math.round(safeAverage(totalsArray.map(d => d.protein)))
+    const averageCarbs = Math.round(safeAverage(totalsArray.map(d => d.carbs)))
+    const averageFat = Math.round(safeAverage(totalsArray.map(d => d.fat)))
 
     // Calculate trend (compare last 2 weeks to previous 2 weeks)
-    const midPoint = Math.floor(totalsArray.length / 2)
-    const firstHalfCalories = totalsArray.slice(0, midPoint).reduce((sum, day) => sum + day.calories, 0) / midPoint
-    const secondHalfCalories = totalsArray.slice(midPoint).reduce((sum, day) => sum + day.calories, 0) / (totalsArray.length - midPoint)
-
+    // Require minimum sample size (≥4 points) else return "stable"
     let caloriesTrend: 'up' | 'down' | 'stable' = 'stable'
-    if (secondHalfCalories > firstHalfCalories * 1.05) caloriesTrend = 'up'
-    else if (secondHalfCalories < firstHalfCalories * 0.95) caloriesTrend = 'down'
+    
+    if (hasMinimumSampleSize(totalsArray.length, 4)) {
+      const midPoint = Math.floor(totalsArray.length / 2)
+      const firstHalf = totalsArray.slice(0, midPoint)
+      const secondHalf = totalsArray.slice(midPoint)
+      
+      const firstHalfCalories = safeAverage(firstHalf.map(d => d.calories))
+      const secondHalfCalories = safeAverage(secondHalf.map(d => d.calories))
 
-    // Calculate compliance rate
+      if (secondHalfCalories > firstHalfCalories * 1.05) caloriesTrend = 'up'
+      else if (secondHalfCalories < firstHalfCalories * 0.95) caloriesTrend = 'down'
+    }
+
+    // Calculate compliance rate with safe percentage
     let complianceRate = 0
     if (nutritionGoal) {
       const daysWithinGoal = totalsArray.filter(day => {
-        const calorieVariance = Math.abs(day.calories - nutritionGoal.targetCalories) / nutritionGoal.targetCalories
+        const calorieVariance = safeDiv(Math.abs(day.calories - nutritionGoal.targetCalories), nutritionGoal.targetCalories)
         return calorieVariance < 0.1 // Within 10% of goal
       }).length
-      complianceRate = Math.round((daysWithinGoal / totalsArray.length) * 100)
+      complianceRate = Math.round(safePercentage(daysWithinGoal, totalsArray.length))
     }
 
     return {
@@ -555,9 +570,9 @@ export class AnalyticsEngine {
       else season = 'winter'
 
       const existing = seasonalData.get(season) || {
-        recipes: new Map(),
-        cuisines: new Map(),
-        calories: []
+        recipes: new Map<string, number>(),
+        cuisines: new Map<string, number>(),
+        calories: [] as number[]
       }
 
       if (meal.recipe) {
@@ -594,9 +609,7 @@ export class AnalyticsEngine {
         .slice(0, 3)
         .map(([cuisine]) => cuisine)
 
-      const averageCalories = data.calories.length > 0
-        ? Math.round(data.calories.reduce((a, b) => a + b, 0) / data.calories.length)
-        : 0
+      const averageCalories = Math.round(safeAverage(data.calories)) // Safe average
 
       return {
         season: season as any,
@@ -782,7 +795,7 @@ export class AnalyticsEngine {
         suggestions.push({
           recipe,
           reason,
-          lastUsed
+          lastUsed: lastUsed || null // Convert undefined to null for type compatibility
         })
       }
 

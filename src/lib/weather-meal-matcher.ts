@@ -1,4 +1,5 @@
 import { Recipe } from '@/lib/types';
+import { clamp } from './math-utils';
 
 export interface WeatherConditions {
   temperature: number; // in Fahrenheit
@@ -84,12 +85,20 @@ function normalizeCondition(condition: string): string {
   return 'partly cloudy'; // default
 }
 
+// Scoring weights (configurable)
+const SCORING_WEIGHTS = {
+  temperature: { max: 40, matchWeight: 10 },
+  condition: { max: 30, matchWeight: 8 },
+  seasonal: { max: 20, matchWeight: 7 },
+  mealType: { max: 10, matchWeight: 10 },
+} as const;
+
 /**
  * Calculate temperature match score (0-40 points)
+ * Normalized by opportunity: cap * (matches / possible)
  */
 function calculateTemperatureScore(recipe: Recipe, temp: number): { score: number; reasons: string[] } {
   const reasons: string[] = [];
-  let score = 0;
   
   const category = getTemperatureCategory(temp);
   const tempPrefs = TEMPERATURE_PREFERENCES[category as keyof typeof TEMPERATURE_PREFERENCES];
@@ -109,9 +118,14 @@ function calculateTemperatureScore(recipe: Recipe, temp: number): { score: numbe
     }
   }
   
+  // Normalize score by opportunity: max * (matches / possible)
+  const maxPossible = preferredMeals.length;
+  const normalizedScore = maxPossible > 0
+    ? (matchCount / maxPossible) * SCORING_WEIGHTS.temperature.max
+    : 0;
+  const score = Math.round(clamp(normalizedScore, 0, SCORING_WEIGHTS.temperature.max));
+  
   if (matchCount > 0) {
-    score = Math.min(40, matchCount * 15); // Up to 40 points
-    
     // Add contextual reason
     if (temp >= 85) {
       reasons.push('Perfect for hot weather - light and refreshing');
@@ -133,10 +147,10 @@ function calculateTemperatureScore(recipe: Recipe, temp: number): { score: numbe
 
 /**
  * Calculate weather condition match score (0-30 points)
+ * Normalized by opportunity
  */
 function calculateConditionScore(recipe: Recipe, condition: string): { score: number; reasons: string[] } {
   const reasons: string[] = [];
-  let score = 0;
   
   const normalized = normalizeCondition(condition);
   const preferredMeals = CONDITION_PREFERENCES[normalized] || [];
@@ -152,8 +166,14 @@ function calculateConditionScore(recipe: Recipe, condition: string): { score: nu
     }
   }
   
+  // Normalize score by opportunity
+  const maxPossible = preferredMeals.length;
+  const normalizedScore = maxPossible > 0
+    ? (matchCount / maxPossible) * SCORING_WEIGHTS.condition.max
+    : 0;
+  const score = Math.round(clamp(normalizedScore, 0, SCORING_WEIGHTS.condition.max));
+  
   if (matchCount > 0) {
-    score = Math.min(30, matchCount * 12);
     
     // Add weather-specific reason
     if (normalized === 'rainy' || normalized === 'stormy') {
@@ -172,10 +192,10 @@ function calculateConditionScore(recipe: Recipe, condition: string): { score: nu
 
 /**
  * Calculate seasonal ingredient match score (0-20 points)
+ * Normalized by opportunity
  */
 function calculateSeasonalScore(recipe: Recipe, season: string): { score: number; reasons: string[] } {
   const reasons: string[] = [];
-  let score = 0;
   
   const seasonalIngredients = SEASONAL_INGREDIENTS[season] || [];
   const ingredients = recipe.ingredients?.toLowerCase() || '';
@@ -190,8 +210,14 @@ function calculateSeasonalScore(recipe: Recipe, season: string): { score: number
     }
   }
   
+  // Normalize score by opportunity
+  const maxPossible = seasonalIngredients.length;
+  const normalizedScore = maxPossible > 0
+    ? (matchCount / maxPossible) * SCORING_WEIGHTS.seasonal.max
+    : 0;
+  const score = Math.round(clamp(normalizedScore, 0, SCORING_WEIGHTS.seasonal.max));
+  
   if (matchCount > 0) {
-    score = Math.min(20, matchCount * 8);
     reasons.push(`Features seasonal ${season} ingredients`);
   }
   

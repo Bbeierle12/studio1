@@ -163,27 +163,17 @@ export async function getCurrentLocation(): Promise<GeolocationCoords> {
   });
 }
 
-/**
- * Convert Kelvin to Fahrenheit
- */
-function kelvinToFahrenheit(kelvin: number): number {
-  return Math.round((kelvin - 273.15) * 9/5 + 32);
-}
+import { kelvinToFahrenheit, metersPerSecondToMph } from './conversion-constants';
+import { clampTimeDelta } from './math-utils';
 
 /**
- * Convert meters per second to miles per hour
- */
-function mpsToMph(mps: number): number {
-  return Math.round(mps * 2.237);
-}
-
-/**
- * Calculate minutes until sunset/sunrise
+ * Calculate minutes until sunset/sunrise (clamped to non-negative)
  */
 function calculateMinutesTo(targetTime: Date): number {
   const now = new Date();
   const diffMs = targetTime.getTime() - now.getTime();
-  return Math.round(diffMs / (1000 * 60));
+  const minutes = Math.round(diffMs / (1000 * 60));
+  return clampTimeDelta(minutes); // Clamp to ≥0
 }
 
 /**
@@ -282,7 +272,7 @@ export async function fetchWeatherData(lat: number, lon: number): Promise<Weathe
       temperature: kelvinToFahrenheit(data.main.temp),
       humidity: data.main.humidity,
       precipitation: estimateRainProbability(data),
-      windSpeed: mpsToMph(data.wind.speed),
+      windSpeed: metersPerSecondToMph(data.wind.speed),
       aqi: 50, // Will be updated by fetchAQIData
       uvIndex: 5, // Default value, would need UV API for actual data
       visibility: Math.round(data.visibility / 1609.34), // Convert meters to miles

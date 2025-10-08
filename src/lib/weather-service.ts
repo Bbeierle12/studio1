@@ -1,5 +1,7 @@
 import { WeatherForecast } from './types';
 import { prisma } from './data';
+import { kelvinToFahrenheit, metersPerSecondToMph } from './conversion-constants';
+import { safeAverage } from './math-utils';
 
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5';
@@ -27,12 +29,7 @@ export interface OpenWeatherForecastResponse {
   list: OpenWeatherResponse[];
 }
 
-/**
- * Convert Kelvin to Fahrenheit
- */
-function kelvinToFahrenheit(kelvin: number): number {
-  return Math.round((kelvin - 273.15) * 9/5 + 32);
-}
+// kelvinToFahrenheit now imported from conversion-constants
 
 /**
  * Get user's location using IP-based geolocation
@@ -103,16 +100,24 @@ export async function fetchWeatherForecast(
       const temps = dayForecasts.map(f => f.main.temp);
       const high = Math.max(...temps);
       const low = Math.min(...temps);
-      const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length;
+      const avgTemp = safeAverage(temps); // Safe average
       
-      // Get most common weather condition
-      const conditions = dayForecasts.map(f => f.weather[0].main);
-      const condition = conditions.sort((a, b) =>
-        conditions.filter(c => c === a).length - conditions.filter(c => c === b).length
-      ).pop() || 'Clear';
+      // Get most common weather condition using one-pass frequency map (O(n) instead of O(n²))
+      const conditionCounts = new Map<string, number>();
+      dayForecasts.forEach(f => {
+        const cond = f.weather[0].main;
+        conditionCounts.set(cond, (conditionCounts.get(cond) || 0) + 1);
+      });
+      const condition = Array.from(conditionCounts.entries())
+        .reduce((max, curr) => curr[1] > max[1] ? curr : max, ['Clear', 0])[0];
       
-      // Average precipitation probability
-      const avgPrecip = dayForecasts.reduce((sum, f) => sum + (f.pop || 0), 0) / dayForecasts.length;
+      // Average precipitation probability (use API pop when available)
+      const precipProbabilities = dayForecasts.map(f => f.pop || 0);
+      const avgPrecip = safeAverage(precipProbabilities);
+      
+      // Calculate averages with 1 dp retention
+      const avgHumidity = safeAverage(dayForecasts.map(f => f.main.humidity));
+      const avgWindSpeedMps = safeAverage(dayForecasts.map(f => f.wind.speed));
       
       forecasts.push({
         date: new Date(dateKey),
@@ -123,9 +128,9 @@ export async function fetchWeatherForecast(
         },
         condition,
         description: dayForecasts[0].weather[0].description,
-        precipitation: Math.round(avgPrecip * 100),
-        humidity: Math.round(dayForecasts.reduce((sum, f) => sum + f.main.humidity, 0) / dayForecasts.length),
-        windSpeed: Math.round(dayForecasts.reduce((sum, f) => sum + f.wind.speed, 0) / dayForecasts.length * 2.237), // m/s to mph
+        precipitation: Math.round(avgPrecip * 100), // Convert to percentage
+        humidity: Math.round(avgHumidity),
+        windSpeed: metersPerSecondToMph(avgWindSpeedMps), // Precise conversion with 1dp
         icon: dayForecasts[0].weather[0].icon
       });
     });

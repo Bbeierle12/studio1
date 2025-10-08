@@ -4,6 +4,16 @@ import { authOptions } from '@/lib/auth'
 import { AnalyticsEngine } from '@/lib/analytics-engine'
 import { z } from 'zod'
 
+// Extend the session user type to include 'id'
+declare module 'next-auth' {
+  interface User {
+    id: string
+  }
+  interface Session {
+    user: User
+  }
+}
+
 const querySchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional()

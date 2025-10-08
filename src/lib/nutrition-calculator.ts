@@ -2,7 +2,22 @@
  * Nutrition Calculator Utility
  *
  * Provides functions for calculating nutritional information from recipes and meal plans.
+ * Uses safe math operations to prevent NaN/Infinity. Keeps full precision internally.
  */
+
+import {
+  safeDiv,
+  safePercentage,
+  safeAverage,
+  clamp,
+  normalizeMacroPercentages,
+  capProgress,
+} from './math-utils';
+import {
+  CALORIES_PER_GRAM_PROTEIN,
+  CALORIES_PER_GRAM_CARBS,
+  CALORIES_PER_GRAM_FAT,
+} from './conversion-constants';
 
 export interface NutritionData {
   calories: number;
@@ -131,14 +146,38 @@ export function calculateTotalNutrition(
 
 /**
  * Calculate progress toward nutrition goals
+ * Uses safe division and keeps full precision internally
  */
 export function calculateNutritionProgress(
   current: NutritionData,
   goal: NutritionGoal
 ): NutritionProgress {
   const calculateProgress = (current: number, target: number) => {
-    if (target === 0) return { current, target, percentage: 0 };
-    const percentage = Math.round((current / target) * 100);
+    const percentage = Math.round(safePercentage(current, target));
+    return { current, target, percentage };
+  };
+
+  return {
+    calories: calculateProgress(current.calories, goal.targetCalories),
+    protein: calculateProgress(current.protein, goal.targetProtein || 0),
+    carbs: calculateProgress(current.carbs, goal.targetCarbs || 0),
+    fat: calculateProgress(current.fat, goal.targetFat || 0),
+    fiber: calculateProgress(current.fiber, goal.targetFiber || 0),
+  };
+}
+
+/**
+ * Calculate progress with optional UI capping at 100%
+ */
+export function calculateNutritionProgressCapped(
+  current: NutritionData,
+  goal: NutritionGoal,
+  capAt100: boolean = true
+): NutritionProgress {
+  const maxPercent = capAt100 ? 100 : Infinity;
+  
+  const calculateProgress = (current: number, target: number) => {
+    const percentage = Math.round(capProgress(current, target, maxPercent));
     return { current, target, percentage };
   };
 
@@ -153,23 +192,15 @@ export function calculateNutritionProgress(
 
 /**
  * Calculate macro ratios (percentage of calories from each macro)
+ * Enforces invariant: percentages always sum to exactly 100%
  */
 export function calculateMacroRatios(nutrition: NutritionData): MacroRatios {
-  // Calories per gram: Protein = 4, Carbs = 4, Fat = 9
-  const proteinCalories = nutrition.protein * 4;
-  const carbsCalories = nutrition.carbs * 4;
-  const fatCalories = nutrition.fat * 9;
-  const totalCalories = proteinCalories + carbsCalories + fatCalories;
-
-  if (totalCalories === 0) {
-    return { proteinPercent: 0, carbsPercent: 0, fatPercent: 0 };
-  }
-
-  return {
-    proteinPercent: Math.round((proteinCalories / totalCalories) * 100),
-    carbsPercent: Math.round((carbsCalories / totalCalories) * 100),
-    fatPercent: Math.round((fatCalories / totalCalories) * 100),
-  };
+  return normalizeMacroPercentages(
+    nutrition.protein,
+    nutrition.carbs,
+    nutrition.fat,
+    nutrition.calories
+  );
 }
 
 /**
@@ -191,7 +222,8 @@ export function getNutritionProgressBarColor(percentage: number): string {
 }
 
 /**
- * Calculate weekly average nutrition
+ * Calculate weekly average nutrition (per-day average)
+ * Handles empty arrays safely, keeps precision internally
  */
 export function calculateWeeklyAverage(
   dailyNutrition: NutritionSummary[]
@@ -209,18 +241,29 @@ export function calculateWeeklyAverage(
     };
   }
 
-  const totals = dailyNutrition.reduce(
-    (acc, day) => ({
-      calories: acc.calories + day.calories,
-      protein: acc.protein + day.protein,
-      carbs: acc.carbs + day.carbs,
-      fat: acc.fat + day.fat,
-      fiber: acc.fiber + day.fiber,
-      sugar: acc.sugar + day.sugar,
-      sodium: acc.sodium + day.sodium,
-      mealsCount: acc.mealsCount + day.mealsCount,
-    }),
-    {
+  const days = dailyNutrition.length;
+
+  return {
+    calories: Math.round(safeAverage(dailyNutrition.map(d => d.calories))),
+    protein: parseFloat(safeAverage(dailyNutrition.map(d => d.protein)).toFixed(1)),
+    carbs: parseFloat(safeAverage(dailyNutrition.map(d => d.carbs)).toFixed(1)),
+    fat: parseFloat(safeAverage(dailyNutrition.map(d => d.fat)).toFixed(1)),
+    fiber: parseFloat(safeAverage(dailyNutrition.map(d => d.fiber)).toFixed(1)),
+    sugar: parseFloat(safeAverage(dailyNutrition.map(d => d.sugar)).toFixed(1)),
+    sodium: Math.round(safeAverage(dailyNutrition.map(d => d.sodium))),
+    mealsCount: Math.round(safeAverage(dailyNutrition.map(d => d.mealsCount))),
+  };
+}
+
+/**
+ * Calculate per-meal average nutrition
+ * Distinct from per-day average
+ */
+export function calculatePerMealAverage(
+  meals: MealWithNutrition[]
+): NutritionData {
+  if (meals.length === 0) {
+    return {
       calories: 0,
       protein: 0,
       carbs: 0,
@@ -228,21 +271,31 @@ export function calculateWeeklyAverage(
       fiber: 0,
       sugar: 0,
       sodium: 0,
-      mealsCount: 0,
-    }
-  );
+    };
+  }
 
-  const days = dailyNutrition.length;
+  const mealsWithData = meals.filter(m => m.recipe && (m.recipe.calories || 0) > 0);
+  
+  if (mealsWithData.length === 0) {
+    return {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0,
+      sugar: 0,
+      sodium: 0,
+    };
+  }
 
   return {
-    calories: Math.round(totals.calories / days),
-    protein: parseFloat((totals.protein / days).toFixed(1)),
-    carbs: parseFloat((totals.carbs / days).toFixed(1)),
-    fat: parseFloat((totals.fat / days).toFixed(1)),
-    fiber: parseFloat((totals.fiber / days).toFixed(1)),
-    sugar: parseFloat((totals.sugar / days).toFixed(1)),
-    sodium: Math.round(totals.sodium / days),
-    mealsCount: Math.round(totals.mealsCount / days),
+    calories: Math.round(safeAverage(mealsWithData.map(m => calculateMealNutrition(m.recipe, m.servings).calories))),
+    protein: parseFloat(safeAverage(mealsWithData.map(m => calculateMealNutrition(m.recipe, m.servings).protein)).toFixed(1)),
+    carbs: parseFloat(safeAverage(mealsWithData.map(m => calculateMealNutrition(m.recipe, m.servings).carbs)).toFixed(1)),
+    fat: parseFloat(safeAverage(mealsWithData.map(m => calculateMealNutrition(m.recipe, m.servings).fat)).toFixed(1)),
+    fiber: parseFloat(safeAverage(mealsWithData.map(m => calculateMealNutrition(m.recipe, m.servings).fiber)).toFixed(1)),
+    sugar: parseFloat(safeAverage(mealsWithData.map(m => calculateMealNutrition(m.recipe, m.servings).sugar)).toFixed(1)),
+    sodium: Math.round(safeAverage(mealsWithData.map(m => calculateMealNutrition(m.recipe, m.servings).sodium))),
   };
 }
 
