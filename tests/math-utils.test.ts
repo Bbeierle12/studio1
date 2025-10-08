@@ -16,7 +16,11 @@ import {
   capProgress,
   hasMinimumSampleSize,
   safeWeeksFromDays,
-} from '../src/lib/math-utils';
+} from '@shared/math-utils';
+import {
+  kelvinToFahrenheit,
+  metersPerSecondToMph,
+} from '@shared/conversion-constants';
 
 describe('Math Utils - Safe Operations', () => {
   describe('safeDiv', () => {
@@ -155,24 +159,20 @@ describe('Analytics Guards', () => {
 
 describe('Conversion Constants', () => {
   it('should use precise temperature conversion', () => {
-    const { kelvinToFahrenheit } = require('@/lib/conversion-constants');
-    
     // Water boiling point: 373.15 K = 212°F
     expect(kelvinToFahrenheit(373.15)).toBeCloseTo(212, 1);
-    
+
     // Water freezing point: 273.15 K = 32°F
     expect(kelvinToFahrenheit(273.15)).toBeCloseTo(32, 1);
-    
+
     // Room temperature: 293.15 K = 68°F
     expect(kelvinToFahrenheit(293.15)).toBeCloseTo(68, 1);
   });
 
   it('should use precise speed conversion', () => {
-    const { metersPerSecondToMph } = require('@/lib/conversion-constants');
-    
     // 10 m/s ≈ 22.4 mph
     expect(metersPerSecondToMph(10)).toBeCloseTo(22.4, 1);
-    
+
     // 5 m/s ≈ 11.2 mph
     expect(metersPerSecondToMph(5)).toBeCloseTo(11.2, 1);
   });

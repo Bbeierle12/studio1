@@ -19,6 +19,30 @@ module.exports = {
     // Next.js specific
     '@next/next/no-html-link-for-pages': 'error',
     '@next/next/no-img-element': 'warn',
+
+    // Prevent server-side imports in tests and shared utilities
+    'no-restricted-imports': ['error', {
+      paths: [
+        {
+          name: 'next/server',
+          message: 'Use only inside route handlers. For tests, use @shared utilities.',
+        },
+        {
+          name: 'next-auth',
+          message: 'Server-only; do not import in tests or shared utilities.',
+        },
+        {
+          name: 'next/headers',
+          message: 'Server-only; do not import in tests or shared utilities.',
+        },
+      ],
+      patterns: [
+        {
+          group: ['**/src/app/api/**'],
+          message: 'Do not import route handlers. Extract utilities to @shared if needed.',
+        },
+      ],
+    }],
   },
   env: {
     browser: true,
