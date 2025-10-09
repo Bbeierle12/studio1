@@ -16,6 +16,12 @@ import {
   withRetry, 
   OpenAIError 
 } from '@/lib/openai-utils';
+import { 
+  checkRateLimit, 
+  getRateLimitIdentifier, 
+  formatRateLimitError,
+  RATE_LIMITS 
+} from '@/lib/rate-limit';
 
 const CookingQuestionSchema = z.object({
   question: z.string().min(1, 'Question is required').max(500, 'Question too long'),
@@ -45,6 +51,14 @@ async function handleCookingAssistant(request: NextRequest) {
 
   if (!user) {
     throw ApiError.notFound('User');
+  }
+
+  // Rate limiting - Protect API key from abuse
+  const identifier = getRateLimitIdentifier(user.id, request.headers.get('x-forwarded-for') || undefined);
+  const rateLimit = checkRateLimit(identifier, RATE_LIMITS.AI_ASSISTANT);
+  
+  if (!rateLimit.allowed) {
+    throw new Error(formatRateLimitError(rateLimit.resetIn, RATE_LIMITS.AI_ASSISTANT.message));
   }
 
   const body = await request.json();
