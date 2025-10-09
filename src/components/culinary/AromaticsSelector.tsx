@@ -51,13 +51,24 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
 }) => {
   const [spiceInput, setSpiceInput] = useState('');
   const [showSpiceSuggestions, setShowSpiceSuggestions] = useState(false);
+  const [showLimitWarning, setShowLimitWarning] = useState(false);
 
   const handleAddSpice = (spice: string) => {
-    if (customSpices.length < maxCustomSpices && !customSpices.includes(spice)) {
-      onSpicesChange?.([...customSpices, spice]);
-      setSpiceInput('');
-      setShowSpiceSuggestions(false);
+    if (!spice.trim()) return;
+    
+    if (customSpices.includes(spice)) {
+      return;
     }
+    
+    if (customSpices.length >= maxCustomSpices) {
+      setShowLimitWarning(true);
+      setTimeout(() => setShowLimitWarning(false), 3000);
+      return;
+    }
+    
+    onSpicesChange?.([...customSpices, spice]);
+    setSpiceInput('');
+    setShowSpiceSuggestions(false);
   };
 
   const handleRemoveSpice = (spice: string) => {
@@ -214,6 +225,13 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
             {customSpices.length}/{maxCustomSpices} selected
           </span>
         </div>
+
+        {/* Warning message */}
+        {showLimitWarning && (
+          <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
+            Maximum of {maxCustomSpices} spices reached. Remove one to add more.
+          </div>
+        )}
 
         {/* Selected spices */}
         {customSpices.length > 0 && (

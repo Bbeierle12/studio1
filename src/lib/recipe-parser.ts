@@ -314,7 +314,7 @@ export class RecipeParser {
     // Tags/Keywords
     if (jsonLd.keywords) {
       recipe.tags = typeof jsonLd.keywords === 'string'
-        ? jsonLd.keywords.split(',').map(k => k.trim())
+        ? jsonLd.keywords.split(',').map((k: string) => k.trim())
         : Array.isArray(jsonLd.keywords) ? jsonLd.keywords : []
     }
 
@@ -607,7 +607,20 @@ export class RecipeParser {
    */
   async inferClassification(recipe: ParsedRecipe): Promise<CulinaryClassification> {
     const { CulinaryClassifier } = await import('./culinary/classification-engine')
+    const { analyticsTracker } = await import('./culinary/analytics-tracker')
+    
     const classifier = new CulinaryClassifier()
-    return classifier.classifyRecipe(recipe)
+    const classification = classifier.classifyRecipe(recipe)
+    
+    // Track the classification for analytics
+    if (classification && Object.keys(classification).length > 0) {
+      analyticsTracker.trackClassification(classification, {
+        prepTime: recipe.prepTime,
+        cookTime: recipe.cookTime,
+        ingredients: recipe.ingredients,
+      })
+    }
+    
+    return classification
   }
 }

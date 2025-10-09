@@ -174,13 +174,13 @@ export const ClassificationSelector: React.FC<ClassificationSelectorProps> = ({
         {...sectionProps}
       >
         <div className="flex flex-wrap gap-2">
-          {Object.entries(CourseTypes).map(([key, value]) => (
+          {Object.entries(CourseTypes).map(([key, courseValue]) => (
             <Chip
               key={key}
-              label={getCourseDisplayName(value)}
-              value={value}
-              selected={value === value}
-              onClick={() => handleCourseToggle(value)}
+              label={getCourseDisplayName(courseValue)}
+              value={courseValue}
+              selected={value.course === courseValue}
+              onClick={() => handleCourseToggle(courseValue)}
             />
           ))}
         </div>
