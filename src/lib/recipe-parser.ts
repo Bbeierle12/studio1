@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { CulinaryClassification } from '@/types/culinary-taxonomy'
 
 // Schema for parsed recipe data
 export const ParsedRecipeSchema = z.object({
@@ -26,6 +27,8 @@ export const ParsedRecipeSchema = z.object({
     sodium: z.number().optional(),
   }).optional(),
   tags: z.array(z.string()).optional(),
+  // New: Culinary classification
+  classification: z.custom<CulinaryClassification>().optional(),
 })
 
 export type ParsedRecipe = z.infer<typeof ParsedRecipeSchema>
@@ -102,7 +105,7 @@ export class RecipeParser {
   /**
    * Parse a recipe from a URL
    */
-  async parseFromUrl(url: string): Promise<ParsedRecipe> {
+  async parseFromUrl(url: string, enrichWithClassification = false): Promise<ParsedRecipe> {
     try {
       // Fetch the HTML content
       const response = await fetch(`/api/recipe-import/fetch?url=${encodeURIComponent(url)}`)
@@ -114,7 +117,14 @@ export class RecipeParser {
       const { html, finalUrl } = await response.json()
 
       // Parse the HTML
-      return this.parseFromHtml(html, finalUrl || url)
+      const recipe = this.parseFromHtml(html, finalUrl || url)
+
+      // Optionally enrich with classification
+      if (enrichWithClassification) {
+        recipe.classification = await this.inferClassification(recipe)
+      }
+
+      return recipe
     } catch (error) {
       console.error('Failed to parse recipe from URL:', error)
       throw new Error(`Failed to parse recipe from URL: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -590,5 +600,14 @@ export class RecipeParser {
       'Minimalist Baker',
       'And many more...'
     ]
+  }
+
+  /**
+   * Infer culinary classification from parsed recipe
+   */
+  async inferClassification(recipe: ParsedRecipe): Promise<CulinaryClassification> {
+    const { CulinaryClassifier } = await import('./culinary/classification-engine')
+    const classifier = new CulinaryClassifier()
+    return classifier.classifyRecipe(recipe)
   }
 }
