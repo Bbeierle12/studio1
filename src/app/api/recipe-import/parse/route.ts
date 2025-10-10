@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { RecipeParser } from '@/lib/recipe-parser'
 import { prisma } from '@/lib/prisma'
+import { parseRecipeToInput, validateRecipeInput } from '@/lib/recipe-utils'
+import { generateUniqueSlug } from '@/lib/data'
 import { z } from 'zod'
 
 const ImportRequestSchema = z.object({
@@ -64,37 +66,41 @@ export async function POST(req: NextRequest) {
     // If autoSave is true, save the recipe to the database
     if (autoSave) {
       try {
-        // Generate a unique slug
-        const baseSlug = parsedRecipe.title
-          .toLowerCase()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/\s+/g, '-')
+        // Convert parsed recipe to unified RecipeInput format
+        const recipeInput = parseRecipeToInput(parsedRecipe, session.user.id)
 
-        let slug = baseSlug
-        let counter = 0
-
-        while (await prisma.recipe.findUnique({ where: { slug } })) {
-          counter++
-          slug = `${baseSlug}-${counter}`
+        // Validate the input
+        const validation = validateRecipeInput(recipeInput)
+        if (!validation.isValid) {
+          return NextResponse.json({
+            recipe: parsedRecipe,
+            saved: false,
+            error: `Validation failed: ${validation.errors.join(', ')}`,
+          })
         }
 
+        // Generate unique slug
+        const slug = await generateUniqueSlug(recipeInput.title)
+
+        // Save to database using unified format
         const recipe = await prisma.recipe.create({
           data: {
-            title: parsedRecipe.title,
+            title: recipeInput.title,
             slug,
-            summary: parsedRecipe.description || '',
-            ingredients: JSON.stringify(parsedRecipe.ingredients),
-            instructions: JSON.stringify(parsedRecipe.instructions),
-            prepTime: parsedRecipe.totalTime || parsedRecipe.prepTime,
-            servings: parsedRecipe.servings,
-            cuisine: parsedRecipe.cuisine,
-            course: parsedRecipe.course,
-            difficulty: parsedRecipe.difficulty,
-            imageUrl: parsedRecipe.imageUrl || '',
-            imageHint: `Imported from ${parsedRecipe.sourceUrl || 'external source'}`,
-            tags: JSON.stringify(parsedRecipe.tags || []),
-            contributor: parsedRecipe.author || session.user.name || 'Imported',
-            // Nutrition data
+            contributor: recipeInput.contributor,
+            summary: recipeInput.summary || '',
+            ingredients: recipeInput.ingredients,
+            instructions: recipeInput.instructions,
+            prepTime: recipeInput.prepTime,
+            servings: recipeInput.servings,
+            cuisine: recipeInput.cuisine,
+            course: recipeInput.course,
+            difficulty: recipeInput.difficulty,
+            imageUrl: recipeInput.imageUrl || 'https://placehold.co/600x400/FFFFFF/FFFFFF',
+            imageHint: recipeInput.imageHint || '',
+            tags: JSON.stringify(recipeInput.tags || []),
+            story: recipeInput.story || '',
+            // Nutrition data (if available)
             calories: parsedRecipe.nutrition?.calories,
             protein: parsedRecipe.nutrition?.protein,
             carbs: parsedRecipe.nutrition?.carbs,

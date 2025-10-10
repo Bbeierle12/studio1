@@ -150,7 +150,7 @@ export const getTags = async (): Promise<string[]> => {
 };
 
 // Function to ensure slug uniqueness
-async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
+export async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
   const baseSlug = generateSlug(title);
   let slug = baseSlug;
   let counter = 1;

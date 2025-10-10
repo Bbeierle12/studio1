@@ -3,11 +3,12 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import {
-  addRecipe as saveRecipe,
   updateRecipe,
   deleteRecipe,
   getRecipeById,
+  generateUniqueSlug,
 } from '@/lib/data';
+import { prisma } from '@/lib/prisma';
 import { summarizeRecipe } from '@/ai/flows/recipe-summarization';
 import { generateRecipe } from '@/ai/flows/generate-recipe-flow';
 import { convertIngredients } from '@/ai/flows/convert-ingredients-flow';
@@ -96,22 +97,29 @@ export async function addRecipeAction(
 
     const tagsArray = tags.split(',').map(tag => tag.trim().toLowerCase());
 
-    const newRecipe = await saveRecipe({
-      title,
-      contributor,
-      prepTime,
-      servings,
-      course,
-      cuisine,
-      difficulty,
-      ingredients,
-      instructions,
-      tags: tagsArray,
-      summary: summaryResult.summary,
-      story,
-      imageUrl: 'https://placehold.co/600x400/FFFFFF/FFFFFF',
-      imageHint: '',
-      userId,
+    // Generate unique slug from title
+    const slug = await generateUniqueSlug(title);
+
+    // Save recipe directly to database
+    await prisma.recipe.create({
+      data: {
+        title,
+        slug,
+        contributor,
+        prepTime,
+        servings,
+        course,
+        cuisine,
+        difficulty,
+        ingredients,
+        instructions,
+        tags: JSON.stringify(tagsArray),
+        summary: summaryResult.summary,
+        story,
+        imageUrl: 'https://placehold.co/600x400/FFFFFF/FFFFFF',
+        imageHint: '',
+        userId,
+      },
     });
   } catch (error) {
     console.error('Error adding recipe:', error);

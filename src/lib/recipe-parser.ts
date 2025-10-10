@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import type { CulinaryClassification } from '@/types/culinary-taxonomy'
+import type { ParsedRecipeData } from '@/lib/types'
 
-// Schema for parsed recipe data
+// Schema for parsed recipe data - matches ParsedRecipeData type
 export const ParsedRecipeSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
@@ -31,7 +32,19 @@ export const ParsedRecipeSchema = z.object({
   classification: z.custom<CulinaryClassification>().optional(),
 })
 
-export type ParsedRecipe = z.infer<typeof ParsedRecipeSchema>
+// Use centralized type from lib/types
+export type ParsedRecipe = ParsedRecipeData & {
+  nutrition?: {
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    fiber?: number;
+    sugar?: number;
+    sodium?: number;
+  };
+  classification?: CulinaryClassification;
+}
 
 // Site-specific parsers configuration
 const SITE_PARSERS: Record<string, {

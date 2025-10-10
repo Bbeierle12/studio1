@@ -25,6 +25,52 @@ export type Recipe = {
   updatedAt?: Date;
 };
 
+/**
+ * Unified Recipe Input - standardized format for all recipe creation flows
+ * (manual entry, URL import, AI generation)
+ */
+export type RecipeInput = {
+  title: string;
+  contributor: string;
+  ingredients: string; // Newline-separated string
+  instructions: string; // Newline-separated string
+  summary?: string;
+  story?: string;
+  prepTime?: number;
+  cookTime?: number;
+  totalTime?: number;
+  servings?: number;
+  course?: 'Appetizer' | 'Main' | 'Dessert' | 'Side' | 'Breakfast';
+  cuisine?: 'Italian' | 'American' | 'Mexican' | 'Asian' | 'Other';
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
+  tags?: string[]; // Array of tags
+  imageUrl?: string;
+  imageHint?: string;
+  sourceUrl?: string; // For imported recipes
+  userId: string;
+};
+
+/**
+ * Helper type for converting parsed recipes (with arrays) to RecipeInput format
+ */
+export type ParsedRecipeData = {
+  title: string;
+  description?: string;
+  ingredients: string[]; // Array format from parsers
+  instructions: string[]; // Array format from parsers
+  prepTime?: number;
+  cookTime?: number;
+  totalTime?: number;
+  servings?: number;
+  cuisine?: string;
+  course?: string;
+  difficulty?: string;
+  imageUrl?: string;
+  sourceUrl?: string;
+  author?: string;
+  tags?: string[];
+};
+
 export type UserRole = 'USER' | 'SUPPORT_ADMIN' | 'CONTENT_ADMIN' | 'SUPER_ADMIN';
 
 export type User = {
