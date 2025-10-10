@@ -599,17 +599,16 @@ export function UnifiedRecipeForm() {
 
               <div className="grid grid-cols-3 gap-3 mt-3">
                 <div className="space-y-2">
-                  <Label htmlFor="ai-course" className="text-xs">Course</Label>
+                  <Label htmlFor="ai-course" className="text-xs">Course (optional)</Label>
                   <Select 
-                    value={course} 
-                    onValueChange={setCourse}
+                    value={course || undefined} 
+                    onValueChange={(value) => setCourse(value === 'unspecified' ? '' : value)}
                     disabled={isGenerating}
                   >
                     <SelectTrigger id="ai-course">
-                      <SelectValue placeholder="Any" />
+                      <SelectValue placeholder="Not specified" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any</SelectItem>
                       <SelectItem value="Appetizer">Appetizer</SelectItem>
                       <SelectItem value="Main">Main</SelectItem>
                       <SelectItem value="Dessert">Dessert</SelectItem>
@@ -620,17 +619,16 @@ export function UnifiedRecipeForm() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="ai-cuisine" className="text-xs">Cuisine</Label>
+                  <Label htmlFor="ai-cuisine" className="text-xs">Cuisine (optional)</Label>
                   <Select 
-                    value={cuisine} 
-                    onValueChange={setCuisine}
+                    value={cuisine || undefined} 
+                    onValueChange={(value) => setCuisine(value === 'unspecified' ? '' : value)}
                     disabled={isGenerating}
                   >
                     <SelectTrigger id="ai-cuisine">
-                      <SelectValue placeholder="Any" />
+                      <SelectValue placeholder="Not specified" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any</SelectItem>
                       <SelectItem value="Italian">Italian</SelectItem>
                       <SelectItem value="American">American</SelectItem>
                       <SelectItem value="Mexican">Mexican</SelectItem>
@@ -641,17 +639,16 @@ export function UnifiedRecipeForm() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="ai-difficulty" className="text-xs">Difficulty</Label>
+                  <Label htmlFor="ai-difficulty" className="text-xs">Difficulty (optional)</Label>
                   <Select 
-                    value={difficulty} 
-                    onValueChange={setDifficulty}
+                    value={difficulty || undefined} 
+                    onValueChange={(value) => setDifficulty(value === 'unspecified' ? '' : value)}
                     disabled={isGenerating}
                   >
                     <SelectTrigger id="ai-difficulty">
-                      <SelectValue placeholder="Any" />
+                      <SelectValue placeholder="Not specified" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any</SelectItem>
                       <SelectItem value="Easy">Easy</SelectItem>
                       <SelectItem value="Medium">Medium</SelectItem>
                       <SelectItem value="Hard">Hard</SelectItem>
