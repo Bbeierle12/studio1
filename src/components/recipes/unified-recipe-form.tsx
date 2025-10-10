@@ -531,7 +531,7 @@ export function UnifiedRecipeForm() {
           <DialogHeader>
             <DialogTitle>Generate Recipe with AI</DialogTitle>
             <DialogDescription>
-              Upload a photo and fill in what you know. AI will generate the rest!
+              Fill in what you know and AI will generate the rest!
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -547,7 +547,7 @@ export function UnifiedRecipeForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ai-image">Upload Photo *</Label>
+              <Label htmlFor="ai-image">Upload Photo (optional)</Label>
               <Input
                 id="ai-image"
                 type="file"
@@ -689,7 +689,7 @@ export function UnifiedRecipeForm() {
               <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/50">
                 <AlertCircle className="h-4 w-4 text-yellow-500" />
                 <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                  Please enter a recipe title and upload a photo
+                  Please enter a recipe title
                 </p>
               </div>
             )}
@@ -708,7 +708,7 @@ export function UnifiedRecipeForm() {
             </Button>
             <Button 
               onClick={handleGenerateWithAI}
-              disabled={isGenerating || !aiImageFile || !title}
+              disabled={isGenerating || !title}
             >
               {isGenerating ? (
                 <>
