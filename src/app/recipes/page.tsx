@@ -1,88 +1,119 @@
-import { getRecipes, getTags } from '@/lib/data';
-import { RecipeCard } from '@/components/recipe-card';
-import { RecipeFilter } from '@/components/recipe-filter';
-import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Import } from 'lucide-react';
-import Link from 'next/link';
+'use client';
 
-type RecipesPageProps = {
-  searchParams?: {
-    query?: string;
-    tag?: string;
+import { useState, useEffect, Suspense } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RecipeBrowser } from '@/components/recipes/recipe-browser';
+import { RecipeCreator } from '@/components/recipes/recipe-creator';
+import { MyRecipes } from '@/components/recipes/my-recipes';
+import { RecipeDetailDrawer } from '@/components/recipes/recipe-detail-drawer';
+import { RecipeSidebar } from '@/components/recipes/recipe-sidebar';
+import { Book, Plus, Heart, ChefHat } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+
+export default function RecipeHubPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [selectedRecipe, setSelectedRecipe] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('browse');
+
+  // Support deep linking with ?tab=create, ?recipe=id, etc.
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    const recipeId = searchParams.get('recipe');
+    
+    if (tab && ['browse', 'create', 'my-recipes'].includes(tab)) {
+      setActiveTab(tab);
+    }
+    
+    if (recipeId) {
+      setSelectedRecipe(recipeId);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Update URL without page reload
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', value);
+    router.push(`/recipes?${params.toString()}`, { scroll: false });
   };
-};
 
-export default async function RecipesPage({ searchParams }: RecipesPageProps) {
-  const resolvedParams = await searchParams;
-  const query = resolvedParams?.query || '';
-  const tag = resolvedParams?.tag || '';
-  const tags = await getTags();
-  const recipes = await getRecipes({ query, tag });
+  const handleSelectRecipe = (recipeId: string) => {
+    setSelectedRecipe(recipeId);
+    // Update URL with recipe ID
+    const params = new URLSearchParams(searchParams);
+    params.set('recipe', recipeId);
+    router.push(`/recipes?${params.toString()}`, { scroll: false });
+  };
+
+  const handleCloseRecipe = () => {
+    setSelectedRecipe(null);
+    // Remove recipe from URL
+    const params = new URLSearchParams(searchParams);
+    params.delete('recipe');
+    const newUrl = params.toString() ? `/recipes?${params.toString()}` : '/recipes';
+    router.push(newUrl, { scroll: false });
+  };
 
   return (
-    <div className='container mx-auto py-8'>
-      <div className='mb-8'>
-        <div className='flex items-center justify-between'>
-          <div className='space-y-2'>
-            <h1 className='text-3xl font-extrabold tracking-tight font-headline lg:text-4xl'>
-              Browse Recipes
-            </h1>
-            <p className='text-muted-foreground'>
-              Discover our family&apos;s cherished recipes.
+    <div className="flex h-[calc(100vh-4rem)]">
+      {/* Sidebar */}
+      <RecipeSidebar activeTab={activeTab} />
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        <div className="container mx-auto py-6 px-4">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <ChefHat className="h-8 w-8 text-primary" />
+              <h1 className="text-4xl font-bold">Recipe Hub</h1>
+            </div>
+            <p className="text-muted-foreground">
+              Browse, create, and manage all your recipes in one place
             </p>
           </div>
-          <Link href="/recipes/import">
-            <Button variant="outline" className="gap-2">
-              <Import className="h-4 w-4" />
-              Import Recipes
-            </Button>
-          </Link>
+
+          {/* Tab Navigation */}
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3 max-w-md">
+              <TabsTrigger value="browse" className="gap-2">
+                <Book className="h-4 w-4" />
+                <span className="hidden sm:inline">Browse</span>
+              </TabsTrigger>
+              <TabsTrigger value="create" className="gap-2">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Create</span>
+              </TabsTrigger>
+              <TabsTrigger value="my-recipes" className="gap-2">
+                <Heart className="h-4 w-4" />
+                <span className="hidden sm:inline">My Recipes</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <Suspense fallback={<div>Loading...</div>}>
+              <TabsContent value="browse" className="space-y-4">
+                <RecipeBrowser onSelectRecipe={handleSelectRecipe} />
+              </TabsContent>
+
+              <TabsContent value="create" className="space-y-4">
+                <RecipeCreator />
+              </TabsContent>
+
+              <TabsContent value="my-recipes" className="space-y-4">
+                <MyRecipes onSelectRecipe={handleSelectRecipe} />
+              </TabsContent>
+            </Suspense>
+          </Tabs>
         </div>
       </div>
 
-      <div className="space-y-6">
-        <RecipeFilter tags={tags} />
-        
-        <Suspense fallback={<RecipeGridSkeleton />}>
-          {recipes.length > 0 ? (
-            <div className='mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-              {recipes.map(recipe => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
-              ))}
-            </div>
-          ) : (
-            <div className='mt-16 text-center'>
-              <h3 className='text-xl font-semibold'>No Recipes Found</h3>
-              <p className='text-muted-foreground mt-2'>
-                Try adjusting your search or filter criteria.
-              </p>
-            </div>
-          )}
-        </Suspense>
-      </div>
-    </div>
-  );
-}
-
-function RecipeGridSkeleton() {
-  return (
-    <div className='mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className='space-y-4'>
-          <Skeleton className='h-48 w-full' />
-          <div className='space-y-2'>
-            <Skeleton className='h-6 w-3/4' />
-            <Skeleton className='h-4 w-1/2' />
-            <Skeleton className='h-12 w-full' />
-          </div>
-          <div className='flex gap-2'>
-            <Skeleton className='h-6 w-16' />
-            <Skeleton className='h-6 w-20' />
-          </div>
-        </div>
-      ))}
+      {/* Recipe Detail Drawer */}
+      <RecipeDetailDrawer
+        recipeId={selectedRecipe}
+        open={!!selectedRecipe}
+        onOpenChange={(open: boolean) => !open && handleCloseRecipe()}
+      />
     </div>
   );
 }
