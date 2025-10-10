@@ -93,150 +93,87 @@ export function ChatRecipeCreator() {
   };
 
   const processUserInput = async (userInput: string) => {
-    // Add user message
     addMessage('user', userInput);
     setInput('');
     setIsLoading(true);
 
-    // Simulate AI processing (replace with actual API call)
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Prepare messages for API (strip timestamp/id)
+      const apiMessages = messages.map(m => ({
+        role: m.role,
+        content: m.content,
+      })).concat({ role: 'user', content: userInput });
 
-    // Simple conversation flow logic
-    let response = '';
-    let nextStep = conversationStep;
+      const res = await fetch('/api/recipe-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: apiMessages,
+          recipeData,
+        }),
+      });
 
-    switch (conversationStep) {
-      case 'initial':
-        // User provides recipe name/idea
-        setRecipeData(prev => ({ ...prev, title: userInput }));
-        response = `Great! "${userInput}" sounds delicious! 🎉 Let's start with the ingredients. What ingredients do you need? You can list them one by one or all at once.`;
-        nextStep = 'ingredients';
-        break;
+      if (!res.ok) throw new Error('AI chat failed');
+      const data = await res.json();
 
-      case 'ingredients':
-        // Parse ingredients from user input
-        const newIngredients = userInput
-          .split(/\n|,|;/)
-          .map(i => i.trim())
-          .filter(i => i.length > 0);
-        
-        setRecipeData(prev => ({ 
-          ...prev, 
-          ingredients: [...prev.ingredients, ...newIngredients] 
-        }));
-        
-        if (newIngredients.length > 0) {
-          response = `Perfect! I've added ${newIngredients.length} ingredient(s). ${
-            recipeData.ingredients.length + newIngredients.length > 3
-              ? "That's a good list! Ready to move on to the instructions? (Say 'yes' or add more ingredients)"
-              : "Do you have more ingredients to add, or shall we move to the cooking instructions?"
-          }`;
-        }
-        
-        // Check if user wants to proceed
-        if (userInput.toLowerCase().includes('yes') || 
-            userInput.toLowerCase().includes('next') || 
-            userInput.toLowerCase().includes('instructions')) {
-          response = `Excellent! Now, let's talk about how to prepare ${recipeData.title}. Walk me through the cooking steps. You can describe them in your own words, and I'll help organize them.`;
-          nextStep = 'instructions';
-        }
-        break;
+      // Update recipe data with extracted info
+      if (data.extractedData) {
+        setRecipeData(prev => {
+          const updated = { ...prev };
+          if (data.extractedData.title) updated.title = data.extractedData.title;
+          if (data.extractedData.ingredients?.length) {
+            updated.ingredients = [
+              ...new Set([...(prev.ingredients || []), ...data.extractedData.ingredients])
+            ];
+          }
+          if (data.extractedData.instructions?.length) {
+            updated.instructions = [
+              ...new Set([...(prev.instructions || []), ...data.extractedData.instructions])
+            ];
+          }
+          if (data.extractedData.servings) updated.servings = data.extractedData.servings;
+          if (data.extractedData.prepTime) updated.prepTime = data.extractedData.prepTime;
+          if (data.extractedData.cuisine) updated.cuisine = data.extractedData.cuisine;
+          if (data.extractedData.difficulty) updated.difficulty = data.extractedData.difficulty;
+          if (data.extractedData.tags?.length) {
+            updated.tags = [
+              ...new Set([...(prev.tags || []), ...data.extractedData.tags])
+            ];
+          }
+          return updated;
+        });
+      }
 
-      case 'instructions':
-        // Parse instructions
-        const newInstructions = userInput
-          .split(/\n\n|\d+\.|Step \d+/i)
-          .map(i => i.trim())
-          .filter(i => i.length > 10); // Filter out very short text
-        
-        setRecipeData(prev => ({ 
-          ...prev, 
-          instructions: [...prev.instructions, ...newInstructions] 
-        }));
-        
-        if (newInstructions.length > 0) {
-          response = `Got it! I've added ${newInstructions.length} step(s). ${
-            recipeData.instructions.length + newInstructions.length > 2
-              ? "Looks like we have a good flow! Want to add any final details like prep time, servings, or cuisine type? (or say 'finish' to complete)"
-              : "Any more steps to add?"
-          }`;
-        }
-        
-        if (userInput.toLowerCase().includes('done') || 
-            userInput.toLowerCase().includes('finish') || 
-            userInput.toLowerCase().includes('details')) {
-          response = `Almost done! Let me ask a few quick details:\n\n• How many servings does this make?\n• How long does it take to prepare? (in minutes)\n• What type of cuisine is this?\n• Difficulty level: Easy, Medium, or Hard?\n\nYou can answer all at once or one by one!`;
-          nextStep = 'details';
-        }
-        break;
+      // Advance conversation step based on completeness
+      if (
+        data.extractedData?.title &&
+        data.extractedData?.ingredients?.length > 0 &&
+        data.extractedData?.instructions?.length > 0 &&
+        data.extractedData?.prepTime
+      ) {
+        setConversationStep('complete');
+      } else if (
+        data.extractedData?.title &&
+        data.extractedData?.ingredients?.length > 0 &&
+        data.extractedData?.instructions?.length > 0
+      ) {
+        setConversationStep('details');
+      } else if (
+        data.extractedData?.title &&
+        data.extractedData?.ingredients?.length > 0
+      ) {
+        setConversationStep('instructions');
+      } else if (data.extractedData?.title) {
+        setConversationStep('ingredients');
+      }
 
-      case 'details':
-        // Parse details from natural language
-        const servingsMatch = userInput.match(/(\d+)\s*(serving|portion|people)/i);
-        const timeMatch = userInput.match(/(\d+)\s*(minute|min|hour)/i);
-        const cuisineMatch = userInput.match(/(italian|chinese|mexican|french|japanese|indian|thai|american|mediterranean)/i);
-        const difficultyMatch = userInput.match(/(easy|medium|hard|difficult)/i);
-        
-        const updates: Partial<RecipeData> = {};
-        
-        if (servingsMatch) {
-          updates.servings = parseInt(servingsMatch[1]);
-        }
-        if (timeMatch) {
-          const time = parseInt(timeMatch[1]);
-          updates.prepTime = timeMatch[2].toLowerCase().includes('hour') ? time * 60 : time;
-        }
-        if (cuisineMatch) {
-          updates.cuisine = cuisineMatch[1].charAt(0).toUpperCase() + cuisineMatch[1].slice(1).toLowerCase();
-        }
-        if (difficultyMatch) {
-          const diff = difficultyMatch[1].toLowerCase();
-          updates.difficulty = diff === 'hard' || diff === 'difficult' ? 'Hard' : 
-                              diff === 'medium' ? 'Medium' : 'Easy';
-        }
-        
-        setRecipeData(prev => ({ ...prev, ...updates }));
-        
-        const detailsAdded = Object.keys(updates).length;
-        if (detailsAdded > 0) {
-          response = `Perfect! I've captured ${detailsAdded} detail(s). ${
-            updates.servings && updates.prepTime 
-              ? `Your ${recipeData.title} is ready to save! Check the preview on the right. Want to add any tags or a personal story about this recipe?`
-              : "Anything else you'd like to add? Or say 'finish' to complete your recipe!"
-          }`;
-        } else {
-          response = "I didn't catch those details. Could you try again? For example: 'Serves 4, takes 30 minutes, Italian cuisine, medium difficulty'";
-        }
-        
-        if (userInput.toLowerCase().includes('finish') || 
-            userInput.toLowerCase().includes('save') || 
-            userInput.toLowerCase().includes('done')) {
-          response = `🎉 Wonderful! Your recipe "${recipeData.title}" is complete! You can review it in the preview panel on the right, make any edits if needed, and then save it to your collection. Great job!`;
-          nextStep = 'complete';
-        }
-        break;
-
-      case 'complete':
-        response = "Your recipe is all set! Use the 'Save Recipe' button in the preview panel to save it, or say 'start over' to create another recipe.";
-        
-        if (userInput.toLowerCase().includes('start') || 
-            userInput.toLowerCase().includes('new') || 
-            userInput.toLowerCase().includes('another')) {
-          setRecipeData({
-            title: '',
-            ingredients: [],
-            instructions: [],
-            tags: [],
-          });
-          response = "Great! Let's create another masterpiece! What recipe would you like to make?";
-          nextStep = 'initial';
-        }
-        break;
+      // Add AI response
+      addMessage('assistant', data.response || '');
+    } catch (error) {
+      addMessage('assistant', 'Sorry, I had trouble understanding that. Could you try rephrasing? 😅');
+    } finally {
+      setIsLoading(false);
     }
-
-    setConversationStep(nextStep);
-    addMessage('assistant', response);
-    setIsLoading(false);
   };
 
   const handleSend = async () => {
