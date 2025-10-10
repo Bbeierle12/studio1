@@ -35,6 +35,7 @@ model User {
   shoppingLists ShoppingList[]  @relation("UserShoppingLists")
   mealTemplates MealTemplate[]  @relation("UserMealTemplates")
   nutritionGoals NutritionGoal[] @relation("UserNutritionGoals")
+  favorites     FavoriteRecipe[] @relation("UserFavorites")
   auditLogs     AuditLog[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -81,6 +82,7 @@ model Recipe {
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   plans        Plan[]
   plannedMeals PlannedMeal[] @relation("PlannedMealRecipes")
+  favorites    FavoriteRecipe[] @relation("RecipeFavorites")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -105,6 +107,19 @@ model Plan {
   @@unique([recipeId, plannedFor, userId])
   @@index([userId])
   @@index([plannedFor])
+  @@index([recipeId])
+}
+
+model FavoriteRecipe {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserFavorites", fields: [userId], references: [id], onDelete: Cascade)
+  recipeId  String
+  recipe    Recipe   @relation("RecipeFavorites", fields: [recipeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, recipeId])
+  @@index([userId])
   @@index([recipeId])
 }
 
