@@ -9,8 +9,9 @@ import { RecipeDetailDrawer } from '@/components/recipes/recipe-detail-drawer';
 import { RecipeSidebar } from '@/components/recipes/recipe-sidebar';
 import { Book, Plus, Heart, ChefHat } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function RecipeHubPage() {
+function RecipeHubContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedRecipe, setSelectedRecipe] = useState<string | null>(null);
@@ -114,6 +115,40 @@ export default function RecipeHubPage() {
         open={!!selectedRecipe}
         onOpenChange={(open: boolean) => !open && handleCloseRecipe()}
       />
+    </div>
+  );
+}
+
+export default function RecipeHubPage() {
+  return (
+    <Suspense fallback={<RecipeHubSkeleton />}>
+      <RecipeHubContent />
+    </Suspense>
+  );
+}
+
+function RecipeHubSkeleton() {
+  return (
+    <div className="flex h-[calc(100vh-4rem)]">
+      <div className="hidden md:block w-64 border-r bg-muted/30 p-4">
+        <Skeleton className="h-8 w-full mb-4" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+      <div className="flex-1 overflow-auto">
+        <div className="container mx-auto py-6 px-4">
+          <Skeleton className="h-12 w-64 mb-4" />
+          <Skeleton className="h-10 w-full max-w-md mb-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="h-48 w-full rounded-lg" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
