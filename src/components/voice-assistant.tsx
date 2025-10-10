@@ -365,10 +365,19 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
       
       if (response.ok) {
         const data = await response.json();
+        
+        // Check if we're getting a fallback response (not using AI)
+        if (data.fallback) {
+          console.warn('⚠️ Voice Assistant: Received fallback response - OpenAI API may not be configured correctly');
+        }
+        
         return data.answer;
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Voice Assistant API error:', response.status, errorData);
       }
     } catch (error) {
-      console.error('AI conversion error:', error);
+      console.error('❌ AI conversion error:', error);
     }
     
     return `I can help with cooking conversions. Your current system is ${currentSystem}. Try asking 'how many tablespoons in a cup' or 'convert 350 fahrenheit to celsius'.`;
@@ -389,10 +398,20 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
       
       if (response.ok) {
         const data = await response.json();
+        
+        // Check if we're getting a fallback response (not using AI)
+        if (data.fallback) {
+          console.warn('⚠️ Voice Assistant: Received fallback response - OpenAI API may not be configured correctly');
+          console.warn('Check: 1) OPENAI_API_KEY in .env.local, 2) API key validity, 3) Server logs for errors');
+        }
+        
         return data.answer;
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Voice Assistant API error:', response.status, errorData);
       }
     } catch (error) {
-      console.error('AI assistant error:', error);
+      console.error('❌ AI assistant network error:', error);
     }
     
     // Fallback responses
@@ -423,10 +442,20 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
       
       if (response.ok) {
         const data = await response.json();
+        
+        // Check if we're getting a fallback response (not using AI)
+        if (data.fallback) {
+          console.warn('⚠️ Voice Assistant: Received fallback response - OpenAI API may not be configured correctly');
+          console.warn('Check: 1) OPENAI_API_KEY in .env.local, 2) API key validity, 3) Server logs for errors');
+        }
+        
         return data.answer;
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Voice Assistant API error:', response.status, errorData);
       }
     } catch (error) {
-      console.error('AI assistant error:', error);
+      console.error('❌ AI assistant network error:', error);
     }
 
     return "I'm your cooking assistant! I can help with timers, reading recipes, unit conversions, and cooking tips. What would you like help with?";

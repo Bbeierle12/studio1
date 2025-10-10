@@ -87,8 +87,10 @@ ${context ? `Context: The user is currently working with: ${context}` : ''}`;
 
   try {
     // Get user-specific OpenAI instance
+    console.log('🔑 Creating OpenAI client for user:', user.id);
     const openaiClient = await createUserOpenAI(user.id);
     const modelName = getModelName(undefined, 'gpt-4-turbo');
+    console.log('🤖 Using model:', modelName);
     
     const result = await withRetry(() => generateText({
       model: openaiClient(modelName),
@@ -96,6 +98,8 @@ ${context ? `Context: The user is currently working with: ${context}` : ''}`;
       prompt: question,
       temperature: 0.7, // Balanced creativity and accuracy
     }));
+    
+    console.log('✅ OpenAI response received successfully');
 
     // Clean up the response for better voice synthesis
     let answer = result.text
@@ -123,10 +127,17 @@ ${context ? `Context: The user is currently working with: ${context}` : ''}`;
     return createSuccessResponse(responseData);
 
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error('❌ OpenAI API error:', error);
+    console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     
     // Handle specific OpenAI errors
     if (error instanceof OpenAIError) {
+      console.error('OpenAI Error Code:', error.code);
+      
       if (error.code === 'NO_KEY' || error.code === 'INVALID_KEY') {
         const responseData: CookingAssistantResponse = {
           answer: "I need an OpenAI API key to help you. Please configure your API key in Settings.",
@@ -147,6 +158,7 @@ ${context ? `Context: The user is currently working with: ${context}` : ''}`;
     }
     
     // Provide fallback responses when AI service fails
+    console.warn('⚠️ Returning fallback answer due to API error');
     const fallbackAnswer = getFallbackAnswer(question);
     
     const responseData: CookingAssistantResponse = {
