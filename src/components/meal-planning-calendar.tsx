@@ -14,6 +14,7 @@ import { CreateMealPlanDialog } from './calendar/create-meal-plan-dialog';
 import { GenerateMealPlanDialog } from './calendar/generate-meal-plan-dialog';
 import { ShoppingListDialog } from './calendar/shopping-list-dialog';
 import { MealTemplateDialog } from './calendar/meal-template-dialog';
+import { ExportDialog } from './calendar/export-dialog';
 import { useQuery } from '@tanstack/react-query';
 import { MealTemplate } from '@/hooks/use-meal-templates';
 
@@ -41,6 +42,7 @@ export function MealPlanningCalendar() {
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showExport, setShowExport] = useState(false);
 
   const { activeMealPlan, mealPlans, isLoading, addMeal } = useMealPlan();
   const { weatherForecast, isLoading: weatherLoading } = useWeather(
@@ -185,6 +187,7 @@ export function MealPlanningCalendar() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setShowExport(true)}
             disabled={!activeMealPlan}
           >
             <Download className="h-4 w-4 mr-2" />
@@ -324,6 +327,12 @@ export function MealPlanningCalendar() {
             mealPlan={activeMealPlan}
             recipes={recipes}
             onLoadTemplate={handleLoadTemplate}
+          />
+
+          <ExportDialog
+            open={showExport}
+            onOpenChange={setShowExport}
+            mealPlan={activeMealPlan}
           />
         </>
       )}
