@@ -167,6 +167,15 @@ export function UnifiedRecipeForm() {
         const formData = new FormData();
         formData.set('title', title);
         formData.set('photoDataUri', photoDataUri);
+        
+        // Pass additional context to help AI generate better recipes
+        if (prepTime) formData.set('prepTime', prepTime);
+        if (servings) formData.set('servings', servings);
+        if (course) formData.set('course', course);
+        if (cuisine) formData.set('cuisine', cuisine);
+        if (difficulty) formData.set('difficulty', difficulty);
+        if (tags) formData.set('tags', tags);
+        if (story) formData.set('story', story);
 
         try {
           const response = await fetch('/api/generate-recipe', {
@@ -183,7 +192,14 @@ export function UnifiedRecipeForm() {
           // Populate form fields with AI results
           setIngredients(result.ingredients || '');
           setInstructions(result.instructions || '');
-          setTags(result.tags || '');
+          setTags(result.tags || tags); // Use AI tags or keep existing
+          
+          // Set metadata if AI provided them and user didn't specify
+          if (result.prepTime && !prepTime) setPrepTime(result.prepTime);
+          if (result.servings && !servings) setServings(result.servings);
+          if (result.course && !course) setCourse(result.course);
+          if (result.cuisine && !cuisine) setCuisine(result.cuisine);
+          if (result.difficulty && !difficulty) setDifficulty(result.difficulty);
 
           setHelperSource('ai');
           setShowAIDialog(false);
@@ -511,16 +527,16 @@ export function UnifiedRecipeForm() {
 
       {/* AI Generation Dialog */}
       <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Generate Recipe with AI</DialogTitle>
             <DialogDescription>
-              Upload a photo of your dish and enter a title. AI will generate ingredients and instructions for you.
+              Upload a photo and fill in what you know. AI will generate the rest!
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="ai-title">Recipe Title</Label>
+              <Label htmlFor="ai-title">Recipe Title *</Label>
               <Input
                 id="ai-title"
                 placeholder="e.g., Homemade Pizza"
@@ -528,12 +544,10 @@ export function UnifiedRecipeForm() {
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={isGenerating}
               />
-              <p className="text-xs text-muted-foreground">
-                You've already entered: "{title || 'none'}"
-              </p>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="ai-image">Upload Photo</Label>
+              <Label htmlFor="ai-image">Upload Photo *</Label>
               <Input
                 id="ai-image"
                 type="file"
@@ -551,11 +565,134 @@ export function UnifiedRecipeForm() {
                 </div>
               )}
             </div>
+
+            <div className="pt-2 pb-2 border-t">
+              <p className="text-sm font-medium mb-3">
+                Optional: Help AI generate a better recipe
+              </p>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="ai-prepTime" className="text-xs">Prep Time (minutes)</Label>
+                  <Input
+                    id="ai-prepTime"
+                    type="number"
+                    placeholder="e.g., 30"
+                    value={prepTime}
+                    onChange={(e) => setPrepTime(e.target.value)}
+                    disabled={isGenerating}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ai-servings" className="text-xs">Servings</Label>
+                  <Input
+                    id="ai-servings"
+                    type="number"
+                    placeholder="e.g., 4"
+                    value={servings}
+                    onChange={(e) => setServings(e.target.value)}
+                    disabled={isGenerating}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 mt-3">
+                <div className="space-y-2">
+                  <Label htmlFor="ai-course" className="text-xs">Course</Label>
+                  <Select 
+                    value={course} 
+                    onValueChange={setCourse}
+                    disabled={isGenerating}
+                  >
+                    <SelectTrigger id="ai-course">
+                      <SelectValue placeholder="Any" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Any</SelectItem>
+                      <SelectItem value="Appetizer">Appetizer</SelectItem>
+                      <SelectItem value="Main">Main</SelectItem>
+                      <SelectItem value="Dessert">Dessert</SelectItem>
+                      <SelectItem value="Side">Side</SelectItem>
+                      <SelectItem value="Breakfast">Breakfast</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ai-cuisine" className="text-xs">Cuisine</Label>
+                  <Select 
+                    value={cuisine} 
+                    onValueChange={setCuisine}
+                    disabled={isGenerating}
+                  >
+                    <SelectTrigger id="ai-cuisine">
+                      <SelectValue placeholder="Any" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Any</SelectItem>
+                      <SelectItem value="Italian">Italian</SelectItem>
+                      <SelectItem value="American">American</SelectItem>
+                      <SelectItem value="Mexican">Mexican</SelectItem>
+                      <SelectItem value="Asian">Asian</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ai-difficulty" className="text-xs">Difficulty</Label>
+                  <Select 
+                    value={difficulty} 
+                    onValueChange={setDifficulty}
+                    disabled={isGenerating}
+                  >
+                    <SelectTrigger id="ai-difficulty">
+                      <SelectValue placeholder="Any" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Any</SelectItem>
+                      <SelectItem value="Easy">Easy</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="Hard">Hard</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2 mt-3">
+                <Label htmlFor="ai-tags" className="text-xs">Tags (comma-separated)</Label>
+                <Input
+                  id="ai-tags"
+                  placeholder="e.g., dinner, italian, comfort-food"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  disabled={isGenerating}
+                />
+              </div>
+
+              <div className="space-y-2 mt-3">
+                <Label htmlFor="ai-story" className="text-xs">Context / Special Notes</Label>
+                <Textarea
+                  id="ai-story"
+                  placeholder="e.g., Make it kid-friendly, Extra spicy, Vegetarian version..."
+                  rows={2}
+                  value={story}
+                  onChange={(e) => setStory(e.target.value)}
+                  disabled={isGenerating}
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground mt-3">
+                💡 The more details you provide, the better AI can tailor the recipe to your needs
+              </p>
+            </div>
+
             {!title && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/50">
                 <AlertCircle className="h-4 w-4 text-yellow-500" />
                 <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                  Please enter a recipe title above first
+                  Please enter a recipe title and upload a photo
                 </p>
               </div>
             )}
@@ -584,7 +721,7 @@ export function UnifiedRecipeForm() {
               ) : (
                 <>
                   <Wand2 className="mr-2 h-4 w-4" />
-                  Generate
+                  Generate Recipe
                 </>
               )}
             </Button>

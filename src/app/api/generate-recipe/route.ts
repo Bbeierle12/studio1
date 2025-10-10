@@ -13,6 +13,15 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const title = formData.get('title') as string;
     const photoDataUri = formData.get('photoDataUri') as string;
+    
+    // Optional context for better AI generation
+    const prepTime = formData.get('prepTime') as string;
+    const servings = formData.get('servings') as string;
+    const course = formData.get('course') as string;
+    const cuisine = formData.get('cuisine') as string;
+    const difficulty = formData.get('difficulty') as string;
+    const tags = formData.get('tags') as string;
+    const story = formData.get('story') as string;
 
     if (!title || !photoDataUri) {
       return NextResponse.json(
@@ -21,13 +30,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate recipe using AI
-    const result = await generateRecipe({ title, photoDataUri });
+    // Build context string for AI
+    let contextPrompt = `Recipe: ${title}`;
+    if (servings) contextPrompt += `\nServings: ${servings}`;
+    if (prepTime) contextPrompt += `\nPrep time: ${prepTime} minutes`;
+    if (course) contextPrompt += `\nCourse: ${course}`;
+    if (cuisine) contextPrompt += `\nCuisine: ${cuisine}`;
+    if (difficulty) contextPrompt += `\nDifficulty: ${difficulty}`;
+    if (tags) contextPrompt += `\nStyle/Tags: ${tags}`;
+    if (story) contextPrompt += `\nSpecial notes: ${story}`;
+
+    // Generate recipe using AI with enhanced context
+    const result = await generateRecipe({ 
+      title: contextPrompt, 
+      photoDataUri 
+    });
 
     return NextResponse.json({
       ingredients: result.ingredients,
       instructions: result.instructions,
       tags: result.tags,
+      // Include context back if AI didn't override
+      prepTime: prepTime || undefined,
+      servings: servings || undefined,
+      course: course || undefined,
+      cuisine: cuisine || undefined,
+      difficulty: difficulty || undefined,
     });
   } catch (error) {
     console.error('Recipe generation error:', error);
