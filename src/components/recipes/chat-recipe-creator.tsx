@@ -113,7 +113,11 @@ export function ChatRecipeCreator() {
         }),
       });
 
-      if (!res.ok) throw new Error('AI chat failed');
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Recipe chat API error:', errorData);
+        throw new Error(errorData.details || errorData.error || 'AI chat failed');
+      }
       const data = await res.json();
 
       // Update recipe data with extracted info
@@ -170,7 +174,9 @@ export function ChatRecipeCreator() {
       // Add AI response
       addMessage('assistant', data.response || '');
     } catch (error) {
-      addMessage('assistant', 'Sorry, I had trouble understanding that. Could you try rephrasing? 😅');
+      console.error('Chat error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      addMessage('assistant', `Sorry, I had trouble understanding that. Could you try rephrasing? 😅\n\n(Error: ${errorMessage})`);
     } finally {
       setIsLoading(false);
     }

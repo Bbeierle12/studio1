@@ -10,6 +10,15 @@ export async function POST(request: NextRequest) {
   try {
     const { messages, recipeData } = await request.json();
 
+    // Check if API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY is not configured');
+      return NextResponse.json(
+        { error: 'OpenAI API key is not configured' },
+        { status: 500 }
+      );
+    }
+
     // System prompt for ChatGPT-5
     const systemPrompt = `You are a friendly, expert chef assistant helping users create recipes through conversation.\n\nYour role:\n- Guide users through recipe creation naturally\n- Ask clarifying questions\n- Parse ingredients and instructions from natural language\n- Be encouraging and helpful\n- Keep responses concise (2-3 sentences max)\n\nCurrent recipe data:\n${JSON.stringify(recipeData, null, 2)}\n\nWhen the user provides information:\n- Extract ingredients, instructions, servings, time, cuisine, difficulty\n- Respond with what you captured and ask for the next piece\n- Use emojis occasionally to be friendly`;
 
@@ -20,8 +29,7 @@ export async function POST(request: NextRequest) {
         { role: 'system', content: systemPrompt },
         ...messages,
       ],
-      temperature: 0.7,
-      max_tokens: 300,
+      max_completion_tokens: 300,
     });
 
     const response = completion.choices[0].message.content;
@@ -36,8 +44,7 @@ export async function POST(request: NextRequest) {
         },
         ...messages,
       ],
-      temperature: 0.3,
-      max_tokens: 500,
+      max_completion_tokens: 500,
     });
 
     let extractedData = {};
@@ -52,8 +59,12 @@ export async function POST(request: NextRequest) {
       extractedData,
     });
   } catch (error) {
+    console.error('Recipe chat error:', error);
     return NextResponse.json(
-      { error: 'Failed to process chat message' },
+      {
+        error: 'Failed to process chat message',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
