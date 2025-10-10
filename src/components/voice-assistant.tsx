@@ -173,11 +173,23 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
     }
     
     try {
+      console.log('⚙️ Processing command...');
       const response = await processVoiceCommand(command);
-      addMessage('assistant', response);
-      speak(response);
+      console.log('📝 Response received:', response);
+      console.log('📝 Response type:', typeof response);
+      console.log('📝 Response length:', response?.length);
+      
+      if (!response || response.trim() === '') {
+        console.error('⚠️ Empty response received!');
+        const fallbackMsg = "I heard you, but I'm having trouble generating a response. Could you try asking again?";
+        addMessage('assistant', fallbackMsg);
+        speak(fallbackMsg);
+      } else {
+        addMessage('assistant', response);
+        speak(response);
+      }
     } catch (error) {
-      console.error('Command processing error:', error);
+      console.error('❌ Command processing error:', error);
       const errorMsg = "Sorry, I couldn't process that command. Could you try again?";
       addMessage('assistant', errorMsg);
       speak(errorMsg);
@@ -374,7 +386,8 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
         return data.answer;
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Voice Assistant API error:', response.status, errorData);
+        console.error('❌ Voice Assistant API error (conversion):', response.status, errorData);
+        console.error('Full error details:', JSON.stringify(errorData, null, 2));
       }
     } catch (error) {
       console.error('❌ AI conversion error:', error);
@@ -387,17 +400,24 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
   const handleCookingQuestionCommand = async (command: string): Promise<string> => {
     // This would integrate with OpenAI API for intelligent responses
     try {
+      const payload = { 
+        question: command,
+        context: currentRecipe ? `Currently cooking: ${currentRecipe.title}` : undefined 
+      };
+      console.log('📤 Sending to API:', payload);
+      
       const response = await fetch('/api/cooking-assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          question: command,
-          context: currentRecipe ? `Currently cooking: ${currentRecipe.title}` : null 
-        })
+        body: JSON.stringify(payload)
       });
       
       if (response.ok) {
-        const data = await response.json();
+        const result = await response.json();
+        console.log('📥 API response:', result);
+        
+        // Handle wrapped response format: { success: true, data: { answer: "..." } }
+        const data = result.data || result;
         
         // Check if we're getting a fallback response (not using AI)
         if (data.fallback) {
@@ -405,20 +425,20 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
           console.warn('Check: 1) OPENAI_API_KEY in .env.local, 2) API key validity, 3) Server logs for errors');
         }
         
-        return data.answer;
+        const answer = data.answer;
+        console.log('✅ Extracted answer:', answer);
+        return answer || "I'm having trouble generating a response right now.";
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('❌ Voice Assistant API error:', response.status, errorData);
+        return "I'm having trouble connecting to my AI brain. Let me try a simpler response.";
       }
     } catch (error) {
       console.error('❌ AI assistant network error:', error);
+      return "Network error. Please check your connection.";
     }
     
-    // Fallback responses
-    if (command.includes('substitute')) {
-      return "Common substitutions: 1 cup milk can be replaced with 1 cup plant milk, 1 egg can be replaced with 1/4 cup applesauce for baking.";
-    }
-    
+    // This shouldn't be reached now, but keep as ultimate fallback
     return "I'm here to help with cooking questions. Ask me about techniques, substitutions, or cooking tips!";
   };
 
@@ -431,17 +451,24 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
   // General cooking command handler
   const handleGeneralCookingCommand = async (command: string): Promise<string> => {
     try {
+      const payload = { 
+        question: command,
+        context: currentRecipe ? `Currently cooking: ${currentRecipe.title}` : undefined 
+      };
+      console.log('📤 Sending to API (general):', payload);
+      
       const response = await fetch('/api/cooking-assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          question: command,
-          context: currentRecipe ? `Currently cooking: ${currentRecipe.title}` : null 
-        })
+        body: JSON.stringify(payload)
       });
       
       if (response.ok) {
-        const data = await response.json();
+        const result = await response.json();
+        console.log('📥 API response (general):', result);
+        
+        // Handle wrapped response format: { success: true, data: { answer: "..." } }
+        const data = result.data || result;
         
         // Check if we're getting a fallback response (not using AI)
         if (data.fallback) {
@@ -449,15 +476,26 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
           console.warn('Check: 1) OPENAI_API_KEY in .env.local, 2) API key validity, 3) Server logs for errors');
         }
         
-        return data.answer;
+        const answer = data.answer;
+        console.log('✅ Extracted answer (general):', answer);
+        return answer || "I'm having trouble generating a response right now.";
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Voice Assistant API error:', response.status, errorData);
+        console.error('❌ Voice Assistant API error (general):', response.status, errorData);
+        console.error('Full error details:', JSON.stringify(errorData, null, 2));
+        
+        // Return user-friendly error message
+        if (response.status === 422) {
+          return "I couldn't process that command. The voice input might be too short or unclear. Try asking a complete cooking question.";
+        }
+        return "I'm having trouble connecting to my AI brain right now. Please try again.";
       }
     } catch (error) {
       console.error('❌ AI assistant network error:', error);
+      return "Network error. Please check your connection.";
     }
 
+    // This shouldn't be reached now, but keep as ultimate fallback
     return "I'm your cooking assistant! I can help with timers, reading recipes, unit conversions, and cooking tips. What would you like help with?";
   };
 

@@ -22,6 +22,7 @@ import {
   formatRateLimitError,
   RATE_LIMITS 
 } from '@/lib/rate-limit';
+import { getVoiceAssistantSettings } from '@/lib/voice-assistant-settings';
 
 const CookingQuestionSchema = z.object({
   question: z.string().min(1, 'Question is required').max(500, 'Question too long'),
@@ -62,41 +63,43 @@ async function handleCookingAssistant(request: NextRequest) {
   }
 
   const body = await request.json();
+  console.log('📥 Received request body:', JSON.stringify(body, null, 2));
+  
   const { question, context } = validateRequestBody<CookingQuestionRequest>(
     CookingQuestionSchema,
     body
   );
-
-  // Create a cooking-focused system prompt
-  const systemPrompt = `You are Chef Assistant, a helpful AI cooking companion designed to help people while they cook. 
-
-You are especially helpful when someone has dirty hands and needs voice assistance. Keep responses concise but informative - ideal for speaking aloud.
-
-You can help with:
-- Cooking techniques and tips
-- Ingredient substitutions
-- Recipe modifications
-- Food safety advice
-- Timing and temperature guidance
-- Kitchen equipment questions
-- Dietary restrictions and alternatives
-
-Keep responses under 100 words when possible, and always prioritize food safety. Be encouraging and friendly.
-
-${context ? `Context: The user is currently working with: ${context}` : ''}`;
+  
+  console.log('✅ Validation passed. Question:', question, 'Context:', context);
 
   try {
+    // Get voice assistant settings from database
+    const settings = await getVoiceAssistantSettings();
+    console.log('⚙️ Using voice assistant settings:', {
+      model: settings.model,
+      temperature: settings.temperature,
+      maxTokens: settings.maxTokens,
+    });
+
+    // Create system prompt with context
+    const systemPrompt = settings.systemPrompt + 
+      (context ? `\n\nContext: The user is currently working with: ${context}` : '');
+
     // Get user-specific OpenAI instance
     console.log('🔑 Creating OpenAI client for user:', user.id);
     const openaiClient = await createUserOpenAI(user.id);
-    const modelName = getModelName(undefined, 'gpt-4-turbo');
+    const modelName = getModelName(undefined, settings.model);
     console.log('🤖 Using model:', modelName);
     
     const result = await withRetry(() => generateText({
       model: openaiClient(modelName),
       system: systemPrompt,
       prompt: question,
-      temperature: 0.7, // Balanced creativity and accuracy
+      temperature: settings.temperature,
+      topP: settings.topP,
+      frequencyPenalty: settings.frequencyPenalty,
+      presencePenalty: settings.presencePenalty,
+      // Note: maxTokens is set via the model configuration in openai-utils
     }));
     
     console.log('✅ OpenAI response received successfully');
