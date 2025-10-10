@@ -148,10 +148,10 @@ export function UnifiedRecipeForm() {
 
   // AI generation handler
   const handleGenerateWithAI = async () => {
-    if (!aiImageFile || !title) {
+    if (!title) {
       toast({
         title: 'Missing information',
-        description: 'Please enter a recipe title and upload an image',
+        description: 'Please enter a recipe title',
         variant: 'destructive',
       });
       return;
@@ -159,75 +159,68 @@ export function UnifiedRecipeForm() {
 
     setIsGenerating(true);
     try {
-      // Convert image to base64
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const photoDataUri = reader.result as string;
-
-        const formData = new FormData();
-        formData.set('title', title);
+      const formData = new FormData();
+      formData.set('title', title);
+      
+      // Add photo if provided
+      if (aiImageFile) {
+        const reader = new FileReader();
+        const photoDataUri = await new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(aiImageFile);
+        });
         formData.set('photoDataUri', photoDataUri);
-        
-        // Pass additional context to help AI generate better recipes
-        if (prepTime) formData.set('prepTime', prepTime);
-        if (servings) formData.set('servings', servings);
-        if (course) formData.set('course', course);
-        if (cuisine) formData.set('cuisine', cuisine);
-        if (difficulty) formData.set('difficulty', difficulty);
-        if (tags) formData.set('tags', tags);
-        if (story) formData.set('story', story);
+      }
+      
+      // Pass additional context to help AI generate better recipes
+      if (prepTime) formData.set('prepTime', prepTime);
+      if (servings) formData.set('servings', servings);
+      if (course) formData.set('course', course);
+      if (cuisine) formData.set('cuisine', cuisine);
+      if (difficulty) formData.set('difficulty', difficulty);
+      if (tags) formData.set('tags', tags);
+      if (story) formData.set('story', story);
 
-        try {
-          const response = await fetch('/api/generate-recipe', {
-            method: 'POST',
-            body: formData,
-          });
+      const response = await fetch('/api/generate-recipe', {
+        method: 'POST',
+        body: formData,
+      });
 
-          if (!response.ok) {
-            throw new Error('AI generation failed');
-          }
+      if (!response.ok) {
+        throw new Error('AI generation failed');
+      }
 
-          const result = await response.json();
+      const result = await response.json();
 
-          // Populate form fields with AI results
-          setIngredients(result.ingredients || '');
-          setInstructions(result.instructions || '');
-          setTags(result.tags || tags); // Use AI tags or keep existing
-          
-          // Set metadata if AI provided them and user didn't specify
-          if (result.prepTime && !prepTime) setPrepTime(result.prepTime);
-          if (result.servings && !servings) setServings(result.servings);
-          if (result.course && !course) setCourse(result.course);
-          if (result.cuisine && !cuisine) setCuisine(result.cuisine);
-          if (result.difficulty && !difficulty) setDifficulty(result.difficulty);
+      // Populate form fields with AI results
+      setIngredients(result.ingredients || '');
+      setInstructions(result.instructions || '');
+      setTags(result.tags || tags); // Use AI tags or keep existing
+      
+      // Set metadata if AI provided them and user didn't specify
+      if (result.prepTime && !prepTime) setPrepTime(result.prepTime);
+      if (result.servings && !servings) setServings(result.servings);
+      if (result.course && !course) setCourse(result.course);
+      if (result.cuisine && !cuisine) setCuisine(result.cuisine);
+      if (result.difficulty && !difficulty) setDifficulty(result.difficulty);
 
-          setHelperSource('ai');
-          setShowAIDialog(false);
-          setAiImageFile(null);
-          setAiImagePreview('');
+      setHelperSource('ai');
+      setShowAIDialog(false);
+      setAiImageFile(null);
+      setAiImagePreview('');
 
-          toast({
-            title: 'Recipe generated!',
-            description: 'AI has filled in the details. Review and adjust as needed',
-          });
-        } catch (error) {
-          toast({
-            title: 'Generation failed',
-            description: error instanceof Error ? error.message : 'Could not generate recipe',
-            variant: 'destructive',
-          });
-        } finally {
-          setIsGenerating(false);
-        }
-      };
-      reader.readAsDataURL(aiImageFile);
-    } catch (error) {
-      setIsGenerating(false);
       toast({
-        title: 'Error',
-        description: 'Failed to process image',
+        title: 'Recipe generated!',
+        description: 'AI has filled in the details. Review and adjust as needed',
+      });
+    } catch (error) {
+      toast({
+        title: 'Generation failed',
+        description: error instanceof Error ? error.message : 'Could not generate recipe',
         variant: 'destructive',
       });
+    } finally {
+      setIsGenerating(false);
     }
   };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
 import { RecipeCreator } from '@/components/recipes/recipe-creator';
@@ -10,6 +10,28 @@ import { RecipeSidebar } from '@/components/recipes/recipe-sidebar';
 import { Book, Plus, Heart, ChefHat } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy load chat creator to avoid SSR issues with canvas
+const ChatRecipeCreator = lazy(() => 
+  import('@/components/recipes/chat-recipe-creator').then(mod => ({ 
+    default: mod.ChatRecipeCreator 
+  }))
+);
+
+function ChatRecipeCreatorWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-[600px]">
+        <div className="text-center">
+          <Skeleton className="h-12 w-12 rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading chat interface...</p>
+        </div>
+      </div>
+    }>
+      <ChatRecipeCreator />
+    </Suspense>
+  );
+}
 
 function RecipeHubContent() {
   const searchParams = useSearchParams();
@@ -56,6 +78,11 @@ function RecipeHubContent() {
     router.push(newUrl, { scroll: false });
   };
 
+  // Full-screen chat mode for Create tab
+  if (activeTab === 'create') {
+    return <ChatRecipeCreatorWrapper />;
+  }
+
   return (
     <div className="flex h-[calc(100vh-4rem)]">
       {/* Sidebar */}
@@ -97,8 +124,8 @@ function RecipeHubContent() {
                 <RecipeBrowser onSelectRecipe={handleSelectRecipe} />
               </TabsContent>
 
-              <TabsContent value="create" className="space-y-4">
-                <RecipeCreator />
+              <TabsContent value="create" className="h-full">
+                {/* This won't render due to full-screen mode above */}
               </TabsContent>
 
               <TabsContent value="my-recipes" className="space-y-4">
