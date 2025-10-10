@@ -19,10 +19,13 @@ import {
   Users,
   ChefHat,
   Heart,
-  X
+  X,
+  Check
 } from 'lucide-react';
 import { VoiceAssistant } from '@/components/voice-assistant';
 import Link from 'next/link';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface RecipeDetailDrawerProps {
   recipeId: string | null;
@@ -35,15 +38,59 @@ export function RecipeDetailDrawer({
   open,
   onOpenChange,
 }: RecipeDetailDrawerProps) {
-  const { data: recipe, isLoading } = useQuery({
+  const { toast } = useToast();
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  const { data: recipe, isLoading, error } = useQuery({
     queryKey: ['recipe', recipeId],
-    queryFn: async () => {
-      const res = await fetch(`/api/recipes/${recipeId}`);
-      if (!res.ok) throw new Error('Failed to fetch recipe');
-      return res.json();
-    },
+    queryFn: () =>
+      fetch(`/api/recipes/${recipeId}`).then(res => {
+        if (!res.ok) throw new Error('Failed to fetch recipe');
+        return res.json();
+      }),
     enabled: !!recipeId && open,
+    staleTime: 5 * 60 * 1000,
   });
+
+  const handlePrint = () => {
+    window.print();
+    toast({
+      title: 'Print',
+      description: 'Opening print dialog...',
+    });
+  };
+
+  const handleShare = async () => {
+    if (navigator.share && recipe) {
+      try {
+        await navigator.share({
+          title: recipe.title,
+          text: recipe.summary,
+          url: window.location.href,
+        });
+      } catch (err) {
+        // User cancelled or error
+        console.log('Share cancelled');
+      }
+    } else {
+      // Fallback: copy link
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: 'Link copied!',
+        description: 'Recipe link copied to clipboard',
+      });
+    }
+  };
+
+  const handleFavorite = () => {
+    setIsFavorited(!isFavorited);
+    toast({
+      title: isFavorited ? 'Removed from favorites' : 'Added to favorites',
+      description: isFavorited 
+        ? 'Recipe removed from your favorites' 
+        : 'Recipe added to your favorites',
+    });
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -70,19 +117,29 @@ export function RecipeDetailDrawer({
                     Edit
                   </Link>
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Add to Meal Plan
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/meal-planning?recipe=${recipe.id}`}>
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Add to Meal Plan
+                  </Link>
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Heart className="h-4 w-4 mr-2" />
-                  Favorite
+                <Button 
+                  variant={isFavorited ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={handleFavorite}
+                >
+                  {isFavorited ? (
+                    <Check className="h-4 w-4 mr-2" />
+                  ) : (
+                    <Heart className="h-4 w-4 mr-2" />
+                  )}
+                  {isFavorited ? 'Favorited' : 'Favorite'}
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleShare}>
                   <Share2 className="h-4 w-4 mr-2" />
                   Share
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => window.print()}>
+                <Button variant="outline" size="sm" onClick={handlePrint}>
                   <Printer className="h-4 w-4 mr-2" />
                   Print
                 </Button>

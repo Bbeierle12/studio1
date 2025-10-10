@@ -1,28 +1,7 @@
-// Unified Recipe Types for Recipe Hub
+// Re-export the main Recipe type from lib/types
+export type { Recipe, User } from '@/lib/types';
 
-export interface Recipe {
-  id: string;
-  title: string;
-  slug: string;
-  contributor: string;
-  course: string | null;
-  cuisine: string | null;
-  difficulty: string | null;
-  prepTime: number | null;
-  cookTime?: number | null;
-  totalTime?: number | null;
-  servings: number | null;
-  tags: string;
-  summary: string;
-  imageUrl: string;
-  imageHint?: string;
-  ingredients: string;
-  instructions: string;
-  userId?: string;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-}
-
+// Additional interfaces for Recipe Hub
 export interface RecipeFilters {
   query?: string;
   tag?: string;
@@ -30,11 +9,6 @@ export interface RecipeFilters {
   cuisine?: string;
   difficulty?: string;
   userId?: string;
-}
-
-export interface RecipeCardProps {
-  recipe: Recipe;
-  onClick?: () => void;
 }
 
 export interface RecipeFormData {
@@ -51,5 +25,5 @@ export interface RecipeFormData {
   ingredients: string;
   instructions: string;
   imageUrl: string;
-  imageHint?: string;
+  imageHint: string;
 }

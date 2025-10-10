@@ -6,21 +6,7 @@ import { RecipeCard } from '@/components/recipe-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Clock, Star } from 'lucide-react';
-
-interface Recipe {
-  id: string;
-  title: string;
-  slug: string;
-  course: string | null;
-  cuisine: string | null;
-  difficulty: string | null;
-  prepTime: number | null;
-  servings: number | null;
-  tags: string;
-  summary: string;
-  imageUrl: string;
-  ingredients: string;
-}
+import { Recipe } from '@/types/recipe';
 
 interface MyRecipesProps {
   onSelectRecipe: (id: string) => void;
@@ -32,11 +18,11 @@ export function MyRecipes({ onSelectRecipe }: MyRecipesProps) {
   // Fetch user's created recipes
   const { data: myRecipes = [], isLoading: myRecipesLoading } = useQuery<Recipe[]>({
     queryKey: ['my-recipes', user?.id],
-    queryFn: async () => {
-      const res = await fetch('/api/recipes?userId=' + user?.id);
-      if (!res.ok) throw new Error('Failed to fetch recipes');
-      return res.json();
-    },
+    queryFn: () =>
+      fetch(`/api/recipes?userId=${user?.id}`).then(res => {
+        if (!res.ok) throw new Error('Failed to fetch recipes');
+        return res.json();
+      }),
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
@@ -44,22 +30,23 @@ export function MyRecipes({ onSelectRecipe }: MyRecipesProps) {
   // Fetch user's favorite recipes
   const { data: favorites = [], isLoading: favoritesLoading } = useQuery<Recipe[]>({
     queryKey: ['favorite-recipes', user?.id],
-    queryFn: async () => {
-      const res = await fetch('/api/recipes/favorites');
-      if (!res.ok) throw new Error('Failed to fetch favorites');
-      return res.json();
-    },
+    queryFn: () =>
+      fetch('/api/recipes/favorites').then(res => {
+        if (!res.ok) {
+          // Return empty array if endpoint doesn't exist yet
+          if (res.status === 404) return [];
+          throw new Error('Failed to fetch favorites');
+        }
+        return res.json();
+      }),
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch recently viewed recipes
+  // Fetch recently viewed recipes (placeholder for now)
   const { data: recentlyViewed = [], isLoading: recentLoading } = useQuery<Recipe[]>({
     queryKey: ['recent-recipes', user?.id],
-    queryFn: async () => {
-      // This would need a backend endpoint to track viewed recipes
-      return [];
-    },
+    queryFn: () => Promise.resolve([]),
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
@@ -112,7 +99,7 @@ export function MyRecipes({ onSelectRecipe }: MyRecipesProps) {
                   onClick={() => onSelectRecipe(recipe.id)}
                   className="cursor-pointer transition-transform hover:scale-[1.02]"
                 >
-                  <RecipeCard recipe={recipe as any} />
+                  <RecipeCard recipe={recipe} />
                 </div>
               ))}
             </div>
@@ -137,7 +124,7 @@ export function MyRecipes({ onSelectRecipe }: MyRecipesProps) {
                   onClick={() => onSelectRecipe(recipe.id)}
                   className="cursor-pointer transition-transform hover:scale-[1.02]"
                 >
-                  <RecipeCard recipe={recipe as any} />
+                  <RecipeCard recipe={recipe} />
                 </div>
               ))}
             </div>
@@ -163,7 +150,7 @@ export function MyRecipes({ onSelectRecipe }: MyRecipesProps) {
                   onClick={() => onSelectRecipe(recipe.id)}
                   className="cursor-pointer transition-transform hover:scale-[1.02]"
                 >
-                  <RecipeCard recipe={recipe as any} />
+                  <RecipeCard recipe={recipe} />
                 </div>
               ))}
             </div>

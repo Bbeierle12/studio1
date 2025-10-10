@@ -5,9 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { RecipeCard } from '@/components/recipe-card';
-import { RecipeFilter } from '@/components/recipe-filter';
-import { Search, Filter, Grid3x3, List } from 'lucide-react';
+import { Search, Filter, Grid3x3, List, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -15,21 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-interface Recipe {
-  id: string;
-  title: string;
-  slug: string;
-  course: string | null;
-  cuisine: string | null;
-  difficulty: string | null;
-  prepTime: number | null;
-  servings: number | null;
-  tags: string;
-  summary: string;
-  imageUrl: string;
-  ingredients: string;
-}
+import { Recipe } from '@/types/recipe';
 
 interface RecipeBrowserProps {
   onSelectRecipe: (id: string) => void;
@@ -41,16 +27,13 @@ export function RecipeBrowser({ onSelectRecipe }: RecipeBrowserProps) {
   const [sortBy, setSortBy] = useState('recent');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const { data: recipes = [], isLoading } = useQuery<Recipe[]>({
+  const { data: recipes = [], isLoading, error } = useQuery<Recipe[]>({
     queryKey: ['recipes', searchQuery, selectedTag],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (searchQuery) params.set('query', searchQuery);
-      if (selectedTag) params.set('tag', selectedTag);
-      
-      const res = await fetch(`/api/recipes?${params.toString()}`);
-      if (!res.ok) throw new Error('Failed to fetch recipes');
-      return res.json();
+    queryFn: () => {
+      return fetch(`/api/recipes${searchQuery || selectedTag ? '?' : ''}${searchQuery ? `query=${encodeURIComponent(searchQuery)}` : ''}${searchQuery && selectedTag ? '&' : ''}${selectedTag ? `tag=${encodeURIComponent(selectedTag)}` : ''}`).then(res => {
+        if (!res.ok) throw new Error('Failed to fetch recipes');
+        return res.json();
+      });
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -115,8 +98,40 @@ export function RecipeBrowser({ onSelectRecipe }: RecipeBrowserProps) {
         </div>
       </div>
 
-      {/* Tag Filter - To be implemented */}
-      {/* <RecipeFilter tags={[]} /> */}
+      {/* Active Filters */}
+      {(searchQuery || selectedTag) && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm text-muted-foreground">Active filters:</span>
+          {searchQuery && (
+            <Badge variant="secondary" className="gap-2">
+              Search: {searchQuery}
+              <X
+                className="h-3 w-3 cursor-pointer"
+                onClick={() => setSearchQuery('')}
+              />
+            </Badge>
+          )}
+          {selectedTag && (
+            <Badge variant="secondary" className="gap-2">
+              Tag: {selectedTag}
+              <X
+                className="h-3 w-3 cursor-pointer"
+                onClick={() => setSelectedTag('')}
+              />
+            </Badge>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedTag('');
+            }}
+          >
+            Clear all
+          </Button>
+        </div>
+      )}
 
       {/* Results Count */}
       <div className="flex items-center justify-between">
@@ -125,10 +140,20 @@ export function RecipeBrowser({ onSelectRecipe }: RecipeBrowserProps) {
         </p>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-12 border border-dashed rounded-lg border-destructive">
+          <p className="text-lg text-destructive mb-2">Failed to load recipes</p>
+          <p className="text-sm text-muted-foreground">
+            Please try again later or contact support
+          </p>
+        </div>
+      )}
+
       {/* Recipe Grid/List */}
       {isLoading ? (
         <RecipeGridSkeleton />
-      ) : sortedRecipes.length > 0 ? (
+      ) : !error && sortedRecipes.length > 0 ? (
         <div className={
           viewMode === 'grid'
             ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
@@ -140,7 +165,7 @@ export function RecipeBrowser({ onSelectRecipe }: RecipeBrowserProps) {
               onClick={() => onSelectRecipe(recipe.id)}
               className="cursor-pointer transition-transform hover:scale-[1.02]"
             >
-              <RecipeCard recipe={recipe as any} />
+              <RecipeCard recipe={recipe} />
             </div>
           ))}
         </div>
