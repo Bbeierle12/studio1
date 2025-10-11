@@ -1,9 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-// Import your OpenAI SDK (update import if using a different package)
-import OpenAI from 'openai';
+import { NextRequest } from 'next/server';
+import { openai } from '@ai-sdk/openai';
+import { streamText, generateObject } from 'ai';
+import { z } from 'zod';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+// Schema for extracted recipe data
+const RecipeExtractionSchema = z.object({
+  title: z.string().nullable(),
+  ingredients: z.array(z.string()).describe('Individual ingredients'),
+  instructions: z.array(z.string()).describe('Numbered cooking steps'),
+  servings: z.number().nullable(),
+  prepTime: z.number().nullable().describe('Preparation time in minutes'),
+  cuisine: z.string().nullable(),
+  difficulty: z.enum(['Easy', 'Medium', 'Hard']).nullable(),
+  tags: z.array(z.string()),
 });
 
 export async function POST(request: NextRequest) {
@@ -13,59 +22,74 @@ export async function POST(request: NextRequest) {
     // Check if API key is configured
     if (!process.env.OPENAI_API_KEY) {
       console.error('OPENAI_API_KEY is not configured');
-      return NextResponse.json(
-        { error: 'OpenAI API key is not configured' },
-        { status: 500 }
+      return new Response(
+        JSON.stringify({ error: 'OpenAI API key is not configured' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // System prompt for ChatGPT-5
-    const systemPrompt = `You are a friendly, expert chef assistant helping users create recipes through conversation.\n\nYour role:\n- Guide users through recipe creation naturally\n- Ask clarifying questions\n- Parse ingredients and instructions from natural language\n- Be encouraging and helpful\n- Keep responses concise (2-3 sentences max)\n\nCurrent recipe data:\n${JSON.stringify(recipeData, null, 2)}\n\nWhen the user provides information:\n- Extract ingredients, instructions, servings, time, cuisine, difficulty\n- Respond with what you captured and ask for the next piece\n- Use emojis occasionally to be friendly`;
+    // System prompt for the chat assistant
+    const systemPrompt = `You are a friendly, expert chef assistant helping users create recipes through conversation.
 
-    // Call ChatGPT-5 (update model name if needed)
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-5',
+Your role:
+- Guide users through recipe creation naturally
+- Ask clarifying questions
+- Parse ingredients and instructions from natural language
+- Be encouraging and helpful
+- Keep responses concise (2-3 sentences max)
+
+Current recipe data:
+${JSON.stringify(recipeData, null, 2)}
+
+When the user provides information:
+- Extract ingredients, instructions, servings, time, cuisine, difficulty
+- Respond with what you captured and ask for the next piece
+- Use emojis occasionally to be friendly`;
+
+    // Generate the conversational response
+    const result = await streamText({
+      model: openai('gpt-4o'),
       messages: [
         { role: 'system', content: systemPrompt },
         ...messages,
       ],
-      max_completion_tokens: 300,
     });
 
-    const response = completion.choices[0].message.content;
+    // Get the full text for extraction
+    const fullText = await result.text;
 
-    // Extraction step: ask ChatGPT-5 to return structured recipe data
-    const extraction = await openai.chat.completions.create({
-      model: 'gpt-5',
+    // Extract structured recipe data using generateObject
+    const { object: extractedData } = await generateObject({
+      model: openai('gpt-4o'),
+      schema: RecipeExtractionSchema,
       messages: [
         {
           role: 'system',
-          content: `Extract recipe information from this conversation. Return JSON only.\n\nFormat:\n{\n  "title": string or null,\n  "ingredients": string[] (individual ingredients),\n  "instructions": string[] (numbered steps),\n  "servings": number or null,\n  "prepTime": number (minutes) or null,\n  "cuisine": string or null,\n  "difficulty": "Easy" | "Medium" | "Hard" | null,\n  "tags": string[]\n}`,
+          content: 'Extract recipe information from this conversation. Return structured data based on the schema.',
         },
         ...messages,
+        { role: 'assistant', content: fullText },
       ],
-      max_completion_tokens: 500,
     });
 
-    let extractedData = {};
-    try {
-      extractedData = JSON.parse(extraction.choices[0].message.content || '{}');
-    } catch (e) {
-      // fallback: empty object
-    }
-
-    return NextResponse.json({
-      response,
-      extractedData,
-    });
+    // Return both the response and extracted data
+    return new Response(
+      JSON.stringify({
+        response: fullText,
+        extractedData,
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
     console.error('Recipe chat error:', error);
-    return NextResponse.json(
-      {
+    return new Response(
+      JSON.stringify({
         error: 'Failed to process chat message',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
+        details: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
