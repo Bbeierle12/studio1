@@ -5,9 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
 import { RecipeCreator } from '@/components/recipes/recipe-creator';
 import { MyRecipes } from '@/components/recipes/my-recipes';
+import { RecipeCollections } from '@/components/recipes/recipe-collections';
 import { RecipeDetailDrawer } from '@/components/recipes/recipe-detail-drawer';
 import { RecipeSidebar } from '@/components/recipes/recipe-sidebar';
-import { Book, Plus, Heart, ChefHat } from 'lucide-react';
+import { Book, Plus, Heart, ChefHat, Library, Grid } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -38,14 +39,20 @@ function RecipeHubContent() {
   const router = useRouter();
   const [selectedRecipe, setSelectedRecipe] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('browse');
+  const [browseSubTab, setBrowseSubTab] = useState('all');
 
   // Support deep linking with ?tab=create, ?recipe=id, etc.
   useEffect(() => {
     const tab = searchParams.get('tab');
     const recipeId = searchParams.get('recipe');
+    const subTab = searchParams.get('subTab');
     
     if (tab && ['browse', 'create', 'my-recipes'].includes(tab)) {
       setActiveTab(tab);
+    }
+
+    if (subTab && ['all', 'collections'].includes(subTab)) {
+      setBrowseSubTab(subTab);
     }
     
     if (recipeId) {
@@ -58,6 +65,14 @@ function RecipeHubContent() {
     // Update URL without page reload
     const params = new URLSearchParams(searchParams);
     params.set('tab', value);
+    router.push(`/recipes?${params.toString()}`, { scroll: false });
+  };
+
+  const handleBrowseSubTabChange = (value: string) => {
+    setBrowseSubTab(value);
+    // Update URL without page reload
+    const params = new URLSearchParams(searchParams);
+    params.set('subTab', value);
     router.push(`/recipes?${params.toString()}`, { scroll: false });
   };
 
@@ -121,7 +136,27 @@ function RecipeHubContent() {
 
             <Suspense fallback={<div>Loading...</div>}>
               <TabsContent value="browse" className="space-y-4">
-                <RecipeBrowser onSelectRecipe={handleSelectRecipe} />
+                {/* Nested tabs for Browse: All Recipes and Collections */}
+                <Tabs value={browseSubTab} onValueChange={handleBrowseSubTabChange}>
+                  <TabsList className="grid w-full grid-cols-2 max-w-xs">
+                    <TabsTrigger value="all" className="gap-2">
+                      <Grid className="h-4 w-4" />
+                      <span>All Recipes</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="collections" className="gap-2">
+                      <Library className="h-4 w-4" />
+                      <span>Collections</span>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="all" className="mt-4">
+                    <RecipeBrowser onSelectRecipe={handleSelectRecipe} />
+                  </TabsContent>
+
+                  <TabsContent value="collections" className="mt-4">
+                    <RecipeCollections />
+                  </TabsContent>
+                </Tabs>
               </TabsContent>
 
               <TabsContent value="create" className="h-full">

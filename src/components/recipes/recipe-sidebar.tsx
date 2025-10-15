@@ -40,9 +40,11 @@ export function RecipeSidebar({ activeTab }: RecipeSidebarProps) {
               Shopping List
             </Link>
           </Button>
-          <Button variant="ghost" className="w-full justify-start" size="sm">
-            <BookMarked className="h-4 w-4 mr-2" />
-            Collections
+          <Button variant="ghost" className="w-full justify-start" size="sm" asChild>
+            <Link href="/recipes?tab=browse&subTab=collections">
+              <BookMarked className="h-4 w-4 mr-2" />
+              Collections
+            </Link>
           </Button>
         </div>
       </div>

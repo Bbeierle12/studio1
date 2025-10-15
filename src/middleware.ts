@@ -19,6 +19,12 @@ export default withAuth(
   async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // Redirect /collections to the new nested location
+    if (pathname === '/collections') {
+      const url = new URL('/recipes?tab=browse&subTab=collections', request.url);
+      return NextResponse.redirect(url);
+    }
+
     // Skip maintenance check for exempt routes
     const isExempt = MAINTENANCE_EXEMPT_ROUTES.some((route) =>
       pathname.startsWith(route)

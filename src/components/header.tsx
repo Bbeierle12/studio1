@@ -87,7 +87,6 @@ export function Header() {
     { href: '/recipes', label: 'Browse', icon: CookingPot },
     { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays },
     { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { href: '/collections', label: 'Collections', icon: Library },
     { href: '/saved', label: 'Saved', icon: Bookmark },
     {
       href: '/recipes/new',
