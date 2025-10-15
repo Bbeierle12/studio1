@@ -37,6 +37,8 @@ import {
   Heart,
   Calendar,
   Star,
+  Edit,
+  Flag,
 } from 'lucide-react';
 import { UserRole } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
@@ -58,6 +60,8 @@ interface Recipe {
   userId: string;
   isFeatured?: boolean;
   featuredAt?: string | null;
+  isReported?: boolean;
+  reportCount?: number;
   createdAt: string;
   updatedAt: string;
   user: {
@@ -97,6 +101,7 @@ export default function RecipeManagementPage() {
   const [courseFilter, setCourseFilter] = useState<string>('all');
   const [cuisineFilter, setCuisineFilter] = useState<string>('all');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
+  const [reportedFilter, setReportedFilter] = useState<string>('all'); // all, reported, not-reported
 
   useEffect(() => {
     if (!loading && (!user || !user.role || !hasPermission(user.role, 'VIEW_ALL_RECIPES'))) {
@@ -108,7 +113,7 @@ export default function RecipeManagementPage() {
     if (user && user.role && hasPermission(user.role, 'VIEW_ALL_RECIPES')) {
       fetchRecipes();
     }
-  }, [user, pagination.page, search, courseFilter, cuisineFilter, difficultyFilter]);
+  }, [user, pagination.page, search, courseFilter, cuisineFilter, difficultyFilter, reportedFilter]);
 
   const fetchRecipes = async () => {
     setLoadingRecipes(true);
@@ -122,6 +127,7 @@ export default function RecipeManagementPage() {
       if (courseFilter !== 'all') params.append('course', courseFilter);
       if (cuisineFilter !== 'all') params.append('cuisine', cuisineFilter);
       if (difficultyFilter !== 'all') params.append('difficulty', difficultyFilter);
+      if (reportedFilter !== 'all') params.append('reported', reportedFilter);
 
       const response = await fetch(`/api/admin/recipes?${params}`);
       if (response.ok) {
@@ -322,6 +328,16 @@ export default function RecipeManagementPage() {
                   <SelectItem value='Hard'>Hard</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={reportedFilter} onValueChange={setReportedFilter}>
+                <SelectTrigger className='w-full md:w-[160px]'>
+                  <SelectValue placeholder='Status' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='all'>All Recipes</SelectItem>
+                  <SelectItem value='reported'>⚠️ Reported</SelectItem>
+                  <SelectItem value='not-reported'>✓ Not Reported</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardHeader>
 
@@ -384,6 +400,17 @@ export default function RecipeManagementPage() {
                                   View Author
                                 </Link>
                               </DropdownMenuItem>
+                              {hasPermission(user.role!, 'EDIT_ANY_RECIPE') && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/recipes/${recipe.slug}/edit`}>
+                                      <Edit className='h-4 w-4 mr-2' />
+                                      Edit Recipe
+                                    </Link>
+                                  </DropdownMenuItem>
+                                </>
+                              )}
                               {hasPermission(user.role!, 'FEATURE_RECIPES') && (
                                 <>
                                   <DropdownMenuSeparator />
@@ -420,6 +447,12 @@ export default function RecipeManagementPage() {
                             <Badge className='bg-yellow-100 text-yellow-800'>
                               <Star className='h-3 w-3 mr-1 fill-yellow-600' />
                               Featured
+                            </Badge>
+                          )}
+                          {recipe.isReported && (
+                            <Badge className='bg-red-100 text-red-800'>
+                              <Flag className='h-3 w-3 mr-1' />
+                              Reported {recipe.reportCount ? `(${recipe.reportCount})` : ''}
                             </Badge>
                           )}
                           {recipe.course && (

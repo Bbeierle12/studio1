@@ -193,21 +193,31 @@ export default function AdminDashboard() {
 
             {/* Recipe Management */}
             {isContentAdmin && (
-              <Button
-                asChild
-                variant='outline'
-                className='h-auto flex-col items-start gap-2 p-4'
-              >
-                <Link href='/admin/recipes'>
-                  <CookingPot className='h-6 w-6' />
-                  <div className='text-left'>
-                    <div className='font-semibold'>Recipe Management</div>
-                    <div className='text-xs text-muted-foreground'>
-                      Edit, delete, and feature recipes
-                    </div>
-                  </div>
-                </Link>
-              </Button>
+              <Link href='/admin/recipes'>
+                <Card className='group hover:shadow-lg transition-shadow cursor-pointer h-full'>
+                  <CardHeader className='pb-3'>
+                    <CardTitle className='flex items-center gap-2 text-base'>
+                      <CookingPot className='h-5 w-5' />
+                      Recipe Management
+                    </CardTitle>
+                    <CardDescription className='text-xs'>
+                      Moderate and manage all recipes across the platform
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className='text-xs text-muted-foreground space-y-1'>
+                      <li>• View and search all {stats?.totalRecipes || 0} recipes</li>
+                      <li>• Advanced filtering by course, cuisine & difficulty</li>
+                      <li>• Feature/unfeature recipes for homepage</li>
+                      <li>• Edit and delete any recipe</li>
+                      <li>• View engagement metrics (favorites, planned meals)</li>
+                      <li>• Moderate inappropriate or reported content</li>
+                      <li>• Track recipe authors and activity</li>
+                      <li>• Full audit trail of all recipe actions</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </Link>
             )}
 
             {/* Analytics */}
