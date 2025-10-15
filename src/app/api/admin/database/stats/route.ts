@@ -15,6 +15,15 @@ export async function GET() {
       );
     }
 
+    // Check if database is configured
+    if (!process.env.DATABASE_URL) {
+      console.error('DATABASE_URL not configured');
+      return NextResponse.json(
+        { error: 'Database not configured. Please set DATABASE_URL environment variable.' },
+        { status: 500 }
+      );
+    }
+
     const startTime = Date.now();
 
     // Get table counts
@@ -74,7 +83,7 @@ export async function GET() {
         message: healthMessage,
         responseTime,
       },
-      prismaVersion: require('../../../../package.json').dependencies['@prisma/client'] || 'Unknown',
+      prismaVersion: '^6.16.2', // Hardcoded version - update when upgrading Prisma
       databaseUrl: process.env.DATABASE_URL?.split('@')[1]?.split('?')[0] || 'Hidden',
       lastMigration: null, // Could be enhanced to read migration history
     };
@@ -91,10 +100,22 @@ export async function GET() {
     });
 
     return NextResponse.json(stats);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching database statistics:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to fetch database statistics';
+    
+    if (error.code === 'P1001') {
+      errorMessage = 'Cannot connect to database. Please check DATABASE_URL.';
+    } else if (error.code === 'P2021') {
+      errorMessage = 'Database table does not exist. Please run migrations.';
+    } else if (error.message?.includes('connect')) {
+      errorMessage = 'Database connection failed. Please check your database is running.';
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch database statistics' },
+      { error: errorMessage, details: error.message },
       { status: 500 }
     );
   }
