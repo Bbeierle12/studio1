@@ -15,9 +15,11 @@ import {
   RefreshCw,
   UserCheck,
   UserPlus,
+  Heart,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import Link from 'next/link';
 
 interface AnalyticsData {
   overview: {
@@ -48,6 +50,22 @@ interface AnalyticsData {
     name: string | null;
     email: string;
     recipeCount: number;
+  }>;
+  popularRecipes: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    imageUrl: string;
+    favoritesCount: number;
+    plannedMealsCount: number;
+  }>;
+  recipesByCourse: Array<{
+    course: string;
+    count: number;
+  }>;
+  recipesByCuisine: Array<{
+    cuisine: string;
+    count: number;
   }>;
 }
 
@@ -321,6 +339,100 @@ export default function AnalyticsPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recipe Analytics */}
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Most Popular Recipes</CardTitle>
+              <CardDescription>Recipes with the most favorites</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='space-y-4'>
+                {analytics.popularRecipes?.map((recipe, index) => (
+                  <Link
+                    key={recipe.id}
+                    href={`/recipes/${recipe.slug}`}
+                    target='_blank'
+                    className='flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors'
+                  >
+                    <div className='flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm'>
+                      {index + 1}
+                    </div>
+                    <img
+                      src={recipe.imageUrl}
+                      alt={recipe.title}
+                      className='w-12 h-12 rounded object-cover'
+                    />
+                    <div className='flex-1 min-w-0'>
+                      <div className='font-medium truncate'>{recipe.title}</div>
+                      <div className='text-xs text-muted-foreground flex items-center gap-3'>
+                        <span className='flex items-center gap-1'>
+                          <Heart className='h-3 w-3' />
+                          {recipe.favoritesCount} favorites
+                        </span>
+                        <span className='flex items-center gap-1'>
+                          <CalendarDays className='h-3 w-3' />
+                          {recipe.plannedMealsCount} planned
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                )) || <p className='text-sm text-muted-foreground'>No data available</p>}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recipes by Course</CardTitle>
+              <CardDescription>Distribution of recipe categories</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='h-[300px]'>
+                <ResponsiveContainer width='100%' height='100%'>
+                  <PieChart>
+                    <Pie
+                      data={analytics.recipesByCourse || []}
+                      dataKey='count'
+                      nameKey='course'
+                      cx='50%'
+                      cy='50%'
+                      outerRadius={80}
+                      label={(entry) => `${entry.course}: ${entry.count}`}
+                    >
+                      {(analytics.recipesByCourse || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'][index % 5]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Cuisine Distribution */}
+        <div className='grid grid-cols-1 gap-6 mt-6'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recipes by Cuisine</CardTitle>
+              <CardDescription>Global cuisine distribution</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                {analytics.recipesByCuisine?.map((item) => (
+                  <div key={item.cuisine} className='p-4 border rounded-lg text-center'>
+                    <div className='text-2xl font-bold'>{item.count}</div>
+                    <div className='text-sm text-muted-foreground'>{item.cuisine}</div>
+                  </div>
+                )) || <p className='text-sm text-muted-foreground col-span-4'>No data available</p>}
               </div>
             </CardContent>
           </Card>

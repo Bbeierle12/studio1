@@ -128,6 +128,59 @@ export async function GET(req: NextRequest) {
         },
       },
       take: 5,
+      where: {
+        recipes: {
+          some: {},
+        },
+      },
+    });
+
+    // Get most popular recipes by favorites
+    const popularRecipes = await prisma.recipe.findMany({
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        imageUrl: true,
+        _count: {
+          select: {
+            favorites: true,
+            plannedMeals: true,
+          },
+        },
+      },
+      orderBy: {
+        favorites: {
+          _count: 'desc',
+        },
+      },
+      take: 5,
+    });
+
+    // Get recipe distribution by course
+    const recipesByCourse = await prisma.recipe.groupBy({
+      by: ['course'],
+      _count: {
+        course: true,
+      },
+      where: {
+        course: {
+          not: null,
+        },
+      },
+    });
+
+    // Get recipe distribution by cuisine
+    const recipesByCuisine = await prisma.recipe.groupBy({
+      by: ['cuisine'],
+      _count: {
+        cuisine: true,
+      },
+      where: {
+        cuisine: {
+          not: null,
+        },
+      },
     });
 
     return NextResponse.json({
@@ -153,6 +206,22 @@ export async function GET(req: NextRequest) {
         name: user.name,
         email: user.email,
         recipeCount: user._count.recipes,
+      })),
+      popularRecipes: popularRecipes.map((recipe) => ({
+        id: recipe.id,
+        title: recipe.title,
+        slug: recipe.slug,
+        imageUrl: recipe.imageUrl,
+        favoritesCount: recipe._count.favorites,
+        plannedMealsCount: recipe._count.plannedMeals,
+      })),
+      recipesByCourse: recipesByCourse.map((item) => ({
+        course: item.course || 'Unknown',
+        count: item._count.course,
+      })),
+      recipesByCuisine: recipesByCuisine.map((item) => ({
+        cuisine: item.cuisine || 'Unknown',
+        count: item._count.cuisine,
       })),
     });
   } catch (error) {
