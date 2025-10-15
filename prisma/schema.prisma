@@ -312,3 +312,18 @@ model CsrfToken {
   @@index([userId])
   @@index([expiresAt])
 }
+
+model AuditWebhook {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  secret      String?  // Optional signing secret
+  events      String[] // Array of event types to listen for
+  isActive    Boolean  @default(true)
+  lastTrigger DateTime?
+  failureCount Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
