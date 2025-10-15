@@ -38,6 +38,20 @@ export const RATE_LIMITS = {
     message: 'Recipe generation limit reached. Please wait before generating more recipes.'
   },
   
+  // Admin mutations (POST/PUT/DELETE)
+  ADMIN_MUTATIONS: {
+    maxRequests: 10,      // 10 requests
+    windowMs: 60000,      // per minute
+    message: 'Too many admin operations. Please slow down.'
+  },
+  
+  // Admin sensitive operations (role changes, deletions)
+  ADMIN_SENSITIVE: {
+    maxRequests: 5,       // 5 requests
+    windowMs: 60000,      // per minute
+    message: 'Rate limit for sensitive operations. Please wait before continuing.'
+  },
+  
   // General API protection
   GENERAL: {
     maxRequests: 100,     // 100 requests

@@ -19,26 +19,29 @@ enum UserRole {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  email         String          @unique
-  password      String
-  name          String?
-  avatarUrl     String?
-  bio           String?
-  role          UserRole        @default(USER)
-  isActive      Boolean         @default(true)
-  lastLogin     DateTime?
-  openaiApiKey  String?         // Encrypted API key for OpenAI services
-  recipes       Recipe[]
-  plans         Plan[]
-  mealPlans     MealPlan[]      @relation("UserMealPlans")
-  shoppingLists ShoppingList[]  @relation("UserShoppingLists")
-  mealTemplates MealTemplate[]  @relation("UserMealTemplates")
-  nutritionGoals NutritionGoal[] @relation("UserNutritionGoals")
-  favorites     FavoriteRecipe[] @relation("UserFavorites")
-  auditLogs     AuditLog[]
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id                  String          @id @default(cuid())
+  email               String          @unique
+  password            String
+  name                String?
+  avatarUrl           String?
+  bio                 String?
+  role                UserRole        @default(USER)
+  isActive            Boolean         @default(true)
+  lastLogin           DateTime?
+  openaiApiKey        String?         // Encrypted API key for OpenAI services
+  twoFactorSecret     String?         // Encrypted TOTP secret for 2FA
+  twoFactorEnabled    Boolean         @default(false)
+  twoFactorVerifiedAt DateTime?       // Last 2FA verification timestamp
+  recipes             Recipe[]
+  plans               Plan[]
+  mealPlans           MealPlan[]      @relation("UserMealPlans")
+  shoppingLists       ShoppingList[]  @relation("UserShoppingLists")
+  mealTemplates       MealTemplate[]  @relation("UserMealTemplates")
+  nutritionGoals      NutritionGoal[] @relation("UserNutritionGoals")
+  favorites           FavoriteRecipe[] @relation("UserFavorites")
+  auditLogs           AuditLog[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 
   @@index([email])
   @@index([createdAt])
@@ -282,4 +285,30 @@ model NutritionGoal {
   @@index([userId])
   @@index([isActive])
   @@index([startDate])
+}
+
+model AdminIpAllowlist {
+  id          String   @id @default(cuid())
+  ipAddress   String   @unique
+  description String?  // Who or what this IP is for
+  addedBy     String   // User ID of SUPER_ADMIN who added it
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime? // Optional expiration
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ipAddress])
+  @@index([isActive])
+}
+
+model CsrfToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
 }
