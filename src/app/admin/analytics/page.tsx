@@ -16,6 +16,7 @@ import {
   UserCheck,
   UserPlus,
   Heart,
+  Download,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
@@ -83,6 +84,7 @@ export default function AnalyticsPage() {
 
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !user.role || !hasPermission(user.role, 'VIEW_ANALYTICS'))) {
@@ -119,6 +121,41 @@ export default function AnalyticsPage() {
       });
     } finally {
       setLoadingAnalytics(false);
+    }
+  };
+
+  const handleExport = async (type: string) => {
+    setExporting(true);
+    try {
+      const response = await fetch(`/api/admin/export/analytics?type=${type}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `analytics_${type}_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast({
+          title: 'Export Successful',
+          description: `${type} analytics exported to CSV`,
+        });
+      } else {
+        throw new Error('Export failed');
+      }
+    } catch (error) {
+      console.error('Error exporting analytics:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to export analytics',
+        variant: 'destructive',
+      });
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -159,10 +196,21 @@ export default function AnalyticsPage() {
               Comprehensive insights and statistics
             </p>
           </div>
-          <Button onClick={fetchAnalytics} variant='outline' size='sm'>
-            <RefreshCw className='h-4 w-4 mr-2' />
-            Refresh
-          </Button>
+          <div className='flex gap-2'>
+            <Button onClick={fetchAnalytics} variant='outline' size='sm'>
+              <RefreshCw className='h-4 w-4 mr-2' />
+              Refresh
+            </Button>
+            <Button 
+              onClick={() => handleExport('overview')} 
+              variant='outline' 
+              size='sm'
+              disabled={exporting}
+            >
+              <Download className='h-4 w-4 mr-2' />
+              {exporting ? 'Exporting...' : 'Export CSV'}
+            </Button>
+          </div>
         </div>
 
         {/* Overview Stats */}

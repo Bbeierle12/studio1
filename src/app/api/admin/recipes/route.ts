@@ -79,6 +79,8 @@ export async function GET(req: NextRequest) {
           prepTime: true,
           servings: true,
           userId: true,
+          isFeatured: true,
+          featuredAt: true,
           createdAt: true,
           updatedAt: true,
           user: {

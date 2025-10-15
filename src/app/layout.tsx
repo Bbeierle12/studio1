@@ -15,6 +15,7 @@ import { QueryProvider } from '@/components/query-provider';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { PWAUpdatePrompt } from '@/components/pwa-update-prompt';
 import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
+import { MaintenanceModeChecker } from '@/components/maintenance-mode-checker';
 
 export const metadata: Metadata = {
   title: 'Studio1 Meal Planner',
@@ -80,22 +81,24 @@ export default function RootLayout({
                 disableTransitionOnChange
               >
                 <AuthProvider>
-                  <ShoppingListProvider>
-                    <SavedRecipesProvider>
-                      <UnitProvider>
-                        <PrintProvider>
-                          <div className='relative flex min-h-screen w-full flex-col overflow-x-hidden'>
-                            <Header />
-                            {children}
-                          </div>
-                          <Toaster />
-                          <PrintDialog />
-                          <PWAInstallPrompt />
-                          <PWAUpdatePrompt />
-                        </PrintProvider>
-                      </UnitProvider>
-                    </SavedRecipesProvider>
-                  </ShoppingListProvider>
+                  <MaintenanceModeChecker>
+                    <ShoppingListProvider>
+                      <SavedRecipesProvider>
+                        <UnitProvider>
+                          <PrintProvider>
+                            <div className='relative flex min-h-screen w-full flex-col overflow-x-hidden'>
+                              <Header />
+                              {children}
+                            </div>
+                            <Toaster />
+                            <PrintDialog />
+                            <PWAInstallPrompt />
+                            <PWAUpdatePrompt />
+                          </PrintProvider>
+                        </UnitProvider>
+                      </SavedRecipesProvider>
+                    </ShoppingListProvider>
+                  </MaintenanceModeChecker>
                 </AuthProvider>
               </ThemeProvider>
             </QueryProvider>

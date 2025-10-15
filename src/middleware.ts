@@ -2,19 +2,61 @@ import { withAuth } from 'next-auth/middleware';
 import { type NextRequest, NextResponse } from 'next/server';
 
 // Only these routes are public (accessible without login)
-const PUBLIC_ROUTES = ['/login', '/register'];
+const PUBLIC_ROUTES = ['/login', '/register', '/maintenance'];
+
+// Routes that should be accessible even during maintenance
+const MAINTENANCE_EXEMPT_ROUTES = [
+  '/login',
+  '/register',
+  '/maintenance',
+  '/api/maintenance',
+  '/api/auth',
+  '/_next',
+  '/favicon.ico',
+];
 
 export default withAuth(
-  function middleware(request: NextRequest) {
-    // This function runs after authentication check
-    // You can add additional logic here if needed
+  async function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
+    // Skip maintenance check for exempt routes
+    const isExempt = MAINTENANCE_EXEMPT_ROUTES.some((route) =>
+      pathname.startsWith(route)
+    );
+
+    if (isExempt) {
+      return NextResponse.next();
+    }
+
+    // Check if user is admin
+    const token = request.nextUrl.searchParams.get('token');
+    const isAdmin = ['SUPPORT_ADMIN', 'CONTENT_ADMIN', 'SUPER_ADMIN'].includes(
+      (request as any).nextauth?.token?.role || ''
+    );
+
+    // Check maintenance mode from cookie (set by API)
+    const maintenanceMode = request.cookies.get('maintenance_mode')?.value === 'true';
+
+    // If maintenance mode is on and user is not admin, redirect to maintenance page
+    if (maintenanceMode && !isAdmin && pathname !== '/maintenance') {
+      const maintenanceUrl = new URL('/maintenance', request.url);
+      return NextResponse.redirect(maintenanceUrl);
+    }
+
+    // If maintenance mode is off and user is on maintenance page, redirect to home
+    if (!maintenanceMode && pathname === '/maintenance') {
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
+    }
+
+    return NextResponse.next();
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
         
-        // Allow access to public routes (login and register pages)
+        // Allow access to public routes (login, register, and maintenance pages)
         if (PUBLIC_ROUTES.includes(pathname)) {
           return true;
         }

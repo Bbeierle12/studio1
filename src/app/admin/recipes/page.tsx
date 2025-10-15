@@ -56,6 +56,8 @@ interface Recipe {
   prepTime: number | null;
   servings: number | null;
   userId: string;
+  isFeatured?: boolean;
+  featuredAt?: string | null;
   createdAt: string;
   updatedAt: string;
   user: {
@@ -178,6 +180,39 @@ export default function RecipeManagementPage() {
       toast({
         title: 'Error',
         description: 'Failed to delete recipe',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleToggleFeatured = async (recipeId: string, currentStatus: boolean, title: string) => {
+    try {
+      const response = await fetch(`/api/admin/recipes/${recipeId}/feature`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFeatured: !currentStatus }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Success',
+          description: !currentStatus 
+            ? `"${title}" is now featured` 
+            : `"${title}" is no longer featured`,
+        });
+        fetchRecipes();
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.error || 'Failed to update recipe',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update recipe',
         variant: 'destructive',
       });
     }
@@ -349,6 +384,17 @@ export default function RecipeManagementPage() {
                                   View Author
                                 </Link>
                               </DropdownMenuItem>
+                              {hasPermission(user.role!, 'FEATURE_RECIPES') && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => handleToggleFeatured(recipe.id, recipe.isFeatured || false, recipe.title)}
+                                  >
+                                    <Star className={`h-4 w-4 mr-2 ${recipe.isFeatured ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                                    {recipe.isFeatured ? 'Unfeature' : 'Feature'}
+                                  </DropdownMenuItem>
+                                </>
+                              )}
                               {hasPermission(user.role!, 'DELETE_ANY_RECIPE') && (
                                 <>
                                   <DropdownMenuSeparator />
@@ -370,6 +416,12 @@ export default function RecipeManagementPage() {
                           {recipe.summary}
                         </p>
                         <div className='flex flex-wrap gap-2'>
+                          {recipe.isFeatured && (
+                            <Badge className='bg-yellow-100 text-yellow-800'>
+                              <Star className='h-3 w-3 mr-1 fill-yellow-600' />
+                              Featured
+                            </Badge>
+                          )}
                           {recipe.course && (
                             <Badge variant='outline'>{recipe.course}</Badge>
                           )}

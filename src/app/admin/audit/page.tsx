@@ -39,6 +39,7 @@ import {
   Eye,
   Shield,
   AlertTriangle,
+  Download,
 } from 'lucide-react';
 import { UserRole } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
@@ -84,6 +85,7 @@ export default function AuditLogsPage() {
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [entityTypeFilter, setEntityTypeFilter] = useState<string>('all');
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !user.role || !hasPermission(user.role, 'VIEW_AUDIT_LOGS'))) {
@@ -129,6 +131,45 @@ export default function AuditLogsPage() {
       });
     } finally {
       setLoadingLogs(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (actionFilter !== 'all') params.append('action', actionFilter);
+      if (entityTypeFilter !== 'all') params.append('entityType', entityTypeFilter);
+
+      const response = await fetch(`/api/admin/export/audit?${params}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `audit_logs_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast({
+          title: 'Export Successful',
+          description: 'Audit logs exported to CSV',
+        });
+      } else {
+        throw new Error('Export failed');
+      }
+    } catch (error) {
+      console.error('Error exporting audit logs:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to export audit logs',
+        variant: 'destructive',
+      });
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -183,10 +224,21 @@ export default function AuditLogsPage() {
               Track all administrative actions and system events
             </p>
           </div>
-          <Button onClick={fetchLogs} variant='outline' size='sm'>
-            <RefreshCw className='h-4 w-4 mr-2' />
-            Refresh
-          </Button>
+          <div className='flex gap-2'>
+            <Button onClick={fetchLogs} variant='outline' size='sm'>
+              <RefreshCw className='h-4 w-4 mr-2' />
+              Refresh
+            </Button>
+            <Button 
+              onClick={handleExport} 
+              variant='outline' 
+              size='sm'
+              disabled={exporting}
+            >
+              <Download className='h-4 w-4 mr-2' />
+              {exporting ? 'Exporting...' : 'Export CSV'}
+            </Button>
+          </div>
         </div>
 
         <Card>
