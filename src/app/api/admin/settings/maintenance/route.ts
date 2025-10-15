@@ -102,10 +102,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    // Create response and set cookie to match maintenance mode state
+    const response = NextResponse.json({
       success: true,
       message: 'Maintenance settings updated successfully',
     });
+
+    // Set cookie to match maintenance mode state
+    response.cookies.set('maintenance_mode', maintenanceMode ? 'true' : 'false', {
+      path: '/',
+      httpOnly: false,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+    });
+
+    return response;
   } catch (error) {
     console.error('Error updating maintenance settings:', error);
     return NextResponse.json(
