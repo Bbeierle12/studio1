@@ -18,6 +18,13 @@ enum UserRole {
   SUPER_ADMIN
 }
 
+enum HouseholdRole {
+  OWNER        // You - full control
+  CURATOR      // Siblings - can edit and curate
+  CONTRIBUTOR  // Any adult - can add recipes
+  KID          // Can react, can't edit
+}
+
 model User {
   id                  String          @id @default(cuid())
   email               String          @unique
@@ -26,6 +33,9 @@ model User {
   avatarUrl           String?
   bio                 String?
   role                UserRole        @default(USER)
+  householdRole       HouseholdRole   @default(CONTRIBUTOR)
+  householdId         String?         // Link to household
+  household           Household?      @relation(fields: [householdId], references: [id])
   isActive            Boolean         @default(true)
   lastLogin           DateTime?
   openaiApiKey        String?         // Encrypted API key for OpenAI services
@@ -39,6 +49,7 @@ model User {
   mealTemplates       MealTemplate[]  @relation("UserMealTemplates")
   nutritionGoals      NutritionGoal[] @relation("UserNutritionGoals")
   favorites           FavoriteRecipe[] @relation("UserFavorites")
+  reactions           RecipeReaction[] @relation("UserReactions")
   auditLogs           AuditLog[]
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
@@ -46,50 +57,68 @@ model User {
   @@index([email])
   @@index([createdAt])
   @@index([role])
+  @@index([householdId])
+  @@index([householdRole])
 }
 
 model Recipe {
-  id           String    @id @default(cuid())
-  title        String
-  slug         String    @unique
-  contributor  String
-  prepTime     Int?      // Minutes - positive values only
-  servings     Int?      // Number of servings - positive values only
-  course       String?
-  cuisine      String?
-  difficulty   String?   // Easy, Medium, Hard
-  ingredients  String    // JSON string array
-  instructions String    // JSON string array
-  tags         String    // JSON string array
-  summary      String
-  story        String?
-  imageUrl     String
-  imageHint    String
-  audioUrl     String?
-  originName   String?   // Name of place/region of origin
-  originLat    Float?    // Latitude of origin location
-  originLng    Float?    // Longitude of origin location
-  parentId     String?   // Reference to parent recipe for variations
-  parent       Recipe?   @relation("RecipeVariations", fields: [parentId], references: [id])
-  variations   Recipe[]  @relation("RecipeVariations")
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  contributor     String
+  prepTime        Int?      // Minutes - positive values only
+  servings        Int?      // Number of servings - positive values only
+  course          String?
+  cuisine         String?
+  difficulty      String?   // Easy, Medium, Hard
+  ingredients     String    // JSON string array
+  instructions    String    // JSON string array
+  tags            String    // JSON string array
+  summary         String
+  story           String?
+  // Heirloom Story Fields
+  originStory     String?   // Rich text origin story
+  photoUrl        String?   // Primary heirloom photo
+  voiceNoteUrl    String?   // Voice note URL for personal narration
+  voiceNoteDuration Int?    // Duration in seconds
+  // Allergy & Substitution Tags
+  allergyTags     String?   // JSON: ["peanut-free", "gluten-free", "dairy-free"]
+  substitutions   String?   // JSON: [{ from: "butter", to: "coconut oil", note: "Grandma's gluten-swap" }]
+  dietaryFlags    String?   // JSON: ["vegetarian", "vegan", "keto", "paleo"]
+  imageUrl        String
+  imageHint       String
+  audioUrl        String?
+  originName      String?   // Name of place/region of origin
+  originLat       Float?    // Latitude of origin location
+  originLng       Float?    // Longitude of origin location
+  parentId        String?   // Reference to parent recipe for variations
+  parent          Recipe?   @relation("RecipeVariations", fields: [parentId], references: [id])
+  variations      Recipe[]  @relation("RecipeVariations")
   // Nutrition information (per serving)
-  servingSize  String?   // e.g., "1 cup", "2 pieces"
-  calories     Int?      // kcal per serving
-  protein      Float?    // grams per serving
-  carbs        Float?    // grams per serving
-  fat          Float?    // grams per serving
-  fiber        Float?    // grams per serving
-  sugar        Float?    // grams per serving
-  sodium       Int?      // mg per serving
-  isFeatured   Boolean   @default(false) // Featured in family foyer
-  featuredAt   DateTime? // When it was featured
-  userId       String
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plans        Plan[]
-  plannedMeals PlannedMeal[] @relation("PlannedMealRecipes")
-  favorites    FavoriteRecipe[] @relation("RecipeFavorites")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  servingSize     String?   // e.g., "1 cup", "2 pieces"
+  calories        Int?      // kcal per serving
+  protein         Float?    // grams per serving
+  carbs           Float?    // grams per serving
+  fat             Float?    // grams per serving
+  fiber           Float?    // grams per serving
+  sugar           Float?    // grams per serving
+  sodium          Int?      // mg per serving
+  isFeatured      Boolean   @default(false) // Featured in family foyer
+  featuredAt      DateTime? // When it was featured
+  // Cooking Mode Support
+  stepTimers      String?   // JSON: [{ step: 1, duration: 600, label: "Simmer" }]
+  voiceEnabled    Boolean   @default(true) // Enable voice navigation
+  // Offline & Print
+  prefetchPriority Int      @default(0) // Higher = prefetch first for offline
+  printFriendly   Boolean   @default(true)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plans           Plan[]
+  plannedMeals    PlannedMeal[] @relation("PlannedMealRecipes")
+  favorites       FavoriteRecipe[] @relation("RecipeFavorites")
+  reactions       RecipeReaction[] @relation("RecipeReactions")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([userId])
   @@index([createdAt])
@@ -98,6 +127,9 @@ model Recipe {
   @@index([difficulty])
   @@index([tags])
   @@index([isFeatured])
+  @@index([allergyTags])
+  @@index([dietaryFlags])
+  @@index([prefetchPriority])
 }
 
 model Plan {
@@ -401,4 +433,74 @@ model SecurityEvent {
   @@index([severity])
   @@index([createdAt])
   @@index([notified])
+}
+
+// === FAMILY FEATURES ===
+
+model Household {
+  id          String   @id @default(cuid())
+  name        String   // "The Smith Family"
+  description String?
+  members     User[]
+  ownerId     String   // User ID of the owner
+  // Family digest settings
+  digestEnabled Boolean @default(true)
+  digestDay    String  @default("sunday") // Day to send digest
+  digestTime   String  @default("09:00")  // Time to send (HH:MM)
+  // Birthday tracking
+  birthdays    Json?   // [{ name: "Mom", date: "05-15", notify: true }]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([ownerId])
+}
+
+model RecipeReaction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserReactions", fields: [userId], references: [id], onDelete: Cascade)
+  recipeId  String
+  recipe    Recipe   @relation("RecipeReactions", fields: [recipeId], references: [id], onDelete: Cascade)
+  emoji     String   // "❤️", "😋", "🔥", "👍", etc.
+  comment   String?  // Optional comment from kids
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, recipeId, emoji])
+  @@index([userId])
+  @@index([recipeId])
+  @@index([createdAt])
+}
+
+model FamilyDigest {
+  id              String   @id @default(cuid())
+  householdId     String
+  weekStartDate   DateTime
+  weekEndDate     DateTime
+  newRecipeCount  Int      @default(0)
+  plannedMealsCount Int    @default(0)
+  upcomingBirthdays Json?  // [{ name: "Dad", date: "2025-10-20", daysUntil: 5 }]
+  highlightRecipeIds Json? // Array of featured recipe IDs
+  sentAt          DateTime?
+  emailStatus     String   @default("pending") // pending, sent, failed
+  createdAt       DateTime @default(now())
+  
+  @@index([householdId])
+  @@index([weekStartDate])
+  @@index([emailStatus])
+}
+
+model CookingSession {
+  id            String   @id @default(cuid())
+  userId        String
+  recipeId      String
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  currentStep   Int      @default(0)
+  voiceEnabled  Boolean  @default(false)
+  timersActive  Json?    // [{ stepIndex: 2, startTime: ISO, duration: 600 }]
+  notes         String?  // User notes during cooking
+  
+  @@index([userId])
+  @@index([recipeId])
+  @@index([startedAt])
 }
