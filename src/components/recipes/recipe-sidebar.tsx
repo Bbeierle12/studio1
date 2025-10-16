@@ -29,19 +29,19 @@ export function RecipeSidebar({ activeTab }: RecipeSidebarProps) {
         </h3>
         <div className="space-y-2">
           <Button variant="ghost" className="w-full justify-start" size="sm" asChild>
-            <Link href="/meal-planning">
+            <Link href="/meal-plan">
               <Calendar className="h-4 w-4 mr-2" />
               Meal Planning
             </Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start" size="sm" asChild>
-            <Link href="/shopping-list">
+            <Link href="/saved">
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Shopping List
+              Saved Recipes
             </Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start" size="sm" asChild>
-            <Link href="/recipes?tab=browse&subTab=collections">
+            <Link href="/collections">
               <BookMarked className="h-4 w-4 mr-2" />
               Collections
             </Link>
