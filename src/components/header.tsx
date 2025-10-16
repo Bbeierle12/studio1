@@ -129,23 +129,58 @@ export function Header() {
       <header className='sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-[inset_0_-1px_0_rgba(0,0,0,0.2)]'>
         {/* Wooden Accent Strip */}
         <div 
-          className='h-1.5 w-full'
+          className='h-1.5 w-full relative'
           style={{
-            background: 'linear-gradient(90deg, #8B6F47 0%, #A0826D 25%, #8B6F47 50%, #A0826D 75%, #8B6F47 100%)',
+            backgroundImage: `url(/textures/${theme === 'dark' ? 'wood-dark' : 'wood-light'}.svg)`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
           }}
-        />
+        >
+          {/* Noise overlay for extra realism */}
+          <div 
+            className='absolute inset-0 opacity-10'
+            style={{
+              backgroundImage: 'url(/textures/noise.svg)',
+              backgroundSize: '128px 128px',
+              mixBlendMode: 'overlay',
+            }}
+          />
+        </div>
         <div className='container flex h-16 items-center'>
           <Link 
             href='/' 
-            className='mr-6 flex items-center space-x-2 px-3 py-1.5 rounded-lg relative transition-transform duration-150 hover:translate-y-0.5'
-            style={{
-              background: 'linear-gradient(135deg, #A0826D 0%, #8B6F47 50%, #A0826D 100%)',
-              boxShadow: 'inset 0 0 0 1px rgba(139, 111, 71, 0.4), 0 1px 3px rgba(0, 0, 0, 0.12)',
-            }}
+            className='mr-6 flex items-center space-x-2 px-3 py-1.5 rounded-lg relative transition-transform duration-150 hover:translate-y-0.5 overflow-hidden'
           >
-            <CookingPot className='h-6 w-6 text-amber-700 dark:text-amber-400 drop-shadow-sm' />
-            <span className='font-bold sm:inline-block font-headline text-white drop-shadow-sm'>
+            {/* Texture background */}
+            <div 
+              className='absolute inset-0 opacity-80 dark:opacity-90'
+              style={{
+                backgroundImage: `url(/textures/${theme === 'dark' ? 'wood-dark' : 'wood-light'}.svg)`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+            
+            {/* Gradient overlay for depth */}
+            <div 
+              className='absolute inset-0 opacity-30'
+              style={{
+                background: 'linear-gradient(135deg, rgba(160, 130, 109, 0.5) 0%, rgba(139, 111, 71, 0.7) 100%)',
+              }}
+            />
+            
+            {/* Ring effect */}
+            <div 
+              className='absolute inset-0 rounded-lg'
+              style={{
+                boxShadow: 'inset 0 0 0 1px rgba(139, 111, 71, 0.4), 0 1px 3px rgba(0, 0, 0, 0.12)',
+              }}
+            />
+            
+            {/* Content (with z-index to appear above backgrounds) */}
+            <CookingPot className='h-6 w-6 text-amber-700 dark:text-amber-400 drop-shadow-sm relative z-10' />
+            <span className='font-bold sm:inline-block font-headline text-white drop-shadow-sm relative z-10'>
               Our Family Table
             </span>
           </Link>

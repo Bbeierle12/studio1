@@ -1,0 +1,59 @@
+<svg width="1200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Dark wood grain pattern -->
+    <pattern id="darkWoodGrain" x="0" y="0" width="400" height="200" patternUnits="userSpaceOnUse">
+      <!-- Base dark wood color layers -->
+      <rect width="400" height="200" fill="#3D2F23"/>
+      <rect width="400" height="200" fill="url(#darkWoodGradient1)" opacity="0.8"/>
+      
+      <!-- Wood grain lines - darker and more pronounced -->
+      <path d="M0,25 Q100,23 200,25 T400,25" stroke="#5A4A3A" stroke-width="2.5" fill="none" opacity="0.5"/>
+      <path d="M0,55 Q100,53 200,55 T400,55" stroke="#4A3A2A" stroke-width="2" fill="none" opacity="0.4"/>
+      <path d="M0,85 Q100,87 200,85 T400,85" stroke="#5A4A3A" stroke-width="2.2" fill="none" opacity="0.45"/>
+      <path d="M0,115 Q100,113 200,115 T400,115" stroke="#4A3A2A" stroke-width="2.5" fill="none" opacity="0.5"/>
+      <path d="M0,145 Q100,147 200,145 T400,145" stroke="#5A4A3A" stroke-width="2" fill="none" opacity="0.4"/>
+      <path d="M0,175 Q100,173 200,175 T400,175" stroke="#6A5A4A" stroke-width="1.8" fill="none" opacity="0.35"/>
+      
+      <!-- Subtle vertical variations -->
+      <ellipse cx="90" cy="100" rx="65" ry="85" fill="#2D1F13" opacity="0.12"/>
+      <ellipse cx="230" cy="100" rx="75" ry="95" fill="#2D1F13" opacity="0.1"/>
+      <ellipse cx="360" cy="100" rx="60" ry="80" fill="#4A3A2A" opacity="0.11"/>
+      
+      <!-- Knot details -->
+      <circle cx="150" cy="80" r="8" fill="#2D1F13" opacity="0.15"/>
+      <circle cx="150" cy="80" r="4" fill="#1D0F03" opacity="0.2"/>
+    </pattern>
+    
+    <!-- Gradient for depth -->
+    <linearGradient id="darkWoodGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4A3A2A;stop-opacity:0.4" />
+      <stop offset="25%" style="stop-color:#2D1F13;stop-opacity:0.5" />
+      <stop offset="50%" style="stop-color:#3D2F23;stop-opacity:0.3" />
+      <stop offset="75%" style="stop-color:#2D1F13;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#4A3A2A;stop-opacity:0.4" />
+    </linearGradient>
+    
+    <!-- Noise filter for texture -->
+    <filter id="darkNoise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="5" seed="2"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend mode="multiply" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  
+  <!-- Apply pattern -->
+  <rect width="1200" height="200" fill="url(#darkWoodGrain)"/>
+  
+  <!-- Noise overlay -->
+  <rect width="1200" height="200" filter="url(#darkNoise)" opacity="0.2"/>
+  
+  <!-- Subtle highlight for realism -->
+  <rect width="1200" height="200" fill="url(#darkVignette)" opacity="0.08"/>
+  
+  <defs>
+    <radialGradient id="darkVignette">
+      <stop offset="0%" style="stop-color:#6A5A4A;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.3" />
+    </radialGradient>
+  </defs>
+</svg>

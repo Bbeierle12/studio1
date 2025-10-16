@@ -1,0 +1,55 @@
+<svg width="1200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Wood grain pattern -->
+    <pattern id="woodGrain" x="0" y="0" width="400" height="200" patternUnits="userSpaceOnUse">
+      <!-- Base wood color layers -->
+      <rect width="400" height="200" fill="#A0826D"/>
+      <rect width="400" height="200" fill="url(#woodGradient1)" opacity="0.7"/>
+      
+      <!-- Wood grain lines -->
+      <path d="M0,30 Q100,28 200,30 T400,30" stroke="#8B6F47" stroke-width="2" fill="none" opacity="0.4"/>
+      <path d="M0,60 Q100,58 200,60 T400,60" stroke="#8B6F47" stroke-width="1.5" fill="none" opacity="0.3"/>
+      <path d="M0,90 Q100,92 200,90 T400,90" stroke="#B8956F" stroke-width="2" fill="none" opacity="0.3"/>
+      <path d="M0,120 Q100,118 200,120 T400,120" stroke="#8B6F47" stroke-width="1.8" fill="none" opacity="0.35"/>
+      <path d="M0,150 Q100,152 200,150 T400,150" stroke="#8B6F47" stroke-width="1.5" fill="none" opacity="0.3"/>
+      <path d="M0,180 Q100,178 200,180 T400,180" stroke="#B8956F" stroke-width="1.2" fill="none" opacity="0.25"/>
+      
+      <!-- Subtle vertical variations -->
+      <ellipse cx="80" cy="100" rx="60" ry="80" fill="#8B6F47" opacity="0.08"/>
+      <ellipse cx="220" cy="100" rx="70" ry="90" fill="#8B6F47" opacity="0.06"/>
+      <ellipse cx="350" cy="100" rx="55" ry="75" fill="#B8956F" opacity="0.07"/>
+    </pattern>
+    
+    <!-- Gradient for depth -->
+    <linearGradient id="woodGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#B8956F;stop-opacity:0.3" />
+      <stop offset="25%" style="stop-color:#8B6F47;stop-opacity:0.4" />
+      <stop offset="50%" style="stop-color:#A0826D;stop-opacity:0.2" />
+      <stop offset="75%" style="stop-color:#8B6F47;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#B8956F;stop-opacity:0.3" />
+    </linearGradient>
+    
+    <!-- Noise filter for texture -->
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" seed="1"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend mode="multiply" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  
+  <!-- Apply pattern -->
+  <rect width="1200" height="200" fill="url(#woodGrain)"/>
+  
+  <!-- Noise overlay -->
+  <rect width="1200" height="200" filter="url(#noise)" opacity="0.15"/>
+  
+  <!-- Subtle vignette for depth -->
+  <rect width="1200" height="200" fill="url(#vignette)" opacity="0.1"/>
+  
+  <defs>
+    <radialGradient id="vignette">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.3" />
+    </radialGradient>
+  </defs>
+</svg>
