@@ -126,11 +126,26 @@ export function Header() {
 
   return (
     <>
-      <header className='sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+      <header className='sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-[inset_0_-1px_0_rgba(0,0,0,0.2)]'>
+        {/* Wooden Accent Strip */}
+        <div 
+          className='h-1.5 w-full'
+          style={{
+            background: 'linear-gradient(90deg, #8B6F47 0%, #A0826D 25%, #8B6F47 50%, #A0826D 75%, #8B6F47 100%)',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+          }}
+        />
         <div className='container flex h-16 items-center'>
-          <Link href='/' className='mr-6 flex items-center space-x-2'>
-            <CookingPot className='h-6 w-6' />
-            <span className='font-bold sm:inline-block font-headline'>
+          <Link 
+            href='/' 
+            className='mr-6 flex items-center space-x-2 px-3 py-1.5 rounded-lg relative transition-transform duration-150 hover:translate-y-0.5'
+            style={{
+              background: 'linear-gradient(135deg, #A0826D 0%, #8B6F47 50%, #A0826D 100%)',
+              boxShadow: 'inset 0 0 0 1px rgba(139, 111, 71, 0.4), 0 1px 3px rgba(0, 0, 0, 0.12)',
+            }}
+          >
+            <CookingPot className='h-6 w-6 text-amber-700 dark:text-amber-400 drop-shadow-sm' />
+            <span className='font-bold sm:inline-block font-headline text-white drop-shadow-sm'>
               Our Family Table
             </span>
           </Link>
@@ -144,7 +159,7 @@ export function Header() {
                   key={href}
                   href={href}
                   className={cn(
-                    'flex items-center gap-2 transition-colors hover:text-foreground/80',
+                    'flex items-center gap-2 transition-all duration-150 hover:text-foreground/80 hover:translate-y-0.5',
                     isActive ? 'text-foreground' : 'text-foreground/60',
                     linkClassName
                   )}
