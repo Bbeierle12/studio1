@@ -91,12 +91,6 @@ export function Header() {
     { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/saved', label: 'Saved', icon: Bookmark },
     {
-      href: '/recipes/new',
-      label: 'Add Recipe',
-      icon: PlusCircle,
-      className: 'hidden sm:flex',
-    },
-    {
       href: '/settings',
       label: 'Settings',
       icon: Settings,

@@ -8,7 +8,7 @@ import { MyRecipes } from '@/components/recipes/my-recipes';
 import { RecipeCollections } from '@/components/recipes/recipe-collections';
 import { RecipeDetailDrawer } from '@/components/recipes/recipe-detail-drawer';
 import { RecipeSidebar } from '@/components/recipes/recipe-sidebar';
-import { Book, Plus, Heart, ChefHat, Library, Grid } from 'lucide-react';
+import { Book, Heart, ChefHat, Library, Grid, MessageSquare, PlusCircle } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -47,7 +47,7 @@ function RecipeHubContent() {
     const recipeId = searchParams.get('recipe');
     const subTab = searchParams.get('subTab');
     
-    if (tab && ['browse', 'create', 'my-recipes'].includes(tab)) {
+    if (tab && ['browse', 'add', 'chat', 'my-recipes'].includes(tab)) {
       setActiveTab(tab);
     }
 
@@ -93,8 +93,8 @@ function RecipeHubContent() {
     router.push(newUrl, { scroll: false });
   };
 
-  // Full-screen chat mode for Create tab
-  if (activeTab === 'create') {
+  // Full-screen chat mode for Chat tab
+  if (activeTab === 'chat') {
     return <ChatRecipeCreatorWrapper />;
   }
 
@@ -119,14 +119,18 @@ function RecipeHubContent() {
 
           {/* Tab Navigation */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 max-w-md">
+            <TabsList className="grid w-full grid-cols-4 max-w-2xl">
               <TabsTrigger value="browse" className="gap-2">
                 <Book className="h-4 w-4" />
                 <span className="hidden sm:inline">Browse</span>
               </TabsTrigger>
-              <TabsTrigger value="create" className="gap-2">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Create</span>
+              <TabsTrigger value="chat" className="gap-2">
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">Chat Create</span>
+              </TabsTrigger>
+              <TabsTrigger value="add" className="gap-2">
+                <PlusCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Recipe</span>
               </TabsTrigger>
               <TabsTrigger value="my-recipes" className="gap-2">
                 <Heart className="h-4 w-4" />
@@ -159,8 +163,12 @@ function RecipeHubContent() {
                 </Tabs>
               </TabsContent>
 
-              <TabsContent value="create" className="h-full">
+              <TabsContent value="chat" className="h-full">
                 {/* This won't render due to full-screen mode above */}
+              </TabsContent>
+
+              <TabsContent value="add" className="space-y-4">
+                <RecipeCreator />
               </TabsContent>
 
               <TabsContent value="my-recipes" className="space-y-4">
