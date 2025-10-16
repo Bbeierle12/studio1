@@ -10,19 +10,18 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Pencil, 
-  Calendar, 
-  Share2, 
-  Printer, 
+import {
+  Pencil,
+  Calendar,
+  Share2,
+  Printer,
   Clock,
   Users,
   ChefHat,
   Heart,
-  X,
-  Check
+  Check,
+  Utensils
 } from 'lucide-react';
-import { VoiceAssistant } from '@/components/voice-assistant';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -111,6 +110,12 @@ export function RecipeDetailDrawer({
             <div className="mt-6 space-y-6">
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-2">
+                <Button variant="default" size="sm" asChild>
+                  <Link href={`/cook?recipe=${recipe.id}`}>
+                    <Utensils className="h-4 w-4 mr-2" />
+                    Start Cook Mode
+                  </Link>
+                </Button>
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/recipes/${recipe.slug}/edit`}>
                     <Pencil className="h-4 w-4 mr-2" />
@@ -123,8 +128,8 @@ export function RecipeDetailDrawer({
                     Add to Meal Plan
                   </Link>
                 </Button>
-                <Button 
-                  variant={isFavorited ? 'default' : 'outline'} 
+                <Button
+                  variant={isFavorited ? 'default' : 'outline'}
                   size="sm"
                   onClick={handleFavorite}
                 >
@@ -231,18 +236,24 @@ export function RecipeDetailDrawer({
                 </div>
               )}
 
-              {/* Voice Assistant */}
+              {/* Cook Mode Hint */}
               <div className="pt-6 border-t">
-                <h3 className="font-semibold mb-3">Cooking Assistant</h3>
-                <VoiceAssistant
-                  currentRecipe={{
-                    id: recipe.id,
-                    title: recipe.title,
-                    ingredients: recipe.ingredients,
-                    instructions: recipe.instructions,
-                  }}
-                  className="w-full"
-                />
+                <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <ChefHat className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-orange-900 dark:text-orange-100 mb-1">
+                        Cook with Voice Assistance
+                      </p>
+                      <p className="text-sm text-orange-800 dark:text-orange-200">
+                        Click "Start Cook Mode" above for hands-free cooking with voice commands, timers, and step-by-step guidance.
+                      </p>
+                      <p className="text-xs text-orange-700 dark:text-orange-300 mt-2">
+                        Tip: Press Ctrl+K anywhere to quickly access voice commands
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </>

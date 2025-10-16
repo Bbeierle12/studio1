@@ -16,6 +16,7 @@ import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { PWAUpdatePrompt } from '@/components/pwa-update-prompt';
 import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 import { MaintenanceModeChecker } from '@/components/maintenance-mode-checker';
+import { Hotkeys } from '@/app/providers/Hotkeys';
 
 export const metadata: Metadata = {
   title: 'Studio1 Meal Planner',
@@ -94,6 +95,7 @@ export default function RootLayout({
                             <PrintDialog />
                             <PWAInstallPrompt />
                             <PWAUpdatePrompt />
+                            <Hotkeys />
                           </PrintProvider>
                         </UnitProvider>
                       </SavedRecipesProvider>
