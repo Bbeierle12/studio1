@@ -18,6 +18,7 @@ import {
   Shield,
   Settings,
   CalendarDays,
+  Users,
   BarChart3,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -86,6 +87,7 @@ export function Header() {
     { href: '/', label: 'Foyer', icon: Home },
     { href: '/recipes', label: 'Browse', icon: CookingPot },
     { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays },
+    { href: '/household', label: 'Family', icon: Users },
     { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/saved', label: 'Saved', icon: Bookmark },
     {
