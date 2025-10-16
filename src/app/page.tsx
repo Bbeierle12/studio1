@@ -1,11 +1,9 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
-import MediaUpload from '@/components/media-upload';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -110,86 +108,77 @@ export default function Home() {
     return null;
   }
 
-  // Authenticated user - show main dashboard
+  // Authenticated user - show family foyer
   return (
     <div className='flex-grow'>
       <div className='absolute inset-0 top-[65px] opacity-10'>
         <Image
           src='https://placehold.co/1920x1080/FFFFFF/FFFFFF'
-          alt='Gnomes in a kitchen sketch background'
+          alt='Cozy family kitchen background'
           fill
           className='object-cover'
-          data-ai-hint='gnomes kitchen'
+          data-ai-hint='warm family kitchen'
         />
       </div>
-      <main className='relative flex h-full grow flex-col items-center justify-center p-8 text-center'>
-        {/* User is logged in - show welcome message and tabs */}
-        <div className='w-full max-w-4xl space-y-6'>
-          <div className='text-center mb-6'>
-            <h2 className='text-2xl font-bold text-white mb-2'>
-              Welcome back, {user?.name || 'Chef'}!
-            </h2>
-            <p className='text-secondary'>
-              Ready to discover today&apos;s perfect recipes?
+      <main className='relative flex h-full grow flex-col items-center justify-center p-8'>
+        {/* Family Foyer - Simple Hub */}
+        <div className='w-full max-w-2xl space-y-8'>
+          <div className='text-center mb-8'>
+            <h1 className='text-3xl md:text-4xl font-bold text-white mb-3'>
+              Welcome home, {user?.name || 'Friend'}
+            </h1>
+            <p className='text-lg text-secondary'>
+              Your family&apos;s recipe living room
             </p>
           </div>
           
-          <Tabs defaultValue="home" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="home">Home</TabsTrigger>
-              <TabsTrigger value="browse">Browse</TabsTrigger>
-              <TabsTrigger value="upload">Upload</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="home" className="space-y-4">
-              <div className='space-y-6'>
-                <Button
-                  asChild
-                  className='w-full max-w-md mx-auto transform transition-transform hover:scale-105'
-                  size='lg'
-                >
-                  <Link href='/recipes'>Browse Recipes</Link>
-                </Button>
-                
-                <div className='grid grid-cols-2 gap-3 max-w-md mx-auto'>
-                  <Button
-                    asChild
-                    variant='secondary'
-                    className='w-full transition-colors'
-                    size='lg'
-                  >
-                    <Link href='/recipes/new'>Add Recipe</Link>
-                  </Button>
-                  
-                  <Button
-                    asChild
-                    variant='outline'  
-                    className='w-full transition-colors'
-                    size='lg'
-                  >
-                    <Link href='/saved'>My Favorites</Link>
-                  </Button>
-                </div>
+          {/* Simple Hub - The Living Room */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto'>
+            <Link href='/meal-plan'>
+              <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 border-transparent hover:border-primary/50'>
+                <h3 className='text-lg font-semibold mb-2'>📅 This Week&apos;s Meals</h3>
+                <p className='text-sm text-muted-foreground'>Plan your family&apos;s week</p>
               </div>
-            </TabsContent>
+            </Link>
             
-            <TabsContent value="browse">
-              <div className="text-center">
-                <p className="text-white mb-4">Explore our collection of family recipes!</p>
-                <Button asChild>
-                  <Link href='/recipes'>Browse All Recipes</Link>
-                </Button>
+            <Link href='/recipes'>
+              <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 border-transparent hover:border-primary/50'>
+                <h3 className='text-lg font-semibold mb-2'>🍳 New Recipes</h3>
+                <p className='text-sm text-muted-foreground'>Discover what to cook</p>
               </div>
-            </TabsContent>
+            </Link>
             
-            <TabsContent value="upload">
-              <MediaUpload />
-            </TabsContent>
-          </Tabs>
+            <Link href='/collections'>
+              <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 border-transparent hover:border-primary/50'>
+                <h3 className='text-lg font-semibold mb-2'>📝 Family Notes</h3>
+                <p className='text-sm text-muted-foreground'>Collections & memories</p>
+              </div>
+            </Link>
+            
+            <Link href='/recipes/new'>
+              <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 border-transparent hover:border-primary/50'>
+                <h3 className='text-lg font-semibold mb-2'>➕ Add Recipe</h3>
+                <p className='text-sm text-muted-foreground'>Share a family favorite</p>
+              </div>
+            </Link>
+          </div>
+          
+          {/* Quick Access */}
+          <div className='text-center mt-8'>
+            <p className='text-sm text-secondary mb-3'>Quick access</p>
+            <div className='flex gap-3 justify-center flex-wrap'>
+              <Button asChild variant='outline' size='sm'>
+                <Link href='/saved'>❤️ Favorites</Link>
+              </Button>
+              <Button asChild variant='outline' size='sm'>
+                <Link href='/recipes?tag=seasonal'>🍂 Seasonal</Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </main>
-      <footer className='absolute bottom-8 w-full text-center text-sm text-secondary'>
-        <p>© 2024 Our Family Table. All Rights Reserved.</p>
+      <footer className='absolute bottom-6 w-full text-center text-xs text-secondary/80'>
+        <p>Our Family Table • Where memories are made</p>
       </footer>
     </div>
   );

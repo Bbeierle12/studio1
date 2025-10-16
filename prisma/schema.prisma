@@ -81,7 +81,7 @@ model Recipe {
   fiber        Float?    // grams per serving
   sugar        Float?    // grams per serving
   sodium       Int?      // mg per serving
-  isFeatured   Boolean   @default(false) // Featured on homepage
+  isFeatured   Boolean   @default(false) // Featured in family foyer
   featuredAt   DateTime? // When it was featured
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)

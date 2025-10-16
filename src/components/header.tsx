@@ -83,7 +83,7 @@ export function Header() {
 
   // All navigation links - only show when user is authenticated
   const navLinks = user ? [
-    { href: '/', label: 'Home', icon: Home },
+    { href: '/', label: 'Foyer', icon: Home },
     { href: '/recipes', label: 'Browse', icon: CookingPot },
     { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays },
     { href: '/analytics', label: 'Analytics', icon: BarChart3 },
