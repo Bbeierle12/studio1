@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '@/lib/data';
+import { addPasswordToHistory } from '@/lib/password-history';
+import { getClientInfo, logLoginAttempt } from '@/lib/login-anomaly';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50),
@@ -37,6 +39,19 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         name: name.trim(),
       },
+    });
+
+    // Add initial password to history
+    await addPasswordToHistory(user.id, password);
+
+    // Log successful registration
+    const { ipAddress, userAgent } = getClientInfo(request);
+    await logLoginAttempt({
+      email: user.email,
+      ipAddress,
+      userAgent,
+      successful: true,
+      userId: user.id,
     });
 
     // Return success (don't include password in response)

@@ -2,6 +2,12 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare, hash } from 'bcryptjs';
 import { prisma } from '@/lib/data';
+import { 
+  checkLoginAnomaly, 
+  logLoginAttempt, 
+  shouldLockAccount 
+} from '@/lib/login-anomaly';
+import { logLoginAnomaly, logAccountLocked } from '@/lib/security-webhooks';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,13 +18,15 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
         action: { label: 'Action', type: 'text' }, // login or signup
         name: { label: 'Name', type: 'text' }, // for signup
+        ipAddress: { label: 'IP Address', type: 'text' },
+        userAgent: { label: 'User Agent', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        const { email, password, action, name } = credentials;
+        const { email, password, action, name, ipAddress, userAgent } = credentials;
 
         try {
           if (action === 'signup') {
@@ -32,23 +40,99 @@ export const authOptions: NextAuthOptions = {
             });
 
             if (!user) {
+              // Log failed attempt
+              await logLoginAttempt({
+                email: email.toLowerCase().trim(),
+                ipAddress: ipAddress || 'unknown',
+                userAgent: userAgent || 'unknown',
+                successful: false,
+                failureReason: 'user_not_found',
+              });
               return null;
+            }
+
+            // Check if account should be locked
+            const isLocked = await shouldLockAccount(email.toLowerCase().trim());
+            if (isLocked) {
+              await logAccountLocked(
+                user.id,
+                'Too many failed login attempts',
+                ipAddress
+              );
+              throw new Error('Account temporarily locked due to too many failed login attempts');
             }
 
             const isPasswordValid = await compare(password, user.password);
             if (!isPasswordValid) {
+              // Log failed attempt
+              await logLoginAttempt({
+                email: email.toLowerCase().trim(),
+                ipAddress: ipAddress || 'unknown',
+                userAgent: userAgent || 'unknown',
+                successful: false,
+                userId: user.id,
+                failureReason: 'invalid_password',
+              });
               return null;
             }
 
             // Check if user is active
             if (!user.isActive) {
+              await logLoginAttempt({
+                email: email.toLowerCase().trim(),
+                ipAddress: ipAddress || 'unknown',
+                userAgent: userAgent || 'unknown',
+                successful: false,
+                userId: user.id,
+                failureReason: 'account_suspended',
+              });
               throw new Error('Account is suspended');
+            }
+
+            // Check for login anomalies
+            const anomalyCheck = await checkLoginAnomaly(
+              email.toLowerCase().trim(),
+              ipAddress || 'unknown',
+              userAgent || 'unknown'
+            );
+
+            if (anomalyCheck.isAnomalous) {
+              // Log anomaly event
+              await logLoginAnomaly(
+                user.id,
+                anomalyCheck.reasons,
+                anomalyCheck.riskScore,
+                ipAddress,
+                userAgent
+              );
+
+              // Block if high risk
+              if (anomalyCheck.shouldBlock) {
+                await logLoginAttempt({
+                  email: email.toLowerCase().trim(),
+                  ipAddress: ipAddress || 'unknown',
+                  userAgent: userAgent || 'unknown',
+                  successful: false,
+                  userId: user.id,
+                  failureReason: 'high_risk_anomaly',
+                });
+                throw new Error('Suspicious login detected. Please verify your identity.');
+              }
             }
 
             // Update last login
             await prisma.user.update({
               where: { id: user.id },
               data: { lastLogin: new Date() },
+            });
+
+            // Log successful login
+            await logLoginAttempt({
+              email: email.toLowerCase().trim(),
+              ipAddress: ipAddress || 'unknown',
+              userAgent: userAgent || 'unknown',
+              successful: true,
+              userId: user.id,
             });
 
             return {

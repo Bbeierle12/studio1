@@ -327,3 +327,78 @@ model AuditWebhook {
 
   @@index([isActive])
 }
+
+model PasswordHistory {
+  id           String   @id @default(cuid())
+  userId       String
+  passwordHash String   // Hashed password for comparison
+  createdAt    DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model LoginAttempt {
+  id          String   @id @default(cuid())
+  userId      String?  // Null if user not found
+  email       String
+  ipAddress   String
+  userAgent   String?
+  successful  Boolean
+  failureReason String? // "invalid_password", "account_locked", "user_not_found", etc.
+  location    Json?    // { country, city, lat, lng } based on IP geolocation
+  deviceInfo  Json?    // { browser, os, device }
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([email])
+  @@index([ipAddress])
+  @@index([createdAt])
+  @@index([successful])
+}
+
+model WebAuthnCredential {
+  id              String   @id @default(cuid())
+  userId          String
+  credentialId    String   @unique // Base64URL encoded credential ID
+  publicKey       String   // Base64URL encoded public key
+  counter         BigInt   @default(0) // Signature counter for replay protection
+  transports      String[] // ["usb", "nfc", "ble", "internal"]
+  deviceName      String?  // User-friendly name for the credential
+  createdAt       DateTime @default(now())
+  lastUsedAt      DateTime?
+  
+  @@index([userId])
+  @@index([credentialId])
+}
+
+model WebAuthnChallenge {
+  id        String   @id @default(cuid())
+  userId    String?  // Null for registration challenges
+  challenge String   @unique // Base64URL encoded challenge
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([challenge])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model SecurityEvent {
+  id          String   @id @default(cuid())
+  userId      String?
+  eventType   String   // "password_changed", "2fa_enabled", "login_anomaly", "account_locked", etc.
+  severity    String   // "low", "medium", "high", "critical"
+  description String
+  metadata    Json?    // Additional event data
+  ipAddress   String?
+  userAgent   String?
+  notified    Boolean  @default(false) // Whether webhook was triggered
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([eventType])
+  @@index([severity])
+  @@index([createdAt])
+  @@index([notified])
+}
