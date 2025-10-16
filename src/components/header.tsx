@@ -38,6 +38,7 @@ import { ShoppingList } from './shopping-list';
 import { useTheme } from 'next-themes';
 import { useUnit } from '@/context/unit-context';
 import AIChatAssistant from './ai-chat-assistant';
+import { useToast } from '@/hooks/use-toast';
 
 function getInitials(name?: string | null) {
   if (!name) return 'U';
@@ -54,6 +55,7 @@ export function Header() {
   const { data: session } = useSession();
   const { setTheme, theme } = useTheme();
   const { unit, toggleUnit } = useUnit();
+  const { toast } = useToast();
   
   // Weather state for voice assistant
   const [weather, setWeather] = useState<{
@@ -77,6 +79,16 @@ export function Header() {
 
   const handleLogout = async () => {
     await signOut();
+  };
+
+  const handleUnitToggle = () => {
+    toggleUnit();
+    const newUnit = unit === 'metric' ? 'imperial' : 'metric';
+    toast({
+      title: 'Units Changed',
+      description: `Switched to ${newUnit === 'metric' ? 'Metric (kg, g, °C)' : 'Imperial (lb, oz, °F)'}`,
+      duration: 2000,
+    });
   };
 
   // Check if user is admin
@@ -157,11 +169,15 @@ export function Header() {
           <Button
             variant='ghost'
             size='icon'
-            onClick={toggleUnit}
+            onClick={handleUnitToggle}
             aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}
+            title={`Current: ${unit === 'metric' ? 'Metric (kg, °C)' : 'Imperial (lb, °F)'} - Click to switch`}
           >
             <Scale className='h-[1.2rem] w-[1.2rem]' />
-            <span className='sr-only'>Toggle Units</span>
+            <span className='absolute -bottom-0.5 right-0.5 text-[10px] font-bold bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center'>
+              {unit === 'metric' ? 'M' : 'I'}
+            </span>
+            <span className='sr-only'>Toggle Units (Current: {unit})</span>
           </Button>
           <Button variant='ghost' size='icon' onClick={toggleTheme}>
             <Sun className='h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />
