@@ -37,7 +37,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShoppingList } from './shopping-list';
 import { useTheme } from 'next-themes';
 import { useUnit } from '@/context/unit-context';
-import VoiceAssistant from './voice-assistant';
+import AIChatAssistant from './ai-chat-assistant';
 
 function getInitials(name?: string | null) {
   if (!name) return 'U';
@@ -214,8 +214,8 @@ export function Header() {
         </div>
       </div>
       
-      {/* Voice Assistant - Only visible when logged in */}
-      {user && <VoiceAssistant weather={weather} />}
+      {/* AI Chat Assistant - Only visible when logged in */}
+      {user && <AIChatAssistant weather={weather} />}
     </header>
   );
 }
