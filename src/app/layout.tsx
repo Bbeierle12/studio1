@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/header';
+import { Sidebar } from '@/components/sidebar';
 import { AuthProvider } from '@/context/auth-context';
 import { ShoppingListProvider } from '@/context/shopping-list-context';
 import { PrintProvider } from '@/context/print-context';
@@ -87,9 +88,15 @@ export default function RootLayout({
                       <SavedRecipesProvider>
                         <UnitProvider>
                           <PrintProvider>
-                            <div className='relative flex min-h-screen w-full flex-col overflow-x-hidden'>
-                              <Header />
-                              {children}
+                            <div className='relative flex min-h-screen w-full'>
+                              {/* Sidebar - fixed position, handled internally */}
+                              <Sidebar />
+
+                              {/* Main content area with sidebar offset */}
+                              <div className='flex flex-col flex-1 md:pl-64 transition-all duration-300'>
+                                <Header />
+                                <main className='flex-1'>{children}</main>
+                              </div>
                             </div>
                             <Toaster />
                             <PrintDialog />

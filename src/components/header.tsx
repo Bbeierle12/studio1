@@ -5,23 +5,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
   CookingPot,
-  Home,
-  PlusCircle,
   LogOut,
   LogIn,
-  Library,
-  ShoppingCart,
   Sun,
   Moon,
   Scale,
-  Bookmark,
-  Shield,
-  Settings,
-  CalendarDays,
-  Users,
-  BarChart3,
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
 import { signOut, useSession } from 'next-auth/react';
@@ -44,33 +33,29 @@ function getInitials(name?: string | null) {
   if (!name) return 'U';
   const parts = name.split(' ');
   if (parts.length > 1) {
-    return parts[0][0] + parts[parts.length - 1][0];
+ return parts[0][0] + parts[parts.length - 1][0];
   }
   return name[0];
 }
 
 export function Header() {
-  const pathname = usePathname();
   const { user, loading } = useAuth();
   const { data: session } = useSession();
   const { setTheme, theme } = useTheme();
   const { unit, toggleUnit } = useUnit();
   const { toast } = useToast();
   
-  // Weather state for voice assistant
   const [weather, setWeather] = useState<{
     temperature: number;
     condition: string;
     humidity?: number;
   } | null>(null);
 
-  // Fetch weather when user logs in
   useEffect(() => {
     if (user) {
-      // Mock weather data - can be replaced with real API
-      const mockWeather = {
-        temperature: 72,
-        condition: 'Sunny',
+   const mockWeather = {
+    temperature: 72,
+     condition: 'Sunny',
         humidity: 45,
       };
       setWeather(mockWeather);
@@ -85,36 +70,11 @@ export function Header() {
     toggleUnit();
     const newUnit = unit === 'metric' ? 'imperial' : 'metric';
     toast({
-      title: 'Units Changed',
-      description: `Switched to ${newUnit === 'metric' ? 'Metric (kg, g, °C)' : 'Imperial (lb, oz, °F)'}`,
+    title: 'Units Changed',
+    description: `Switched to ${newUnit === 'metric' ? 'Metric (kg, g, °C)' : 'Imperial (lb, oz, °F)'}`,
       duration: 2000,
     });
   };
-
-  // Check if user is admin
-  const isAdmin = user?.role && ['SUPPORT_ADMIN', 'CONTENT_ADMIN', 'SUPER_ADMIN'].includes(user.role);
-
-  // All navigation links - only show when user is authenticated
-  const navLinks = user ? [
-    { href: '/', label: 'Foyer', icon: Home },
-    { href: '/recipes', label: 'Recipe Hub', icon: CookingPot },
-    { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays },
-    { href: '/household', label: 'Family', icon: Users },
-    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { href: '/saved', label: 'Saved', icon: Bookmark },
-    {
-      href: '/settings',
-      label: 'Settings',
-      icon: Settings,
-      className: 'hidden sm:flex',
-    },
-    ...(isAdmin ? [{
-      href: '/admin',
-      label: 'Admin',
-      icon: Shield,
-      className: 'text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300',
-    }] : []),
-  ] : [];
 
   const toggleTheme = () => {
     if (theme === 'light') {
@@ -126,163 +86,105 @@ export function Header() {
 
   return (
     <>
-      <header className='sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-[inset_0_-1px_0_rgba(0,0,0,0.2)]'>
-        {/* Wooden Accent Strip */}
+      {/* Slim Top Header */}
+      <header className={cn(
+        'sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border',
+        user && 'md:pl-0' // Sidebar handles the offset
+      )}>
+    {/* Decorative Top Strip */}
         <div 
-          className='h-1.5 w-full relative'
+  className='h-1 w-full relative'
           style={{
-            backgroundImage: `url(/textures/${theme === 'dark' ? 'wood-dark' : 'wood-light'}.svg)`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+   background: 'linear-gradient(180deg, hsl(var(--primary) / 0.15) 0%, hsl(var(--primary) / 0.08) 50%, hsl(var(--primary) / 0.15) 100%)',
+            boxShadow: `
+     inset 0 1px 0 hsl(var(--primary) / 0.2),
+         inset 0 -1px 0 hsl(var(--primary) / 0.1)
+  `,
           }}
         >
-          {/* Noise overlay for extra realism */}
-          <div 
-            className='absolute inset-0 opacity-10'
+        <div 
+            className='absolute inset-0 opacity-40'
             style={{
-              backgroundImage: 'url(/textures/noise.svg)',
-              backgroundSize: '128px 128px',
-              mixBlendMode: 'overlay',
-            }}
+     background: 'linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.1) 50%, transparent 100%)',
+  }}
           />
-        </div>
-        <div className='container flex h-16 items-center'>
-          <Link 
-            href='/' 
-            className='mr-6 flex items-center space-x-2 px-3 py-1.5 rounded-lg relative transition-transform duration-150 hover:translate-y-0.5 overflow-hidden'
-          >
-            {/* Texture background */}
-            <div 
-              className='absolute inset-0 opacity-80 dark:opacity-90'
-              style={{
-                backgroundImage: `url(/textures/${theme === 'dark' ? 'wood-dark' : 'wood-light'}.svg)`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
-            
-            {/* Gradient overlay for depth */}
-            <div 
-              className='absolute inset-0 opacity-30'
-              style={{
-                background: 'linear-gradient(135deg, rgba(160, 130, 109, 0.5) 0%, rgba(139, 111, 71, 0.7) 100%)',
-              }}
-            />
-            
-            {/* Ring effect */}
-            <div 
-              className='absolute inset-0 rounded-lg'
-              style={{
-                boxShadow: 'inset 0 0 0 1px rgba(139, 111, 71, 0.4), 0 1px 3px rgba(0, 0, 0, 0.12)',
-              }}
-            />
-            
-            {/* Content (with z-index to appear above backgrounds) */}
-            <CookingPot className='h-6 w-6 text-amber-700 dark:text-amber-400 drop-shadow-sm relative z-10' />
-            <span className='font-bold sm:inline-block font-headline text-white drop-shadow-sm relative z-10'>
-              Our Family Table
-            </span>
+</div>
+
+        <div className='container flex h-14 items-center'>
+          {/* Mobile Logo (shown when sidebar hidden) */}
+       <Link 
+    href='/' 
+      className='flex items-center gap-2 px-2 py-1 rounded-lg transition-all md:hidden'
+      >
+    <CookingPot className='h-5 w-5 text-primary' />
+     <span className='font-bold text-sm'>Our Family Table</span>
           </Link>
-        <nav className='flex flex-1 items-center space-x-4 text-sm font-medium'>
-          {navLinks.map(
-            ({ href, label, icon: Icon, className: linkClassName }) => {
-              const isActive =
-                href === '/' ? pathname === href : pathname.startsWith(href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={cn(
-                    'flex items-center gap-2 transition-all duration-150 hover:text-foreground/80 hover:translate-y-0.5',
-                    isActive ? 'text-foreground' : 'text-foreground/60',
-                    linkClassName
-                  )}
-                >
-                  <Icon className='h-4 w-4' />
-                  <span className='hidden sm:inline-block'>{label}</span>
-                </Link>
-              );
-            }
-          )}
-        </nav>
-        <div className='flex items-center justify-end gap-2'>
-          {user && (
-            <Button asChild variant='outline' size='sm' className='sm:hidden'>
-              <Link href='/recipes/new'>
-                <PlusCircle className='h-4 w-4' />
-                <span className='sr-only'>Add Recipe</span>
-              </Link>
+
+        {/* Spacer for desktop */
+<div className="flex-1 hidden md:block" />}
+
+          {/* Right side utilities */}
+          <div className='flex items-center justify-end gap-2 ml-auto'>
+       <ShoppingList />
+            
+  <Button
+    variant='ghost'
+  size='icon'
+        onClick={handleUnitToggle}
+       aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}
+   title={`Current: ${unit === 'metric' ? 'Metric (kg, °C)' : 'Imperial (lb, °F)'}`}
+   >
+        <Scale className='h-[1.1rem] w-[1.1rem]' />
+       <span className='absolute -bottom-0.5 right-0.5 text-[9px] font-bold bg-primary text-primary-foreground rounded-full w-3.5 h-3.5 flex items-center justify-center'>
+      {unit === 'metric' ? 'M' : 'I'}
+ </span>
+  </Button>
+
+    <Button variant='ghost' size='icon' onClick={toggleTheme}>
+      <Sun className='h-[1.1rem] w-[1.1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />
+              <Moon className='absolute h-[1.1rem] w-[1.1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100' />
             </Button>
-          )}
-          <ShoppingList />
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={handleUnitToggle}
-            aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}
-            title={`Current: ${unit === 'metric' ? 'Metric (kg, °C)' : 'Imperial (lb, °F)'} - Click to switch`}
-          >
-            <Scale className='h-[1.2rem] w-[1.2rem]' />
-            <span className='absolute -bottom-0.5 right-0.5 text-[10px] font-bold bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center'>
-              {unit === 'metric' ? 'M' : 'I'}
-            </span>
-            <span className='sr-only'>Toggle Units (Current: {unit})</span>
-          </Button>
-          <Button variant='ghost' size='icon' onClick={toggleTheme}>
-            <Sun className='h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />
-            <Moon className='absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100' />
-            <span className='sr-only'>Toggle theme</span>
-          </Button>
-          {loading ? (
-            <div className='h-8 w-20 animate-pulse rounded-md bg-muted' />
-          ) : user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='ghost'
-                  className='relative h-8 w-8 rounded-full'
-                >
-                  <Avatar className='h-8 w-8'>
-                    <AvatarImage
-                      src={user.avatarUrl ?? undefined}
-                      alt={user.name ?? 'User'}
-                    />
-                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className='w-56' align='end' forceMount>
-                <DropdownMenuLabel className='font-normal'>
-                  <div className='flex flex-col space-y-1'>
-                    <p className='text-sm font-medium leading-none'>
-                      {user.name}
-                    </p>
-                    <p className='text-xs leading-none text-muted-foreground'>
-                      {session?.user?.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className='mr-2 h-4 w-4' />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button asChild variant='secondary' size='sm'>
-              <Link href='/login'>
-                <LogIn className='mr-2 h-4 w-4' />
-                Sign in
-              </Link>
-            </Button>
-          )}
+
+   {loading ? (
+  <div className='h-8 w-8 animate-pulse rounded-full bg-muted' />
+            ) : user ? (
+   <DropdownMenu>
+   <DropdownMenuTrigger asChild>
+       <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
+             <Avatar className='h-8 w-8'>
+             <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? 'User'} />
+          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+  </Avatar>
+     </Button>
+           </DropdownMenuTrigger>
+   <DropdownMenuContent className='w-56' align='end' forceMount>
+             <DropdownMenuLabel className='font-normal'>
+                 <div className='flex flex-col space-y-1'>
+        <p className='text-sm font-medium leading-none'>{user.name}</p>
+ <p className='text-xs leading-none text-muted-foreground'>
+      {session?.user?.email}
+       </p>
+         </div>
+      </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+    <DropdownMenuItem onClick={handleLogout}>
+           <LogOut className='mr-2 h-4 w-4' />
+<span>Log out</span>
+       </DropdownMenuItem>
+        </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+        <Button asChild variant='secondary' size='sm'>
+    <Link href='/login'>
+      <LogIn className='mr-2 h-4 w-4' />
+          Sign in
+     </Link>
+       </Button>
+    )}
         </div>
-      </div>
+        </div>
       </header>
       
-      {/* AI Chat Assistant - Only visible when logged in */}
       {user && <AIChatAssistant weather={weather} />}
     </>
   );
