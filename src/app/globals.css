@@ -20,8 +20,8 @@
     --accent-foreground: 25 55% 20%; /* #4d3321 - Deeper brown */
     --destructive: 0 60% 50%; /* #cc3333 - Muted red */
     --destructive-foreground: 0 0% 100%;
-    --border: 30 15% 80%; /* #d6ccc7 */
-    --input: 30 15% 80%;
+    --border: 30 15% 82%; /* #dbd1cc - Softer, lighter border */
+    --input: 30 15% 82%;
     --ring: 25 55% 35%; /* #7f5539 - Medium brown */
     --radius: 0.5rem;
   }
@@ -43,8 +43,8 @@
     --accent-foreground: 30 25% 90%;
     --destructive: 0 50% 40%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 15% 25%;
-    --input: 30 15% 25%;
+    --border: 30 15% 27%; /* Softer dark border with slight transparency */
+    --input: 30 15% 27%;
     --ring: 30 40% 75%;
   }
 }
@@ -55,6 +55,43 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Smooth border utility classes */
+  .border-smooth {
+    border-color: hsl(var(--border) / 0.5);
+  }
+  
+  .border-smooth-light {
+    border-color: hsl(var(--border) / 0.3);
+  }
+  
+  .border-smooth-gradient-x {
+    position: relative;
+  }
+  
+  .border-smooth-gradient-x::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent 0%, hsl(var(--border) / 0.5) 10%, hsl(var(--border) / 0.8) 50%, hsl(var(--border) / 0.5) 90%, transparent 100%);
+  }
+  
+  .border-smooth-gradient-y {
+    position: relative;
+  }
+  
+  .border-smooth-gradient-y::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+  bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent 0%, hsl(var(--border) / 0.3) 10%, hsl(var(--border) / 0.5) 50%, hsl(var(--border) / 0.3) 90%, transparent 100%);
   }
 }
 

@@ -28,12 +28,18 @@ import { useTheme } from 'next-themes';
 import { useUnit } from '@/context/unit-context';
 import AIChatAssistant from './ai-chat-assistant';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 function getInitials(name?: string | null) {
   if (!name) return 'U';
   const parts = name.split(' ');
   if (parts.length > 1) {
- return parts[0][0] + parts[parts.length - 1][0];
+    return parts[0][0] + parts[parts.length - 1][0];
   }
   return name[0];
 }
@@ -53,9 +59,9 @@ export function Header() {
 
   useEffect(() => {
     if (user) {
-   const mockWeather = {
-    temperature: 72,
-     condition: 'Sunny',
+      const mockWeather = {
+     temperature: 72,
+      condition: 'Sunny',
         humidity: 45,
       };
       setWeather(mockWeather);
@@ -70,8 +76,8 @@ export function Header() {
     toggleUnit();
     const newUnit = unit === 'metric' ? 'imperial' : 'metric';
     toast({
-    title: 'Units Changed',
-    description: `Switched to ${newUnit === 'metric' ? 'Metric (kg, g, °C)' : 'Imperial (lb, oz, °F)'}`,
+      title: 'Units Changed',
+      description: `Switched to ${newUnit === 'metric' ? 'Metric (kg, g, °C)' : 'Imperial (lb, oz, °F)'}`,
       duration: 2000,
     });
   };
@@ -88,100 +94,152 @@ export function Header() {
     <>
       {/* Slim Top Header */}
       <header className={cn(
-        'sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border',
+        'sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative',
         user && 'md:pl-0' // Sidebar handles the offset
       )}>
-    {/* Decorative Top Strip */}
+        {/* Decorative Top Strip with smooth gradient */}
         <div 
-  className='h-1 w-full relative'
+          className='h-1 w-full relative'
           style={{
-   background: 'linear-gradient(180deg, hsl(var(--primary) / 0.15) 0%, hsl(var(--primary) / 0.08) 50%, hsl(var(--primary) / 0.15) 100%)',
-            boxShadow: `
-     inset 0 1px 0 hsl(var(--primary) / 0.2),
-         inset 0 -1px 0 hsl(var(--primary) / 0.1)
-  `,
-          }}
+  background: 'linear-gradient(180deg, hsl(var(--primary) / 0.15) 0%, hsl(var(--primary) / 0.08) 50%, hsl(var(--primary) / 0.15) 100%)',
+        boxShadow: `
+              inset 0 1px 0 hsl(var(--primary) / 0.2),
+   inset 0 -1px 0 hsl(var(--primary) / 0.1)
+    `,
+ }}
         >
-        <div 
-            className='absolute inset-0 opacity-40'
-            style={{
-     background: 'linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.1) 50%, transparent 100%)',
-  }}
-          />
-</div>
-
-        <div className='container flex h-14 items-center'>
-          {/* Mobile Logo (shown when sidebar hidden) */}
-       <Link 
-    href='/' 
-      className='flex items-center gap-2 px-2 py-1 rounded-lg transition-all md:hidden'
-      >
-    <CookingPot className='h-5 w-5 text-primary' />
-     <span className='font-bold text-sm'>Our Family Table</span>
-          </Link>
-
-        {/* Spacer for desktop */
-<div className="flex-1 hidden md:block" />}
-
-          {/* Right side utilities */}
-          <div className='flex items-center justify-end gap-2 ml-auto'>
-       <ShoppingList />
-            
-  <Button
-    variant='ghost'
-  size='icon'
-        onClick={handleUnitToggle}
-       aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}
-   title={`Current: ${unit === 'metric' ? 'Metric (kg, °C)' : 'Imperial (lb, °F)'}`}
-   >
-        <Scale className='h-[1.1rem] w-[1.1rem]' />
-       <span className='absolute -bottom-0.5 right-0.5 text-[9px] font-bold bg-primary text-primary-foreground rounded-full w-3.5 h-3.5 flex items-center justify-center'>
-      {unit === 'metric' ? 'M' : 'I'}
- </span>
-  </Button>
-
-    <Button variant='ghost' size='icon' onClick={toggleTheme}>
-      <Sun className='h-[1.1rem] w-[1.1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />
-              <Moon className='absolute h-[1.1rem] w-[1.1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100' />
-            </Button>
-
-   {loading ? (
-  <div className='h-8 w-8 animate-pulse rounded-full bg-muted' />
-            ) : user ? (
-   <DropdownMenu>
-   <DropdownMenuTrigger asChild>
-       <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
-             <Avatar className='h-8 w-8'>
-             <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? 'User'} />
-          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-  </Avatar>
-     </Button>
-           </DropdownMenuTrigger>
-   <DropdownMenuContent className='w-56' align='end' forceMount>
-             <DropdownMenuLabel className='font-normal'>
-                 <div className='flex flex-col space-y-1'>
-        <p className='text-sm font-medium leading-none'>{user.name}</p>
- <p className='text-xs leading-none text-muted-foreground'>
-      {session?.user?.email}
-       </p>
-         </div>
-      </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-    <DropdownMenuItem onClick={handleLogout}>
-           <LogOut className='mr-2 h-4 w-4' />
-<span>Log out</span>
-       </DropdownMenuItem>
-        </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-        <Button asChild variant='secondary' size='sm'>
-    <Link href='/login'>
-      <LogIn className='mr-2 h-4 w-4' />
-          Sign in
-     </Link>
-       </Button>
-    )}
+          <div 
+    className='absolute inset-0 opacity-40'
+  style={{
+   background: 'linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.1) 50%, transparent 100%)',
+            }}
+  />
         </div>
+
+        {/* Smooth gradient border bottom */}
+        <div 
+     className='absolute bottom-0 left-0 right-0 h-px'
+    style={{
+            background: 'linear-gradient(90deg, transparent 0%, hsl(var(--border) / 0.5) 10%, hsl(var(--border) / 0.8) 50%, hsl(var(--border) / 0.5) 90%, transparent 100%)',
+          }}
+        />
+
+        <div className='container flex h-16 items-center px-4'>
+          {/* Mobile Logo (shown when sidebar hidden) */}
+  <Link 
+      href='/' 
+            className='flex items-center gap-2 px-2 py-1 rounded-lg transition-all md:hidden hover:bg-primary/10'
+          >
+            <CookingPot className='h-6 w-6 text-primary' />
+            <span className='font-bold text-base'>Our Family Table</span>
+      </Link>
+
+          {/* Spacer for desktop */}
+          <div className="flex-1 hidden md:block" />
+
+{/* Right side utilities */}
+          <TooltipProvider delayDuration={300}>
+            <div className='flex items-center justify-end gap-3 ml-auto'>
+  {/* Shopping List */}
+       <ShoppingList />
+          
+         {/* Unit Toggle */}
+          <Tooltip>
+       <TooltipTrigger asChild>
+  <Button
+     variant='ghost'
+           size='icon'
+    className='h-10 w-10 relative hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary'
+    onClick={handleUnitToggle}
+        aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}
+       >
+     <Scale className='h-5 w-5' />
+  <span className='absolute bottom-1 right-1 text-[10px] font-bold bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center shadow-sm'>
+               {unit === 'metric' ? 'M' : 'I'}
+     </span>
+       </Button>
+    </TooltipTrigger>
+          <TooltipContent side='bottom'>
+                  <p className='text-sm'>
+          {unit === 'metric' ? 'Metric (kg, g, °C)' : 'Imperial (lb, oz, °F)'}
+     </p>
+       <p className='text-xs text-muted-foreground'>Click to switch</p>
+       </TooltipContent>
+          </Tooltip>
+
+   {/* Theme Toggle */}
+     <Tooltip>
+      <TooltipTrigger asChild>
+            <Button 
+    variant='ghost' 
+     size='icon' 
+          className='h-10 w-10 hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary'
+  onClick={toggleTheme}
+        aria-label='Toggle theme'
+  >
+                    <Sun className='h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />
+        <Moon className='absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100' />
+  </Button>
+        </TooltipTrigger>
+              <TooltipContent side='bottom'>
+    <p className='text-sm'>
+       {theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          </p>
+         </TooltipContent>
+  </Tooltip>
+
+       {/* User Menu / Login */}
+  {loading ? (
+             <div className='h-10 w-10 animate-pulse rounded-full bg-muted' />
+      ) : user ? (
+              <DropdownMenu>
+          <Tooltip>
+     <TooltipTrigger asChild>
+      <DropdownMenuTrigger asChild>
+         <Button 
+   variant='ghost' 
+      className='relative h-10 w-10 rounded-full hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary ring-offset-2'
+          >
+     <Avatar className='h-9 w-9'>
+<AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? 'User'} />
+ <AvatarFallback className='text-sm font-semibold bg-primary/20 text-primary'>
+                   {getInitials(user.name)}
+         </AvatarFallback>
+     </Avatar>
+    </Button>
+          </DropdownMenuTrigger>
+          </TooltipTrigger>
+                 <TooltipContent side='bottom'>
+          <p className='text-sm'>{user.name}</p>
+             <p className='text-xs text-muted-foreground'>Account settings</p>
+          </TooltipContent>
+      </Tooltip>
+       <DropdownMenuContent className='w-64' align='end' forceMount>
+               <DropdownMenuLabel className='font-normal'>
+<div className='flex flex-col space-y-1'>
+         <p className='text-sm font-medium leading-none'>{user.name}</p>
+ <p className='text-xs leading-none text-muted-foreground'>
+   {session?.user?.email}
+      </p>
+       </div>
+         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+     <DropdownMenuItem onClick={handleLogout} className='cursor-pointer'>
+        <LogOut className='mr-2 h-4 w-4' />
+                <span>Log out</span>
+       </DropdownMenuItem>
+    </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+              <Button asChild variant='secondary' size='default' className='h-10'>
+             <Link href='/login'>
+        <LogIn className='mr-2 h-4 w-4' />
+             Sign in
+           </Link>
+     </Button>
+   )}
+    </div>
+          </TooltipProvider>
         </div>
       </header>
       
