@@ -1,93 +1,83 @@
 import { NextRequest } from 'next/server';
-import { openai } from '@ai-sdk/openai';
-import { streamText, generateObject } from 'ai';
-import { z } from 'zod';
+import { RecipeChatEngine } from '@/lib/recipe-chat/recipe-chat-engine';
+import { getOrCreateContext, updateRecipeInDB, saveChatInteraction } from '@/lib/recipe-chat/helpers';
+import { getServerSession } from 'next-auth';
 
-// Schema for extracted recipe data
-const RecipeExtractionSchema = z.object({
-  title: z.string().nullable(),
-  ingredients: z.array(z.string()).describe('Individual ingredients'),
-  instructions: z.array(z.string()).describe('Numbered cooking steps'),
-  servings: z.number().nullable(),
-  prepTime: z.number().nullable().describe('Preparation time in minutes'),
-  cuisine: z.string().nullable(),
-  difficulty: z.enum(['Easy', 'Medium', 'Hard']).nullable(),
-  tags: z.array(z.string()),
-});
+const engine = new RecipeChatEngine();
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { messages, recipeData } = await request.json();
+    const session = await getServerSession();
+    const { messages, context, mode } = await req.json();
 
-    // Check if API key is configured
+  // Check if API key is configured
     if (!process.env.OPENAI_API_KEY) {
       console.error('OPENAI_API_KEY is not configured');
-      return new Response(
-        JSON.stringify({ error: 'OpenAI API key is not configured' }),
+    return new Response(
+     JSON.stringify({ error: 'OpenAI API key is not configured' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+   );
     }
 
-    // System prompt for the chat assistant
-    const systemPrompt = `You are a friendly, expert chef assistant helping users create recipes through conversation.
+    // Get or create recipe context
+    const recipeContext = await getOrCreateContext(session?.user?.id, context);
 
-Your role:
-- Guide users through recipe creation naturally
-- Ask clarifying questions
-- Parse ingredients and instructions from natural language
-- Be encouraging and helpful
-- Keep responses concise (2-3 sentences max)
-
-Current recipe data:
-${JSON.stringify(recipeData, null, 2)}
-
-When the user provides information:
-- Extract ingredients, instructions, servings, time, cuisine, difficulty
-- Respond with what you captured and ask for the next piece
-- Use emojis occasionally to be friendly`;
-
-    // Generate the conversational response
-    const result = await streamText({
-      model: openai('gpt-4o'),
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages,
-      ],
-    });
-
-    // Get the full text for extraction
-    const fullText = await result.text;
-
-    // Extract structured recipe data using generateObject
-    const { object: extractedData } = await generateObject({
-      model: openai('gpt-4o'),
-      schema: RecipeExtractionSchema,
-      messages: [
-        {
-          role: 'system',
-          content: 'Extract recipe information from this conversation. Return structured data based on the schema.',
-        },
-        ...messages,
-        { role: 'assistant', content: fullText },
-      ],
-    });
-
-    // Return both the response and extracted data
-    return new Response(
-      JSON.stringify({
-        response: fullText,
-        extractedData,
-      }),
-      {
-        headers: { 'Content-Type': 'application/json' },
-      }
+    // Process through recipe chat engine
+    const stream = await engine.processMessage(
+      messages[messages.length - 1].content,
+      recipeContext
     );
+
+    // Convert OpenAI stream to Response
+    // Create a ReadableStream from the OpenAI stream
+    const readableStream = new ReadableStream({
+  async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            const text = chunk.choices[0]?.delta?.content || '';
+       if (text) {
+controller.enqueue(new TextEncoder().encode(text));
+            }
+       
+            // Handle tool calls
+    const toolCalls = chunk.choices[0]?.delta?.tool_calls;
+            if (toolCalls) {
+       for (const toolCall of toolCalls) {
+   if (toolCall.function?.name === 'update_recipe' && toolCall.function?.arguments) {
+            try {
+            const updates = JSON.parse(toolCall.function.arguments);
+     await updateRecipeInDB(
+    recipeContext.currentRecipe?.id,
+       updates.updates
+    );
+                  } catch (e) {
+    console.error('Error updating recipe:', e);
+        }
+             }
+           }
+      }
+ });
+
+
+// Save chat history asynchronously
+    saveChatInteraction(recipeContext.sessionId, messages, 'completion').catch(console.error);
+
+    // Return streaming response with headers
+    return new Response(readableStream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'X-Recipe-Context': JSON.stringify(recipeContext),
+        'X-Recipe-Mode': mode || 'recipe_creation'
+      }
+    });
   } catch (error) {
     console.error('Recipe chat error:', error);
     return new Response(
       JSON.stringify({
-        error: 'Failed to process chat message',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: 'Failed to process recipe chat',
+    details: error instanceof Error ? error.message : 'Unknown error',
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );

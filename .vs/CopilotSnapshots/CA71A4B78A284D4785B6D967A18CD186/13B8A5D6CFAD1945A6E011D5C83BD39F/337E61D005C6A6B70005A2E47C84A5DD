@@ -1,0 +1,22 @@
+﻿export interface RecipeContext {
+  mode: 'create' | 'modify' | 'discover' | 'learn';
+  currentRecipe?: Recipe;
+  history: RecipeInteraction[];
+  userPreferences: UserPreferences;
+  sessionId: string;
+}
+
+export interface RecipeInteraction {
+  timestamp: Date;
+  action: string;
+  data: any;
+  result: any;
+}
+
+export type ChatMode = 
+  | 'recipe_creation'
+  | 'recipe_modification' 
+  | 'recipe_search'
+  | 'cooking_guidance'
+  | 'ingredient_substitution'
+  | 'nutrition_analysis';

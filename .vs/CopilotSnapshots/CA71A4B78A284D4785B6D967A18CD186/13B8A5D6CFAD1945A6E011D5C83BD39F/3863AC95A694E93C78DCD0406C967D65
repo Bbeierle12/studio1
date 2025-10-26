@@ -1,0 +1,258 @@
+﻿import OpenAI from 'openai';
+import { RecipeContext, ChatMode, RecipeChatRecipe } from './types';
+
+export class RecipeChatEngine {
+  private openai: OpenAI;
+
+  constructor() {
+    this.openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+
+  async processMessage(message: string, context: RecipeContext) {
+    // First, determine the user's intent
+  const intent = await this.analyzeIntent(message, context);
+    
+    switch (intent.mode) {
+      case 'recipe_creation':
+ return this.handleRecipeCreation(message, context);
+      case 'recipe_modification':
+        return this.handleRecipeModification(message, context);
+ case 'recipe_search':
+        return this.handleRecipeDiscovery(message, context);
+      case 'cooking_guidance':
+        return this.handleCookingGuidance(message, context);
+      case 'ingredient_substitution':
+ return this.handleIngredientSubstitution(message, context);
+ case 'nutrition_analysis':
+        return this.handleNutritionAnalysis(message, context);
+   default:
+  return this.handleGeneralChat(message, context);
+    }
+  }
+
+  private async analyzeIntent(message: string, context: RecipeContext) {
+    const completion = await this.openai.chat.completions.create({
+    model: 'gpt-4-turbo-preview',
+      messages: [
+        {
+          role: 'system',
+          content: `Analyze the user's message in the context of recipe creation and cooking.
+ Current context: ${JSON.stringify(context)}`
+        },
+      {
+          role: 'user',
+    content: message
+        }
+      ],
+      tools: [
+        {
+          type: 'function',
+   function: {
+       name: 'determine_intent',
+            description: 'Determine user intent for recipe-related tasks',
+            parameters: {
+      type: 'object',
+   properties: {
+             mode: {
+            type: 'string',
+        enum: ['recipe_creation', 'recipe_modification', 'recipe_search', 
+          'cooking_guidance', 'ingredient_substitution', 'nutrition_analysis', 'general'],
+        },
+     confidence: {
+            type: 'number',
+     description: 'Confidence score 0-1'
+            },
+             extractedInfo: {
+       type: 'object',
+          description: 'Any specific information extracted from the message'
+   }
+       },
+      required: ['mode', 'confidence']
+   }
+          }
+        }
+      ],
+   tool_choice: 'auto'
+    });
+
+    const toolCall = completion.choices[0].message.tool_calls?.[0];
+    if (toolCall) {
+      return JSON.parse(toolCall.function.arguments);
+  }
+    
+    return { mode: 'general', confidence: 0.5 };
+  }
+
+  private async handleRecipeCreation(message: string, context: RecipeContext) {
+    const systemPrompt = `You are an expert chef and recipe creator. 
+    Guide the user through creating a recipe step by step.
+    Ask clarifying questions when needed.
+    Current recipe state: ${JSON.stringify(context.currentRecipe || {})}`
+
+    const completion = await this.openai.chat.completions.create({
+      model: 'gpt-4-turbo-preview',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message }
+      ],
+    tools: [
+        {
+      type: 'function',
+          function: {
+          name: 'update_recipe',
+       description: 'Update the recipe being created',
+  parameters: {
+          type: 'object',
+        properties: {
+      updates: {
+        type: 'object',
+      properties: {
+        name: { type: 'string' },
+ description: { type: 'string' },
+       ingredients: {
+              type: 'array',
+               items: {
+        type: 'object',
+           properties: {
+      name: { type: 'string' },
+         amount: { type: 'number' },
+         unit: { type: 'string' },
+       preparation: { type: 'string' }
+      }
+                 }
+           },
+instructions: {
+        type: 'array',
+     items: {
+          type: 'object',
+    properties: {
+          step: { type: 'number' },
+        instruction: { type: 'string' },
+            duration: { type: 'number' },
+  temperature: { type: 'string' }
+       }
+            }
+             },
+         cookingTime: { type: 'number' },
+prepTime: { type: 'number' },
+            servings: { type: 'number' },
+ difficulty: { type: 'string' },
+               cuisine: { type: 'string' },
+    mealType: { type: 'array', items: { type: 'string' } },
+     dietaryInfo: { type: 'array', items: { type: 'string' } }
+            }
+            },
+    nextQuestion: {
+      type: 'string',
+      description: 'Next clarifying question to ask the user'
+ },
+              isComplete: {
+     type: 'boolean',
+        description: 'Whether the recipe is complete'
+     }
+   }
+ }
+          }
+        }
+      ],
+      stream: true
+    });
+
+    return completion;
+  }
+
+  private async handleRecipeModification(message: string, context: RecipeContext) {
+    const systemPrompt = `You are helping modify an existing recipe.
+    Current recipe: ${JSON.stringify(context.currentRecipe)}
+    Help the user make changes while maintaining recipe integrity.`;
+
+    const completion = await this.openai.chat.completions.create({
+   model: 'gpt-4-turbo-preview',
+      messages: [
+{ role: 'system', content: systemPrompt },
+        { role: 'user', content: message }
+      ],
+      stream: true
+    });
+
+    return completion;
+  }
+
+  private async handleRecipeDiscovery(message: string, context: RecipeContext) {
+    const systemPrompt = `You are helping discover recipes based on user preferences.
+    User preferences: ${JSON.stringify(context.userPreferences)}`;
+
+    const completion = await this.openai.chat.completions.create({
+      model: 'gpt-4-turbo-preview',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message }
+      ],
+      stream: true
+  });
+
+    return completion;
+  }
+
+  private async handleCookingGuidance(message: string, context: RecipeContext) {
+    const systemPrompt = `You are a cooking instructor providing step-by-step guidance.`;
+
+    const completion = await this.openai.chat.completions.create({
+      model: 'gpt-4-turbo-preview',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message }
+      ],
+   stream: true
+    });
+
+    return completion;
+  }
+
+  private async handleIngredientSubstitution(message: string, context: RecipeContext) {
+ const systemPrompt = `You are an expert at suggesting ingredient substitutions.`;
+
+    const completion = await this.openai.chat.completions.create({
+      model: 'gpt-4-turbo-preview',
+      messages: [
+        { role: 'system', content: systemPrompt },
+     { role: 'user', content: message }
+      ],
+      stream: true
+    });
+
+    return completion;
+  }
+
+  private async handleNutritionAnalysis(message: string, context: RecipeContext) {
+    const systemPrompt = `You are a nutritionist analyzing recipe nutrition.`;
+
+    const completion = await this.openai.chat.completions.create({
+  model: 'gpt-4-turbo-preview',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message }
+      ],
+      stream: true
+    });
+
+    return completion;
+  }
+
+  private async handleGeneralChat(message: string, context: RecipeContext) {
+    const systemPrompt = `You are a friendly cooking assistant.`;
+
+    const completion = await this.openai.chat.completions.create({
+      model: 'gpt-4-turbo-preview',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message }
+      ],
+      stream: true
+    });
+
+    return completion;
+  }
+}

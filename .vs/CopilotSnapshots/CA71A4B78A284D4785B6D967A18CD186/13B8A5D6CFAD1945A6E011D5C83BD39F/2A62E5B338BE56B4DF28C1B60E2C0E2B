@@ -1,0 +1,69 @@
+﻿// Import base Recipe type from main types
+export interface RecipeChatRecipe {
+  id?: string;
+  name?: string;
+  description?: string;
+  ingredients?: Array<{
+    name: string;
+    amount: number;
+    unit: string;
+    preparation?: string;
+  }>;
+  instructions?: Array<{
+    step: number;
+    instruction: string;
+    duration?: number;
+    temperature?: string;
+  }>;
+  prepTime?: number;
+  cookTime?: number;
+  servings?: number;
+  difficulty?: string;
+  cuisine?: string;
+  mealType?: string[];
+  dietaryInfo?: string[];
+  nutrition?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  tags?: string[];
+  imageUrl?: string;
+}
+
+export interface UserPreferences {
+  dietaryRestrictions?: string[];
+  allergies?: string[];
+  cuisinePreferences?: string[];
+  caloriesTarget?: number;
+  cookingLevel?: 'beginner' | 'intermediate' | 'advanced';
+  mealPrepTime?: {
+    breakfast?: number;
+    lunch?: number;
+    dinner?: number;
+  };
+}
+
+export interface RecipeContext {
+  mode: 'create' | 'modify' | 'discover' | 'learn';
+  currentRecipe?: RecipeChatRecipe;
+  history: RecipeInteraction[];
+  userPreferences: UserPreferences;
+  sessionId: string;
+}
+
+export interface RecipeInteraction {
+  timestamp: Date;
+  action: string;
+  data: any;
+  result: any;
+}
+
+export type ChatMode = 
+  | 'recipe_creation'
+  | 'recipe_modification' 
+  | 'recipe_search'
+  | 'cooking_guidance'
+  | 'ingredient_substitution'
+  | 'nutrition_analysis';

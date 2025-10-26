@@ -1,0 +1,451 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 24% 96%; /* #f7f3f0 - Light beige */
+    --foreground: 25 55% 25%; /* #604029 - Dark brown */
+    --card: 30 24% 96%;
+    --card-foreground: 25 55% 25%;
+    --popover: 30 24% 96%;
+    --popover-foreground: 25 55% 25%;
+    --primary: 25 55% 25%; /* #604029 - Dark brown */
+    --primary-foreground: 30 24% 96%; /* #f7f3f0 - Light beige */
+    --secondary: 30 15% 55%; /* #9e8a7e - Muted brown */
+    --secondary-foreground: 30 24% 98%; /* #fcfaf8 - Off-white */
+    --muted: 30 15% 85%; /* #e0d9d4 - Light grayish brown */
+    --muted-foreground: 30 10% 45%; /* #827b76 - Grayish brown */
+    --accent: 30 30% 90%; /* #f0e9e4 - Pale beige */
+    --accent-foreground: 25 55% 20%; /* #4d3321 - Deeper brown */
+    --destructive: 0 60% 50%; /* #cc3333 - Muted red */
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 15% 82%; /* #dbd1cc - Softer, lighter border */
+    --input: 30 15% 82%;
+    --ring: 25 55% 35%; /* #7f5539 - Medium brown */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 25 55% 15%; /* #38261a - Very dark brown */
+    --foreground: 30 25% 85%; /* #e0d7d1 - Light grayish beige */
+    --card: 25 55% 15%;
+    --card-foreground: 30 25% 85%;
+    --popover: 25 55% 15%;
+    --popover-foreground: 30 25% 85%;
+    --primary: 30 40% 75%; /* #d4bda9 - Tan */
+    --primary-foreground: 25 55% 10%; /* #261a11 - Near black */
+    --secondary: 30 15% 30%; /* #5c524c - Dark grayish brown */
+    --secondary-foreground: 30 25% 90%; /* #e8e3df */
+    --muted: 30 15% 25%; /* #4f4641 */
+    --muted-foreground: 30 15% 65%; /* #b5a9a2 */
+    --accent: 30 15% 20%; /* #423b36 */
+    --accent-foreground: 30 25% 90%;
+    --destructive: 0 50% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 15% 27%; /* Softer dark border with slight transparency */
+    --input: 30 15% 27%;
+    --ring: 30 40% 75%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Smooth border utility classes */
+  .border-smooth {
+    border-color: hsl(var(--border) / 0.5);
+  }
+  
+  .border-smooth-light {
+    border-color: hsl(var(--border) / 0.3);
+  }
+  
+  .border-smooth-gradient-x {
+    position: relative;
+  }
+  
+  .border-smooth-gradient-x::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent 0%, hsl(var(--border) / 0.5) 10%, hsl(var(--border) / 0.8) 50%, hsl(var(--border) / 0.5) 90%, transparent 100%);
+  }
+  
+  .border-smooth-gradient-y {
+    position: relative;
+  }
+  
+  .border-smooth-gradient-y::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+  bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent 0%, hsl(var(--border) / 0.3) 10%, hsl(var(--border) / 0.5) 50%, hsl(var(--border) / 0.3) 90%, transparent 100%);
+  }
+}
+
+@layer utilities {
+  .printable-content {
+    display: none;
+  }
+}
+
+/* Print specific styles */
+@media print {
+  /* Hide everything by default */
+  body > * {
+    display: none !important;
+  }
+
+  /* Show only the printable content and ensure it takes up the full space */
+  .printable-content,
+  .printable-content * {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .printable-content {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 1.5rem !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  @page {
+    size: auto;
+    margin: 0.75in;
+  }
+
+  body {
+    background-color: #fff !important;
+    color: #000 !important;
+    font-size: 10pt;
+  }
+
+  /* Hide elements specifically marked as no-print */
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #000 !important;
+    page-break-after: avoid;
+  }
+
+  a {
+    text-decoration: none;
+    color: #000 !important;
+  }
+
+  img {
+    max-width: 50% !important;
+    display: block !important;
+    margin-left: auto;
+    margin-right: auto;
+    page-break-inside: avoid;
+  }
+
+  ul,
+  p,
+  li {
+    color: #000 !important;
+  }
+
+  .prose-black,
+  .prose-black p,
+  .prose-black li {
+    color: #000 !important;
+  }
+
+  .bg-primary {
+    background-color: #000 !important;
+  }
+}
+
+/* Hyperrealistic Wood Grain Styles */
+
+/* Base wood color and texture */
+.wood-base {
+  background: linear-gradient(
+    160deg,
+    #d2b48c 0%,
+    #deb887 15%,
+    #f4a460 30%,
+    #d2b48c 45%,
+    #cd853f 60%,
+    #d2b48c 75%,
+    #daa520 90%,
+    #d2b48c 100%
+  );
+}
+
+/* Primary wood grain pattern */
+.wood-grain-primary {
+  background-image: 
+    /* Horizontal grain lines */
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(139, 69, 19, 0.1) 2%,
+      transparent 4%,
+      rgba(160, 82, 45, 0.15) 8%,
+      transparent 10%,
+      rgba(139, 69, 19, 0.08) 15%,
+      transparent 17%,
+      rgba(101, 67, 33, 0.12) 25%,
+      transparent 27%,
+      rgba(139, 69, 19, 0.1) 35%,
+      transparent 37%,
+      rgba(160, 82, 45, 0.18) 45%,
+      transparent 47%,
+      rgba(139, 69, 19, 0.09) 55%,
+      transparent 57%,
+      rgba(101, 67, 33, 0.14) 65%,
+      transparent 67%,
+      rgba(139, 69, 19, 0.11) 75%,
+      transparent 77%,
+      rgba(160, 82, 45, 0.16) 85%,
+      transparent 87%,
+      rgba(139, 69, 19, 0.1) 95%,
+      transparent 97%
+    );
+  background-size: 100% 8px;
+  opacity: 0.7;
+}
+
+/* Secondary wood grain with knots and imperfections */
+.wood-grain-secondary {
+  background-image:
+    /* Wood knots */
+    radial-gradient(ellipse 40px 20px at 15% 20%, rgba(101, 67, 33, 0.3), transparent 70%),
+    radial-gradient(ellipse 25px 15px at 75% 60%, rgba(139, 69, 19, 0.25), transparent 70%),
+    radial-gradient(ellipse 30px 18px at 40% 85%, rgba(160, 82, 45, 0.2), transparent 70%),
+    /* Fine grain texture */
+    repeating-linear-gradient(
+      91deg,
+      transparent,
+      transparent 1px,
+      rgba(139, 69, 19, 0.05) 1px,
+      rgba(139, 69, 19, 0.05) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  opacity: 0.6;
+}
+
+/* Wood highlights for depth */
+.wood-highlights {
+  background-image:
+    linear-gradient(
+      92deg,
+      transparent 0%,
+      rgba(255, 248, 220, 0.1) 10%,
+      transparent 11%,
+      rgba(255, 248, 220, 0.15) 20%,
+      transparent 21%,
+      rgba(255, 248, 220, 0.08) 35%,
+      transparent 36%,
+      rgba(255, 248, 220, 0.12) 50%,
+      transparent 51%,
+      rgba(255, 248, 220, 0.1) 65%,
+      transparent 66%,
+      rgba(255, 248, 220, 0.18) 80%,
+      transparent 81%,
+      rgba(255, 248, 220, 0.09) 95%,
+      transparent 96%
+    );
+  background-size: 100% 12px;
+  opacity: 0.4;
+}
+
+/* Wood shadows for realistic depth */
+.wood-shadows {
+  background-image:
+    linear-gradient(
+      88deg,
+      rgba(101, 67, 33, 0.1) 0%,
+      transparent 2%,
+      rgba(139, 69, 19, 0.08) 8%,
+      transparent 10%,
+      rgba(101, 67, 33, 0.12) 18%,
+      transparent 20%,
+      rgba(139, 69, 19, 0.06) 30%,
+      transparent 32%,
+      rgba(101, 67, 33, 0.1) 42%,
+      transparent 44%,
+      rgba(139, 69, 19, 0.09) 54%,
+      transparent 56%,
+      rgba(101, 67, 33, 0.11) 66%,
+      transparent 68%,
+      rgba(139, 69, 19, 0.07) 78%,
+      transparent 80%,
+      rgba(101, 67, 33, 0.13) 88%,
+      transparent 90%
+    );
+  background-size: 100% 6px;
+  opacity: 0.5;
+}
+
+/* Wood edge beveling effect */
+.wood-edge {
+  box-shadow: 
+    inset 0 1px 3px rgba(255, 248, 220, 0.3),
+    inset 0 -1px 3px rgba(101, 67, 33, 0.2),
+    inset 1px 0 3px rgba(255, 248, 220, 0.2),
+    inset -1px 0 3px rgba(101, 67, 33, 0.15),
+    0 4px 12px rgba(101, 67, 33, 0.3),
+    0 8px 24px rgba(139, 69, 19, 0.2);
+  border: 1px solid rgba(160, 82, 45, 0.3);
+}
+
+/* Wood panel container */
+.wood-panel-container {
+  filter: drop-shadow(0 8px 16px rgba(101, 67, 33, 0.4));
+}
+
+/* Wood panel main styling */
+.wood-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.wood-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(255, 248, 220, 0.6) 0%,
+    rgba(255, 248, 220, 0.3) 50%,
+    rgba(255, 248, 220, 0.6) 100%
+  );
+  z-index: 5;
+}
+
+.wood-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(101, 67, 33, 0.4) 0%,
+    rgba(101, 67, 33, 0.2) 50%,
+    rgba(101, 67, 33, 0.4) 100%
+  );
+  z-index: 5;
+}
+
+/* Wood input styling */
+.wood-input {
+  background: rgba(255, 248, 220, 0.9);
+  border: 2px solid rgba(160, 82, 45, 0.3);
+  color: #8B4513;
+  border-radius: 8px;
+  box-shadow: 
+    inset 0 2px 4px rgba(101, 67, 33, 0.1),
+    0 2px 8px rgba(139, 69, 19, 0.1);
+  transition: all 0.2s ease;
+}
+
+.wood-input:focus {
+  background: rgba(255, 248, 220, 1);
+  border-color: rgba(160, 82, 45, 0.6);
+  box-shadow: 
+    inset 0 2px 4px rgba(101, 67, 33, 0.15),
+    0 0 0 3px rgba(160, 82, 45, 0.1),
+    0 4px 12px rgba(139, 69, 19, 0.15);
+  outline: none;
+}
+
+.wood-input::placeholder {
+  color: rgba(139, 69, 19, 0.6);
+}
+
+/* Wood button styling */
+.wood-button {
+  background: linear-gradient(135deg, 
+    #CD853F 0%, 
+    #D2B48C 25%, 
+    #CD853F 50%, 
+    #B8860B 75%, 
+    #CD853F 100%
+  );
+  border: 2px solid rgba(160, 82, 45, 0.4);
+  color: #654321;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(255, 248, 220, 0.3);
+  box-shadow: 
+    inset 0 1px 3px rgba(255, 248, 220, 0.4),
+    inset 0 -1px 3px rgba(101, 67, 33, 0.2),
+    0 4px 12px rgba(139, 69, 19, 0.3);
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 12px 24px;
+}
+
+.wood-button:hover {
+  background: linear-gradient(135deg, 
+    #D2B48C 0%, 
+    #DEB887 25%, 
+    #D2B48C 50%, 
+    #DAA520 75%, 
+    #D2B48C 100%
+  );
+  box-shadow: 
+    inset 0 1px 3px rgba(255, 248, 220, 0.5),
+    inset 0 -1px 3px rgba(101, 67, 33, 0.3),
+    0 6px 16px rgba(139, 69, 19, 0.4);
+  transform: translateY(-1px);
+  border-color: rgba(160, 82, 45, 0.5);
+}
+
+.wood-button:active {
+  transform: translateY(0);
+  box-shadow: 
+    inset 0 2px 4px rgba(101, 67, 33, 0.3),
+    inset 0 -1px 2px rgba(255, 248, 220, 0.2),
+    0 2px 8px rgba(139, 69, 19, 0.2);
+}
+
+/* Wood text shadow for legibility */
+.wood-text-shadow {
+  text-shadow: 0 1px 2px rgba(255, 248, 220, 0.5);
+}
+
+/* Wood inset effect for icons */
+.wood-inset {
+  box-shadow: 
+    inset 0 2px 4px rgba(101, 67, 33, 0.2),
+    inset 0 -1px 2px rgba(255, 248, 220, 0.3),
+    0 2px 8px rgba(139, 69, 19, 0.2);
+  background: linear-gradient(145deg, 
+    rgba(160, 82, 45, 0.2) 0%,
+    rgba(210, 180, 140, 0.3) 50%,
+    rgba(160, 82, 45, 0.2) 100%
+  );
+}

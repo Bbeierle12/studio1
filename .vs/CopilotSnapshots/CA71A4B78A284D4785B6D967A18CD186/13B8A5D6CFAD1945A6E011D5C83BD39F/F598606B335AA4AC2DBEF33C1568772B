@@ -1,0 +1,55 @@
+﻿import { OpenAIStream, StreamingTextResponse } from 'ai';
+import { RecipeChatEngine } from '@/lib/recipe-chat/recipe-chat-engine';
+import { getServerSession } from 'next-auth';
+
+const engine = new RecipeChatEngine();
+
+export async function POST(req: Request) {
+  const session = await getServerSession();
+  const { messages, context, mode } = await req.json();
+
+  // Get or create recipe context
+  const recipeContext = await getOrCreateContext(session?.user?.id, context);
+
+  // Process through recipe chat engine
+  const stream = await engine.processMessage(
+    messages[messages.length - 1].content,
+    recipeContext
+  );
+
+  // Handle tool calls for recipe updates
+  const streamWithCallbacks = OpenAIStream(stream, {
+    experimental_onToolCall: async (call, appendToolCallMessage) => {
+      if (call.function.name === 'update_recipe') {
+        const updates = JSON.parse(call.function.arguments);
+        
+        // Update recipe in database
+        const updatedRecipe = await updateRecipeInDB(
+          recipeContext.currentRecipe?.id,
+          updates.updates
+        );
+
+        // Return the update confirmation
+        const result = {
+          recipeId: updatedRecipe.id,
+          updates: updates.updates,
+          isComplete: updates.isComplete
+        };
+
+        return appendToolCallMessage(result);
+      }
+    },
+    onCompletion: async (completion) => {
+      // Save chat history
+      await saveChatInteraction(recipeContext.sessionId, messages, completion);
+    }
+  });
+
+  // Add recipe data to response headers
+  return new StreamingTextResponse(streamWithCallbacks, {
+    headers: {
+      'X-Recipe-Context': JSON.stringify(recipeContext),
+      'X-Recipe-Mode': mode
+    }
+  });
+}

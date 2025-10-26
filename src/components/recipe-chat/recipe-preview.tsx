@@ -1,0 +1,214 @@
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, Users, ChefHat, Flame } from 'lucide-react';
+import { RecipeChatRecipe } from '@/lib/recipe-chat/types';
+
+interface RecipePreviewProps {
+  recipe: RecipeChatRecipe;
+  onClose: () => void;
+  onEdit: (section: string) => void;
+}
+
+export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
+  const [activeTab, setActiveTab] = useState<'ingredients' | 'instructions' | 'nutrition'>('ingredients');
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="p-6 border-b">
+        <div className="flex items-start justify-between mb-4">
+          <h2 className="text-2xl font-bold">{recipe.name || 'Untitled Recipe'}</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            ?
+          </button>
+        </div>
+        
+        {recipe.description && (
+          <p className="text-gray-600 mb-4">{recipe.description}</p>
+        )}
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 gap-3">
+          {recipe.prepTime && (
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="w-4 h-4 text-gray-400" />
+              <span>Prep: {recipe.prepTime} min</span>
+            </div>
+          )}
+          {recipe.cookTime && (
+            <div className="flex items-center gap-2 text-sm">
+              <Flame className="w-4 h-4 text-gray-400" />
+              <span>Cook: {recipe.cookTime} min</span>
+            </div>
+          )}
+          {recipe.servings && (
+            <div className="flex items-center gap-2 text-sm">
+              <Users className="w-4 h-4 text-gray-400" />
+              <span>{recipe.servings} servings</span>
+            </div>
+          )}
+          {recipe.difficulty && (
+            <div className="flex items-center gap-2 text-sm">
+              <ChefHat className="w-4 h-4 text-gray-400" />
+              <span>{recipe.difficulty}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b">
+        {['ingredients', 'instructions', 'nutrition'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab as any)}
+            className={`flex-1 py-3 capitalize transition-colors ${
+              activeTab === tab
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <AnimatePresence mode="wait">
+          {activeTab === 'ingredients' && (
+            <motion.div
+              key="ingredients"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold">Ingredients</h3>
+                <button
+                  onClick={() => onEdit('ingredients')}
+                  className="text-sm text-blue-500 hover:text-blue-600"
+                >
+                  Edit
+                </button>
+              </div>
+              {recipe.ingredients && recipe.ingredients.length > 0 ? (
+                <ul className="space-y-2">
+                  {recipe.ingredients.map((ingredient: any, index: number) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <input type="checkbox" className="mt-1" />
+                      <span>
+                        {ingredient.amount} {ingredient.unit} {ingredient.name}
+                        {ingredient.preparation && (
+                          <span className="text-gray-500">, {ingredient.preparation}</span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">No ingredients added yet</p>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'instructions' && (
+            <motion.div
+              key="instructions"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold">Instructions</h3>
+                <button
+                  onClick={() => onEdit('instructions')}
+                  className="text-sm text-blue-500 hover:text-blue-600"
+                >
+                  Edit
+                </button>
+              </div>
+              {recipe.instructions && recipe.instructions.length > 0 ? (
+                <ol className="space-y-3">
+                  {recipe.instructions.map((step: any, index: number) => (
+                    <li key={index} className="flex gap-3">
+                      <span className="flex-shrink-0 w-7 h-7 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                        {index + 1}
+                      </span>
+                      <div>
+                        <p>{step.instruction}</p>
+                        {step.duration && (
+                          <span className="text-sm text-gray-500">
+                            Time: {step.duration} minutes
+                          </span>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-gray-500">No instructions added yet</p>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'nutrition' && (
+            <motion.div
+              key="nutrition"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold">Nutrition Info</h3>
+                <button
+                  onClick={() => onEdit('nutrition')}
+                  className="text-sm text-blue-500 hover:text-blue-600"
+                >
+                  Calculate
+                </button>
+              </div>
+              {recipe.nutrition ? (
+                <div className="space-y-2">
+                  <div className="flex justify-between py-2 border-b">
+                    <span>Calories</span>
+                    <span className="font-semibold">{recipe.nutrition.calories}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b">
+                    <span>Protein</span>
+                    <span className="font-semibold">{recipe.nutrition.protein}g</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b">
+                    <span>Carbohydrates</span>
+                    <span className="font-semibold">{recipe.nutrition.carbs}g</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span>Fat</span>
+                    <span className="font-semibold">{recipe.nutrition.fat}g</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500">Nutrition info not calculated yet</p>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="p-4 border-t space-y-2">
+        <button className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+          Save Recipe
+        </button>
+        <button className="w-full py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          Export as PDF
+        </button>
+      </div>
+    </div>
+  );
+}

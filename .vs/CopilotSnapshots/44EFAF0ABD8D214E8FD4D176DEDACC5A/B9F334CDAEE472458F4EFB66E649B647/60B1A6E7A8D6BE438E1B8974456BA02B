@@ -1,0 +1,255 @@
+﻿'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/auth-context';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  CookingPot,
+  Home,
+  CalendarDays,
+  Users,
+  BarChart3,
+  Bookmark,
+  Settings,
+  Shield,
+  ChevronLeft,
+  ChevronRight,
+  PlusCircle,
+} from 'lucide-react';
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: number;
+  adminOnly?: boolean;
+}
+
+export function Sidebar() {
+  const pathname = usePathname();
+  const { user } = useAuth();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Check if user is admin
+  const isAdmin = user?.role && ['SUPPORT_ADMIN', 'CONTENT_ADMIN', 'SUPER_ADMIN'].includes(user.role);
+
+  // Navigation items
+  const navItems: NavItem[] = [
+    { href: '/', label: 'Foyer', icon: Home },
+    { href: '/recipes', label: 'Recipe Hub', icon: CookingPot },
+    { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays },
+    { href: '/household', label: 'Family', icon: Users },
+    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { href: '/saved', label: 'Saved', icon: Bookmark },
+    { href: '/settings', label: 'Settings', icon: Settings },
+  ];
+
+  // Admin item
+  if (isAdmin) {
+    navItems.push({
+      href: '/admin',
+      label: 'Admin',
+      icon: Shield,
+      adminOnly: true,
+    });
+  }
+
+  // Detect mobile on mount and window resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsMobileOpen(false);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [pathname]);
+
+  if (!user) return null;
+
+  return (
+    <>
+      {isMobile && isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      <aside
+        className={cn(
+          'fixed left-0 top-0 h-full bg-background z-50 transition-all duration-300 flex flex-col',
+          isMobile
+            ? isMobileOpen
+              ? 'translate-x-0 w-64'
+              : '-translate-x-full w-64'
+            : isCollapsed
+            ? 'w-16'
+            : 'w-64'
+        )}
+        style={{
+          borderRight: '1px solid transparent',
+          backgroundImage:
+            'linear-gradient(to right, hsl(var(--background)), hsl(var(--background))), linear-gradient(to bottom, transparent 0%, hsl(var(--border) / 0.3) 10%, hsl(var(--border) / 0.5) 50%, hsl(var(--border) / 0.3) 90%, transparent 100%)',
+          backgroundOrigin: 'border-box',
+          backgroundClip: 'padding-box, border-box',
+        }}
+      >
+        {/* Header Section with smooth bottom border */}
+        <div className={cn('h-16 flex items-center px-4 relative', isCollapsed && !isMobile && 'justify-center')}>
+          <Link
+            href="/"
+            className={cn(
+              'flex items-center gap-2 font-bold transition-all',
+              isCollapsed && !isMobile && 'gap-0'
+            )}
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+              <CookingPot className="h-5 w-5 text-primary" />
+            </div>
+            {(!isCollapsed || isMobile) && <span className="text-sm">Our Family Table</span>}
+          </Link>
+
+          {/* Smooth gradient border */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-px"
+            style={{
+              background:
+                'linear-gradient(90deg, transparent 0%, hsl(var(--border) / 0.3) 20%, hsl(var(--border) / 0.6) 50%, hsl(var(--border) / 0.3) 80%, transparent 100%)',
+            }}
+          />
+        </div>
+
+        <nav className="flex-1 overflow-y-auto py-4 px-2">
+          {(!isCollapsed || isMobile) && (
+            <div className="px-2 mb-4">
+              <Button asChild className="w-full justify-start gap-2" size="sm">
+                <Link href="/recipes/new">
+                  <PlusCircle className="h-4 w-4" />
+                  Add Recipe
+                </Link>
+              </Button>
+            </div>
+          )}
+
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const isActive =
+                item.href === '/'
+                  ? pathname === item.href
+                  : pathname.startsWith(item.href);
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all relative group',
+                    'hover:bg-primary/10',
+                    isActive
+                      ? 'bg-primary/10 text-primary font-medium'
+                      : 'text-muted-foreground hover:text-foreground',
+                    item.adminOnly && 'text-orange-500 hover:text-orange-600',
+                    isCollapsed && !isMobile && 'justify-center px-0'
+                  )}
+                >
+                  {isActive && (
+                    <div
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
+                      style={{
+                        background:
+                          'linear-gradient(to bottom, transparent 0%, hsl(var(--primary)) 20%, hsl(var(--primary)) 80%, transparent 100%)',
+                      }}
+                    />
+                  )}
+
+                  <Icon className={cn('h-5 w-5 flex-shrink-0', isCollapsed && !isMobile && 'mx-auto')} />
+
+                  {(!isCollapsed || isMobile) && (
+                    <>
+                      <span className="flex-1">{item.label}</span>
+                      {item.badge && item.badge > 0 && (
+                        <Badge
+                          variant="secondary"
+                          className="h-5 min-w-[20px] flex items-center justify-center px-1.5 text-xs"
+                        >
+                          {item.badge > 99 ? '99+' : item.badge}
+                        </Badge>
+                      )}
+                    </>
+                  )}
+
+                  {isCollapsed && !isMobile && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md shadow-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
+                      {item.label}
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* Footer with smooth top border */}
+        <div className="p-4 relative">
+          {/* Smooth gradient border */}
+          <div
+            className="absolute top-0 left-0 right-0 h-px"
+            style={{
+              background:
+                'linear-gradient(90deg, transparent 0%, hsl(var(--border) / 0.3) 20%, hsl(var(--border) / 0.6) 50%, hsl(var(--border) / 0.3) 80%, transparent 100%)',
+            }}
+          />
+
+          {!isMobile && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className={cn('w-full justify-center', isCollapsed && 'px-0')}
+            >
+              {isCollapsed ? (
+                <ChevronRight className="h-4 w-4" />
+              ) : (
+                <>
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Collapse
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </aside>
+
+      {isMobile && (
+        <Button
+          variant="outline"
+          size="icon"
+          className="fixed bottom-4 left-4 z-50 md:hidden shadow-lg"
+          onClick={() => setIsMobileOpen(!isMobileOpen)}
+        >
+          {isMobileOpen ? (
+            <ChevronLeft className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </Button>
+      )}
+    </>
+  );
+}

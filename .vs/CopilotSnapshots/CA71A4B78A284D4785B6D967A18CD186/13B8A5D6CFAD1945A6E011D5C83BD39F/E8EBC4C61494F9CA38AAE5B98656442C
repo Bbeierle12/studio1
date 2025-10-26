@@ -1,0 +1,275 @@
+﻿'use client';
+
+import { useChat } from 'ai/react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RecipePreview } from './recipe-preview';
+import { IngredientsList } from './ingredients-list';
+import { CookingSteps } from './cooking-steps';
+import { NutritionPanel } from './nutrition-panel';
+
+export function RecipeChatInterface() {
+  const [mode, setMode] = useState<ChatMode>('recipe_creation');
+  const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  
+  const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
+    api: '/api/recipe-chat',
+    body: {
+      mode,
+      context: {
+        currentRecipe,
+        userPreferences: getUserPreferences()
+      }
+    },
+    onResponse: (response) => {
+      const context = response.headers.get('X-Recipe-Context');
+      if (context) {
+        const parsed = JSON.parse(context);
+        if (parsed.currentRecipe) {
+          setCurrentRecipe(parsed.currentRecipe);
+        }
+      }
+    }
+  });
+
+  // Quick action buttons
+  const quickActions = [
+    {
+      label: "Create a new recipe",
+      prompt: "I want to create a new recipe",
+      mode: 'recipe_creation' as ChatMode,
+      icon: '👨‍🍳'
+    },
+    {
+      label: "Find recipes with ingredients I have",
+      prompt: "Help me find recipes with ingredients I have",
+      mode: 'recipe_search' as ChatMode,
+      icon: '🔍'
+    },
+    {
+      label: "Modify current recipe",
+      prompt: "I want to modify this recipe",
+      mode: 'recipe_modification' as ChatMode,
+      icon: '✏️'
+    },
+    {
+      label: "Get cooking guidance",
+      prompt: "Guide me through cooking this",
+      mode: 'cooking_guidance' as ChatMode,
+      icon: '📖'
+    }
+  ];
+
+  // Contextual suggestions based on conversation
+  const getContextualSuggestions = () => {
+    if (!currentRecipe) {
+      return [
+        "Let's create a pasta recipe",
+        "I want to make something vegetarian",
+        "Show me dessert ideas",
+        "Help me make a quick breakfast"
+      ];
+    }
+
+    if (currentRecipe && !currentRecipe.ingredients?.length) {
+      return [
+        "Add ingredients for 4 servings",
+        "What ingredients do I need?",
+        "Make it gluten-free",
+        "Add seasonal vegetables"
+      ];
+    }
+
+    if (currentRecipe.ingredients?.length && !currentRecipe.instructions?.length) {
+      return [
+        "Now add the cooking steps",
+        "How do I prepare this?",
+        "What's the cooking process?",
+        "Add detailed instructions"
+      ];
+    }
+
+    return [
+      "Calculate nutrition info",
+      "Make it healthier",
+      "Suggest wine pairings",
+      "Create shopping list"
+    ];
+  };
+
+  return (
+    <div className="flex h-screen bg-gradient-to-br from-orange-50 via-white to-green-50">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Recipe Creator AI</h1>
+              <p className="text-sm text-gray-500">
+                {mode.replace('_', ' ').charAt(0).toUpperCase() + mode.slice(1).replace('_', ' ')}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {currentRecipe && (
+                <button
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  {showPreview ? 'Hide' : 'Show'} Recipe
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {messages.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-12"
+            >
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                Let's cook something amazing! 🍳
+              </h2>
+              <p className="text-gray-600 mb-8">
+                I can help you create, modify, or discover recipes. What would you like to do?
+              </p>
+              
+              {/* Quick Actions */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {quickActions.map((action) => (
+                  <button
+                    key={action.mode}
+                    onClick={() => {
+                      setMode(action.mode);
+                      append({ role: 'user', content: action.prompt });
+                    }}
+                    className="p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all text-left"
+                  >
+                    <div className="text-2xl mb-2">{action.icon}</div>
+                    <div className="font-medium text-sm">{action.label}</div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          <AnimatePresence>
+            {messages.map((message, index) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className={`flex ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                }`}
+              >
+                <div
+                  className={`max-w-2xl p-4 rounded-2xl ${
+                    message.role === 'user'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white shadow-md border'
+                  }`}
+                >
+                  {message.role === 'assistant' && index === messages.length - 1 && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-xs text-gray-500">Chef AI</span>
+                    </div>
+                  )}
+                  <div className="prose prose-sm max-w-none">
+                    {message.content}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-start"
+            >
+              <div className="bg-white shadow-md border rounded-2xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+                  </div>
+                  <span className="text-sm text-gray-500">Chef AI is thinking...</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="border-t bg-white p-4">
+          {/* Contextual Suggestions */}
+          {messages.length > 0 && (
+            <div className="mb-3 flex gap-2 overflow-x-auto">
+              {getContextualSuggestions().map((suggestion) => (
+                <button
+                  key={suggestion}
+                  onClick={() => append({ role: 'user', content: suggestion })}
+                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm whitespace-nowrap transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="flex gap-3">
+            <input
+              value={input}
+              onChange={handleInputChange}
+              placeholder="Ask me anything about recipes..."
+              className="flex-1 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-50 transition-colors"
+            >
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Recipe Preview Panel */}
+      <AnimatePresence>
+        {showPreview && currentRecipe && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 20 }}
+            className="w-96 bg-white shadow-xl border-l overflow-y-auto"
+          >
+            <RecipePreview 
+              recipe={currentRecipe}
+              onClose={() => setShowPreview(false)}
+              onEdit={(section) => {
+                setShowPreview(false);
+                append({ 
+                  role: 'user', 
+                  content: `I want to edit the ${section} of this recipe` 
+                });
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
