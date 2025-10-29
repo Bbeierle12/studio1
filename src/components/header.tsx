@@ -26,7 +26,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShoppingList } from './shopping-list';
 import { useTheme } from 'next-themes';
 import { useUnit } from '@/context/unit-context';
-import AIChatAssistant from './ai-chat-assistant';
 import { useToast } from '@/hooks/use-toast';
 import {
   Tooltip,
@@ -50,23 +49,6 @@ export function Header() {
   const { setTheme, theme } = useTheme();
   const { unit, toggleUnit } = useUnit();
   const { toast } = useToast();
-  
-  const [weather, setWeather] = useState<{
-    temperature: number;
-    condition: string;
-    humidity?: number;
-  } | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      const mockWeather = {
-     temperature: 72,
-      condition: 'Sunny',
-        humidity: 45,
-      };
-      setWeather(mockWeather);
-    }
-  }, [user]);
 
   const handleLogout = async () => {
     await signOut();
@@ -242,8 +224,6 @@ export function Header() {
           </TooltipProvider>
         </div>
       </header>
-      
-      {user && <AIChatAssistant weather={weather} />}
     </>
   );
 }

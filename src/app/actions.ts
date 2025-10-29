@@ -9,10 +9,7 @@ import {
   generateUniqueSlug,
 } from '@/lib/data';
 import { prisma } from '@/lib/prisma';
-import { summarizeRecipe } from '@/ai/flows/recipe-summarization';
-import { generateRecipe } from '@/ai/flows/generate-recipe-flow';
-import { convertIngredients } from '@/ai/flows/convert-ingredients-flow';
-import { recipeSchema, generatedRecipeSchema } from '@/lib/schemas';
+import { recipeSchema } from '@/lib/schemas';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import type { Recipe } from '@/lib/types';
@@ -89,12 +86,6 @@ export async function addRecipeAction(
   } = validatedFields.data;
 
   try {
-    const summaryResult = await summarizeRecipe({
-      recipeName: title,
-      ingredients,
-      instructions,
-    });
-
     const tagsArray = tags.split(',').map(tag => tag.trim().toLowerCase());
 
     // Generate unique slug from title
@@ -114,7 +105,7 @@ export async function addRecipeAction(
         ingredients,
         instructions,
         tags: JSON.stringify(tagsArray),
-        summary: summaryResult.summary,
+        summary: '', // No AI summary
         story,
         imageUrl: 'https://placehold.co/600x400/FFFFFF/FFFFFF',
         imageHint: '',
@@ -188,12 +179,6 @@ export async function updateRecipeAction(
   }
 
   try {
-    const summaryResult = await summarizeRecipe({
-      recipeName: title,
-      ingredients,
-      instructions,
-    });
-
     const tagsArray = tags.split(',').map(tag => tag.trim().toLowerCase());
 
     await updateRecipe({
@@ -209,7 +194,7 @@ export async function updateRecipeAction(
       ingredients,
       instructions,
       tags: tagsArray,
-      summary: summaryResult.summary,
+      summary: recipeToUpdate?.summary || '', // Keep existing summary
       story,
       imageUrl: recipeToUpdate?.imageUrl || 'https://placehold.co/600x400/FFFFFF/FFFFFF',
       imageHint: recipeToUpdate?.imageHint || '',
@@ -255,52 +240,4 @@ export async function deleteRecipeAction(id: string) {
 
   revalidatePath('/recipes');
   redirect('/recipes');
-}
-
-export async function generateRecipeAction(formData: FormData) {
-  const validatedFields = generatedRecipeSchema.safeParse({
-    title: formData.get('title'),
-    photoDataUri: formData.get('photoDataUri'),
-  });
-
-  if (!validatedFields.success) {
-    // This case should ideally be handled by client-side validation
-    console.error(
-      'Validation failed:',
-      validatedFields.error.flatten().fieldErrors
-    );
-    redirect('/recipes/generate?error=validation');
-    return;
-  }
-
-  try {
-    const { title, photoDataUri } = validatedFields.data;
-    const result = await generateRecipe({ title, photoDataUri });
-
-    const queryParams = new URLSearchParams({
-      title,
-      ingredients: result.ingredients,
-      instructions: result.instructions,
-      tags: result.tags,
-      fromAI: 'true',
-    });
-
-    redirect(`/recipes/new?${queryParams.toString()}`);
-  } catch (error) {
-    console.error('Error generating recipe with AI:', error);
-    redirect('/recipes/generate?error=ai_failed');
-  }
-}
-
-export async function convertIngredientsAction(
-  ingredients: string,
-  targetUnit: 'metric' | 'imperial'
-) {
-  try {
-    const result = await convertIngredients({ ingredients, targetUnit });
-    return { convertedIngredients: result.convertedIngredients };
-  } catch (error) {
-    console.error('Error converting ingredients with AI:', error);
-    return { error: 'Failed to convert ingredients. Please try again.' };
-  }
 }
