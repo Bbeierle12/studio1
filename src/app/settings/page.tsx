@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useUnit } from '@/context/unit-context';
 import { useToast } from '@/hooks/use-toast';
+import { AnalyticsDashboard } from '@/components/analytics/dashboard';
 import {
   User,
   Lock,
@@ -25,7 +26,8 @@ import {
   Eye,
   EyeOff,
   Camera,
-  Key
+  Key,
+  BarChart3
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -298,7 +300,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className={`grid w-full ${user.role && user.role !== 'USER' ? 'grid-cols-6' : 'grid-cols-5'}`}>
+        <TabsList className={`grid w-full ${user.role && user.role !== 'USER' ? 'grid-cols-7' : 'grid-cols-6'}`}>
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Profile
@@ -313,6 +315,10 @@ export default function SettingsPage() {
               API Keys
             </TabsTrigger>
           )}
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
             Notifications
@@ -601,6 +607,21 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
         )}
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Analytics & Insights</h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Track your meal planning patterns and get personalized recommendations
+                </p>
+              </div>
+            </div>
+            <AnalyticsDashboard />
+          </div>
+        </TabsContent>
 
         {/* Notifications Tab */}
         <TabsContent value="notifications">

@@ -45,7 +45,6 @@ export function Sidebar() {
     { href: '/recipes', label: 'Recipe Hub', icon: CookingPot },
     { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays },
     { href: '/household', label: 'Family', icon: Users },
-    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/saved', label: 'Saved', icon: Bookmark },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
