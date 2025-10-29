@@ -3,12 +3,12 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   /* config options here */
   eslint: {
-    // Ignore ESLint during builds for deployment
-    ignoreDuringBuilds: true,
+    // Enable ESLint checking during builds for better error detection
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    // Ignore TypeScript errors during builds for deployment
-    ignoreBuildErrors: true,
+    // Enable TypeScript error checking during builds for better type safety
+    ignoreBuildErrors: false,
   },
   images: {
     dangerouslyAllowSVG: true,

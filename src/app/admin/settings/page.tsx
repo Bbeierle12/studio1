@@ -599,7 +599,7 @@ export default function AdminSettingsPage() {
               placeholder="Enter the system prompt that defines the assistant's behavior..."
             />
             <p className="text-xs text-muted-foreground">
-              This prompt defines the assistant's personality, role, and capabilities
+              This prompt defines the assistant&apos;s personality, role, and capabilities
             </p>
           </div>
 
@@ -611,7 +611,7 @@ export default function AdminSettingsPage() {
               <p><strong>Temperature:</strong> 0.7 is balanced - good for most cooking questions</p>
               <p><strong>Max Tokens:</strong> 500 is optimal for voice responses (not too long)</p>
               <p><strong>Frequency/Presence Penalties:</strong> Keep at 0 for consistent cooking advice</p>
-              <p><strong>System Prompt:</strong> Customize to change the assistant's personality and focus areas</p>
+              <p><strong>System Prompt:</strong> Customize to change the assistant&apos;s personality and focus areas</p>
             </AlertDescription>
           </Alert>
 

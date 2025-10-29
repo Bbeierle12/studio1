@@ -31,35 +31,40 @@ export async function POST(req: NextRequest) {
     // Convert OpenAI stream to Response
     // Create a ReadableStream from the OpenAI stream
     const readableStream = new ReadableStream({
-  async start(controller) {
+      async start(controller) {
         try {
           for await (const chunk of stream) {
             const text = chunk.choices[0]?.delta?.content || '';
-       if (text) {
-controller.enqueue(new TextEncoder().encode(text));
+            if (text) {
+              controller.enqueue(new TextEncoder().encode(text));
             }
-       
+
             // Handle tool calls
-    const toolCalls = chunk.choices[0]?.delta?.tool_calls;
+            const toolCalls = chunk.choices[0]?.delta?.tool_calls;
             if (toolCalls) {
-       for (const toolCall of toolCalls) {
-   if (toolCall.function?.name === 'update_recipe' && toolCall.function?.arguments) {
-            try {
-            const updates = JSON.parse(toolCall.function.arguments);
-     await updateRecipeInDB(
-    recipeContext.currentRecipe?.id,
-       updates.updates
-    );
+              for (const toolCall of toolCalls) {
+                if (toolCall.function?.name === 'update_recipe' && toolCall.function?.arguments) {
+                  try {
+                    const updates = JSON.parse(toolCall.function.arguments);
+                    await updateRecipeInDB(
+                      recipeContext.currentRecipe?.id,
+                      updates.updates
+                    );
                   } catch (e) {
-    console.error('Error updating recipe:', e);
+                    console.error('Error updating recipe:', e);
+                  }
+                }
+              }
+            }
+          }
+          controller.close();
+        } catch (error) {
+          controller.error(error);
         }
-             }
-           }
       }
- });
+    });
 
-
-// Save chat history asynchronously
+    // Save chat history asynchronously
     saveChatInteraction(recipeContext.sessionId, messages, 'completion').catch(console.error);
 
     // Return streaming response with headers

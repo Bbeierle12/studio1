@@ -1,7 +1,6 @@
 'use client';
 
-import { useChat } from 'ai/react';
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RecipePreview } from './recipe-preview';
 import { ChatMode, RecipeChatRecipe, UserPreferences } from '@/lib/recipe-chat/types';
@@ -10,7 +9,7 @@ import { ChatMode, RecipeChatRecipe, UserPreferences } from '@/lib/recipe-chat/t
 const getUserPreferences = (): UserPreferences => {
   return {
     dietaryRestrictions: [],
- allergies: [],
+    allergies: [],
     cuisinePreferences: [],
     cookingLevel: 'intermediate',
     mealPrepTime: {
@@ -25,30 +24,112 @@ export function RecipeChatInterface() {
   const [mode, setMode] = useState<ChatMode>('recipe_creation');
   const [currentRecipe, setCurrentRecipe] = useState<RecipeChatRecipe | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  
-  const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
-    api: '/api/recipe-chat',
-    body: {
-      mode,
-      context: {
-        currentRecipe,
-   userPreferences: getUserPreferences()
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; content: string }>>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Handle form submission
+  const handleSubmit = async (e?: FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+
+    if (!input.trim() || isLoading) return;
+
+    const messageContent = input;
+    setInput(''); // Clear input immediately
+
+    // Add user message to chat
+    const userMessage = {
+      id: Date.now().toString(),
+      role: 'user' as const,
+      content: messageContent
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      // Send message to API
+      const response = await fetch('/api/recipe-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          mode,
+          context: {
+            currentRecipe,
+            userPreferences: getUserPreferences()
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response');
       }
-    },
-    onResponse: (response: Response) => {
-    const context = response.headers.get('X-Recipe-Context');
-      if (context) {
+
+      // Check for recipe context in headers
+      const contextHeader = response.headers.get('X-Recipe-Context');
+      if (contextHeader) {
         try {
- const parsed = JSON.parse(context);
+          const parsed = JSON.parse(contextHeader);
           if (parsed.currentRecipe) {
             setCurrentRecipe(parsed.currentRecipe);
           }
-      } catch (e) {
-        console.error('Error parsing recipe context:', e);
+        } catch (err) {
+          console.error('Error parsing recipe context:', err);
         }
       }
+
+      // Read the stream
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = '';
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          assistantMessage += chunk;
+        }
+      }
+
+      // Add assistant message to chat
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: assistantMessage
+      }]);
+
+    } catch (error) {
+      console.error('Chat error:', error);
+      // Optionally add error message to chat
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.'
+      }]);
+    } finally {
+      setIsLoading(false);
     }
-  });
+  };
+
+  // Handle quick action clicks
+  const handleQuickAction = async (action: typeof quickActions[0]) => {
+    setMode(action.mode);
+    setInput(action.prompt);
+    await handleSubmit();
+  };
+
+  // Handle contextual suggestion clicks
+  const handleSuggestion = async (suggestion: string) => {
+    setInput(suggestion);
+    await handleSubmit();
+  };
 
   // Quick action buttons
   const quickActions = [
@@ -56,25 +137,25 @@ export function RecipeChatInterface() {
       label: "Create a new recipe",
       prompt: "I want to create a new recipe",
       mode: 'recipe_creation' as ChatMode,
-  icon: '?????'
+      icon: '👨‍🍳'
     },
-  {
+    {
       label: "Find recipes with ingredients I have",
       prompt: "Help me find recipes with ingredients I have",
-   mode: 'recipe_search' as ChatMode,
-      icon: '??'
+      mode: 'recipe_search' as ChatMode,
+      icon: '🔍'
     },
     {
-   label: "Modify current recipe",
+      label: "Modify current recipe",
       prompt: "I want to modify this recipe",
       mode: 'recipe_modification' as ChatMode,
-      icon: '??'
+      icon: '✏️'
     },
     {
-   label: "Get cooking guidance",
+      label: "Get cooking guidance",
       prompt: "Guide me through cooking this",
       mode: 'cooking_guidance' as ChatMode,
-      icon: '??'
+      icon: '📖'
     }
   ];
 
@@ -82,27 +163,27 @@ export function RecipeChatInterface() {
   const getContextualSuggestions = () => {
     if (!currentRecipe) {
       return [
-      "Let's create a pasta recipe",
+        "Let's create a pasta recipe",
         "I want to make something vegetarian",
         "Show me dessert ideas",
-    "Help me make a quick breakfast"
-];
+        "Help me make a quick breakfast"
+      ];
     }
 
     if (currentRecipe && !currentRecipe.ingredients?.length) {
-  return [
-  "Add ingredients for 4 servings",
+      return [
+        "Add ingredients for 4 servings",
         "What ingredients do I need?",
         "Make it gluten-free",
-  "Add seasonal vegetables"
-  ];
-  }
+        "Add seasonal vegetables"
+      ];
+    }
 
-  if (currentRecipe.ingredients?.length && !currentRecipe.instructions?.length) {
+    if (currentRecipe.ingredients?.length && !currentRecipe.instructions?.length) {
       return [
         "Now add the cooking steps",
         "How do I prepare this?",
-     "What's the cooking process?",
+        "What's the cooking process?",
         "Add detailed instructions"
       ];
     }
@@ -111,182 +192,176 @@ export function RecipeChatInterface() {
       "Calculate nutrition info",
       "Make it healthier",
       "Suggest wine pairings",
-  "Create shopping list"
+      "Create shopping list"
     ];
   };
 
   return (
-  <div className="flex h-screen bg-gradient-to-br from-orange-50 via-white to-green-50">
+    <div className="flex h-screen bg-gradient-to-br from-orange-50 via-white to-green-50">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-     {/* Header */}
+        {/* Header */}
         <div className="bg-white shadow-sm border-b px-6 py-4">
-<div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <div>
-      <h1 className="text-2xl font-bold text-gray-800">Recipe Creator AI</h1>
-    <p className="text-sm text-gray-500">
-  {mode.replace('_', ' ').charAt(0).toUpperCase() + mode.slice(1).replace('_', ' ')}
-    </p>
-      </div>
+              <h1 className="text-2xl font-bold text-gray-800">Recipe Creator AI</h1>
+              <p className="text-sm text-gray-500">
+                {mode.replace('_', ' ').charAt(0).toUpperCase() + mode.slice(1).replace('_', ' ')}
+              </p>
+            </div>
             <div className="flex gap-2">
-   {currentRecipe && (
-         <button
-           onClick={() => setShowPreview(!showPreview)}
-      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-        >
-   {showPreview ? 'Hide' : 'Show'} Recipe
-          </button>
- )}
+              {currentRecipe && (
+                <button
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  {showPreview ? 'Hide' : 'Show'} Recipe
+                </button>
+              )}
             </div>
           </div>
         </div>
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-     {messages.length === 0 && (
+          {messages.length === 0 && (
             <motion.div
-     initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-       className="text-center py-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-12"
             >
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">
-      Let's cook something amazing! ??
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                Let's cook something amazing! 👨‍🍳
               </h2>
               <p className="text-gray-600 mb-8">
-    I can help you create, modify, or discover recipes. What would you like to do?
-   </p>
-              
-    {/* Quick Actions */}
-   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-{quickActions.map((action) => (
-    <button
-           key={action.mode}
-         onClick={() => {
-            setMode(action.mode);
-          append({ role: 'user', content: action.prompt });
-             }}
-     className="p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all text-left"
-             >
-              <div className="text-2xl mb-2">{action.icon}</div>
-          <div className="font-medium text-sm">{action.label}</div>
-      </button>
-    ))}
-         </div>
-      </motion.div>
-     )}
+                I can help you create, modify, or discover recipes. What would you like to do?
+              </p>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {quickActions.map((action) => (
+                  <button
+                    key={action.mode}
+                    onClick={() => handleQuickAction(action)}
+                    className="p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all text-left"
+                  >
+                    <div className="text-2xl mb-2">{action.icon}</div>
+                    <div className="font-medium text-sm">{action.label}</div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           <AnimatePresence>
-          {messages.map((message: any, index: number) => (
-      <motion.div
-        key={message.id}
-        initial={{ opacity: 0, y: 20 }}
-         animate={{ opacity: 1, y: 0 }}
-  exit={{ opacity: 0 }}
-      className={`flex ${
-       message.role === 'user' ? 'justify-end' : 'justify-start'
-         }`}
-    >
-              <div
-           className={`max-w-2xl p-4 rounded-2xl ${
-       message.role === 'user'
-           ? 'bg-blue-500 text-white'
-           : 'bg-white shadow-md border'
-        }`}
+            {messages.map((message, index) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className={`flex ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                }`}
+              >
+                <div
+                  className={`max-w-2xl p-4 rounded-2xl ${
+                    message.role === 'user'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white shadow-md border'
+                  }`}
                 >
-       {message.role === 'assistant' && index === messages.length - 1 && (
-  <div className="flex items-center gap-2 mb-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-   <span className="text-xs text-gray-500">Chef AI</span>
-           </div>
-           )}
-       <div className="prose prose-sm max-w-none">
-          {message.content}
-         </div>
-  </div>
-     </motion.div>
-        ))}
+                  {message.role === 'assistant' && index === messages.length - 1 && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-xs text-gray-500">Chef AI</span>
+                    </div>
+                  )}
+                  <div className="prose prose-sm max-w-none">
+                    {message.content}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </AnimatePresence>
 
-    {isLoading && (
+          {isLoading && (
             <motion.div
-   initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-          className="flex justify-start"
- >
-      <div className="bg-white shadow-md border rounded-2xl p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex gap-1">
-            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-           <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-      </div>
-              <span className="text-sm text-gray-500">Chef AI is thinking...</span>
-         </div>
-  </div>
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-start"
+            >
+              <div className="bg-white shadow-md border rounded-2xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                  </div>
+                  <span className="text-sm text-gray-500">Chef AI is thinking...</span>
+                </div>
+              </div>
             </motion.div>
           )}
         </div>
 
-    {/* Input Area */}
- <div className="border-t bg-white p-4">
+        {/* Input Area */}
+        <div className="border-t bg-white p-4">
           {/* Contextual Suggestions */}
           {messages.length > 0 && (
             <div className="mb-3 flex gap-2 overflow-x-auto">
-         {getContextualSuggestions().map((suggestion) => (
-          <button
-             key={suggestion}
-      onClick={() => append({ role: 'user', content: suggestion })}
-className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm whitespace-nowrap transition-colors"
-         >
-        {suggestion}
-      </button>
-       ))}
- </div>
-      )}
+              {getContextualSuggestions().map((suggestion) => (
+                <button
+                  key={suggestion}
+                  onClick={() => handleSuggestion(suggestion)}
+                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm whitespace-nowrap transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex gap-3">
-      <input
-    value={input}
-        onChange={handleInputChange}
-            placeholder="Ask me anything about recipes..."
-         className="flex-1 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-disabled={isLoading}
-   />
-     <button
-            type="submit"
-         disabled={isLoading}
-   className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-50 transition-colors"
-     >
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask me anything about recipes..."
+              className="flex-1 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-50 transition-colors"
+            >
               Send
-   </button>
-     </form>
+            </button>
+          </form>
         </div>
       </div>
 
       {/* Recipe Preview Panel */}
       <AnimatePresence>
-      {showPreview && currentRecipe && (
-  <motion.div
-    initial={{ x: '100%' }}
-    animate={{ x: 0 }}
-   exit={{ x: '100%' }}
+        {showPreview && currentRecipe && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 20 }}
-    className="w-96 bg-white shadow-xl border-l overflow-y-auto"
+            className="w-96 bg-white shadow-xl border-l overflow-y-auto"
           >
-            <RecipePreview 
-        recipe={currentRecipe}
+            <RecipePreview
+              recipe={currentRecipe}
               onClose={() => setShowPreview(false)}
-     onEdit={(section: string) => {
-       setShowPreview(false);
-                append({ 
- role: 'user', 
-        content: `I want to edit the ${section} of this recipe` 
-   });
-   }}
-    />
- </motion.div>
+              onEdit={(section: string) => {
+                setShowPreview(false);
+                handleSuggestion(`I want to edit the ${section} of this recipe`);
+              }}
+            />
+          </motion.div>
         )}
-   </AnimatePresence>
+      </AnimatePresence>
     </div>
   );
 }

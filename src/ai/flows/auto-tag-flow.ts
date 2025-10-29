@@ -114,8 +114,8 @@ function buildAutoTagPrompt(input: AutoTagInput): string {
   }
 
   if (input.instructions) {
-    const truncated = input.instructions.length > 500 
-      ? input.instructions.substring(0, 500) + '...'
+    const truncated = input.instructions.length > 500
+      ? `${input.instructions.substring(0, 500)}...`
       : input.instructions;
     parts.push(`\nInstructions:\n${truncated}`);
   }
