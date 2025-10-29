@@ -10,25 +10,12 @@ import {
   MessageSquare,
   X,
   Send,
-  Mic, 
-  MicOff,
-  Loader2,
   Minimize2,
   Maximize2,
-  Volume2,
-  VolumeX,
   ChefHat,
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// Web Speech API type declarations
-declare global {
-  interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
-  }
-}
 
 interface Message {
   id: string;
@@ -62,17 +49,9 @@ export function AIChatAssistant({ weather }: AIChatAssistantProps) {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   
-  // Voice State
-  const [voiceMode, setVoiceMode] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [audioEnabled, setAudioEnabled] = useState(true);
-  
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
-  const synthesisRef = useRef<SpeechSynthesis | null>(null);
   
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -82,92 +61,6 @@ export function AIChatAssistant({ weather }: AIChatAssistantProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  
-  // Initialize Speech Recognition
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
-        
-        recognition.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          setInputText(transcript);
-          handleSendMessage(transcript);
-        };
-        
-        recognition.onerror = (event: any) => {
-          console.error('Speech recognition error:', event.error);
-          setIsListening(false);
-        };
-        
-        recognition.onend = () => {
-          setIsListening(false);
-        };
-        
-        recognitionRef.current = recognition;
-      }
-      
-      // Initialize speech synthesis
-      if ('speechSynthesis' in window) {
-        synthesisRef.current = window.speechSynthesis;
-      }
-    }
-    
-    return () => {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (e) {
-          // Ignore cleanup errors
-        }
-      }
-    };
-  }, []);
-  
-  // Toggle voice listening
-  const toggleVoiceListening = () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-    } else {
-      try {
-        recognitionRef.current?.start();
-        setIsListening(true);
-      } catch (error) {
-        console.error('Failed to start voice recognition:', error);
-      }
-    }
-  };
-  
-  // Speak text
-  const speakText = (text: string) => {
-    if (!audioEnabled || !synthesisRef.current) return;
-    
-    // Cancel any ongoing speech
-    synthesisRef.current.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1.0;
-    utterance.volume = 0.8;
-    
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    
-    synthesisRef.current.speak(utterance);
-  };
-  
-  // Stop speaking
-  const stopSpeaking = () => {
-    synthesisRef.current?.cancel();
-    setIsSpeaking(false);
-  };
   
   // Handle sending message
   const handleSendMessage = async (text?: string) => {
@@ -198,11 +91,6 @@ export function AIChatAssistant({ weather }: AIChatAssistantProps) {
       
       setMessages(prev => [...prev, assistantMessage]);
       setIsTyping(false);
-      
-      // Speak response if audio is enabled
-      if (audioEnabled) {
-        speakText(response);
-      }
     }, 1000);
   };
   
@@ -284,9 +172,6 @@ export function AIChatAssistant({ weather }: AIChatAssistantProps) {
             <div className="flex items-center gap-2">
               <ChefHat className="h-4 w-4" />
               <span className="font-semibold text-sm">AI Assistant</span>
-              {isSpeaking && (
-                <Volume2 className="h-3 w-3 animate-pulse" />
-              )}
             </div>
             <div className="flex gap-1">
               <Button
@@ -326,18 +211,6 @@ export function AIChatAssistant({ weather }: AIChatAssistantProps) {
             </div>
           </div>
           <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setAudioEnabled(!audioEnabled)}
-              className="h-8 w-8 p-0 hover:bg-white/20 text-white"
-            >
-              {audioEnabled ? (
-                <Volume2 className="h-4 w-4" />
-              ) : (
-                <VolumeX className="h-4 w-4" />
-              )}
-            </Button>
             <Button
               size="sm"
               variant="ghost"
@@ -424,26 +297,13 @@ export function AIChatAssistant({ weather }: AIChatAssistantProps) {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={isListening ? "Listening..." : "Type your message..."}
+              placeholder="Type your message..."
               className="flex-1"
-              disabled={isListening}
             />
             <Button
               size="icon"
-              onClick={toggleVoiceListening}
-              variant={isListening ? "destructive" : "outline"}
-              className={cn(isListening && "animate-pulse")}
-            >
-              {isListening ? (
-                <MicOff className="h-4 w-4" />
-              ) : (
-                <Mic className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              size="icon"
               onClick={() => handleSendMessage()}
-              disabled={!inputText.trim() || isListening}
+              disabled={!inputText.trim()}
               className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
             >
               <Send className="h-4 w-4" />
@@ -452,12 +312,6 @@ export function AIChatAssistant({ weather }: AIChatAssistantProps) {
           
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Press Enter to send</span>
-            {voiceMode && (
-              <Badge variant="secondary" className="text-xs">
-                <Mic className="h-3 w-3 mr-1" />
-                Voice Mode
-              </Badge>
-            )}
           </div>
         </div>
       </Card>
