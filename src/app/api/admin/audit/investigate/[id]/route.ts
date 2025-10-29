@@ -12,9 +12,10 @@ import { getInvestigationContext } from '@/lib/audit-enhanced';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -30,7 +31,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const context = await getInvestigationContext(params.id);
+    const context = await getInvestigationContext(id);
 
     if (!context) {
       return NextResponse.json(
