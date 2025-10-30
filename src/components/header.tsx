@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   CookingPot,
@@ -9,7 +10,8 @@ import {
   LogIn,
   Sun,
   Moon,
-  Scale,
+  Ruler,
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
@@ -49,6 +51,8 @@ export function Header() {
   const { setTheme, theme } = useTheme();
   const { unit, toggleUnit } = useUnit();
   const { toast } = useToast();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = async () => {
     await signOut();
@@ -62,6 +66,14 @@ export function Header() {
       description: `Switched to ${newUnit === 'metric' ? 'Metric (kg, g, °C)' : 'Imperial (lb, oz, °F)'}`,
       duration: 2000,
     });
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/recipes?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+    }
   };
 
   const toggleTheme = () => {
