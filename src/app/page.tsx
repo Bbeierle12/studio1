@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { HomeWeekView } from '@/components/home-week-view';
+import { FoyerWeekCalendar } from '@/components/foyer/foyer-week-calendar';
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -136,7 +136,7 @@ export default function Home() {
           {/* Simple Hub - The Living Room */}
           <div className='space-y-6'>
             {/* Week Calendar View */}
-            <HomeWeekView />
+            <FoyerWeekCalendar />
             
             {/* Quick Action Cards */}
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
