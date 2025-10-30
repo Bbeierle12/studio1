@@ -20,6 +20,12 @@ import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { usePrint } from '@/context/print-context';
 
 export function ShoppingList() {
@@ -71,20 +77,36 @@ export function ShoppingList() {
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button variant='outline' size='icon' className='relative'>
-          <ShoppingCart className='h-4 w-4' />
-          <span className='sr-only'>Open Shopping List</span>
-          {unchecked > 0 && (
-            <Badge
-              variant='destructive'
-              className='absolute -right-2 -top-2 h-5 w-5 justify-center rounded-full p-0 text-xs'
-            >
-              {unchecked}
-            </Badge>
-          )}
-        </Button>
-      </SheetTrigger>
+      <TooltipProvider delayDuration={300}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <SheetTrigger asChild>
+              <Button 
+                variant='ghost' 
+                size='icon' 
+                className='h-10 w-10 relative hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary'
+              >
+                <ShoppingCart className='h-5 w-5' />
+                <span className='sr-only'>Open Shopping List</span>
+                {unchecked > 0 && (
+                  <Badge
+                    variant='destructive'
+                    className='absolute -right-1 -top-1 h-5 min-w-[20px] px-1 justify-center rounded-full text-xs font-bold'
+                  >
+                    {unchecked}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+          </TooltipTrigger>
+          <TooltipContent side='bottom'>
+            <p className='text-sm'>Shopping List</p>
+            {unchecked > 0 && (
+              <p className='text-xs text-muted-foreground'>{unchecked} item{unchecked !== 1 ? 's' : ''} to buy</p>
+            )}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <SheetContent className='flex flex-col'>
         <SheetHeader>
           <SheetTitle>Shopping List</SheetTitle>
@@ -134,7 +156,7 @@ export function ShoppingList() {
                 items={items.map(item => ({
                   name: item.name,
                   quantity: '1',
-                  category: item.category,
+                  category: (item as any).category || 'Other',
                 }))}
                 trigger={
                   <Button variant='default' className='w-full'>

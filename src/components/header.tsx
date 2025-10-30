@@ -131,13 +131,27 @@ export function Header() {
           {/* Spacer for desktop */}
           <div className="flex-1 hidden md:block" />
 
+          {/* Global Search Bar - Center Position */}
+          <div className="flex-1 max-w-md mx-4 hidden md:block">
+            <form onSubmit={handleSearch} className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search recipes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-10 pl-10 pr-4 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
+              />
+            </form>
+          </div>
+
 {/* Right side utilities */}
           <TooltipProvider delayDuration={300}>
             <div className='flex items-center justify-end gap-3 ml-auto'>
   {/* Shopping List */}
        <ShoppingList />
           
-         {/* Unit Toggle */}
+          {/* Unit Toggle */}
           <Tooltip>
        <TooltipTrigger asChild>
   <Button
@@ -147,7 +161,7 @@ export function Header() {
     onClick={handleUnitToggle}
         aria-label={`Switch to ${unit === 'metric' ? 'imperial' : 'metric'} units`}
        >
-     <Scale className='h-5 w-5' />
+     <Ruler className='h-5 w-5' />
   <span className='absolute bottom-1 right-1 text-[10px] font-bold bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center shadow-sm'>
                {unit === 'metric' ? 'M' : 'I'}
      </span>
@@ -159,9 +173,7 @@ export function Header() {
      </p>
        <p className='text-xs text-muted-foreground'>Click to switch</p>
        </TooltipContent>
-          </Tooltip>
-
-   {/* Theme Toggle */}
+          </Tooltip>   {/* Theme Toggle */}
      <Tooltip>
       <TooltipTrigger asChild>
             <Button 
