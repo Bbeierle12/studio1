@@ -26,6 +26,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShoppingList } from './shopping-list';
+import { QuickActions } from './quick-actions';
+import { NotificationsDropdown } from './notifications-dropdown';
+import { CommandPalette } from './command-palette';
+import { EnhancedSearchBar } from './enhanced-search-bar';
 import { useTheme } from 'next-themes';
 import { useUnit } from '@/context/unit-context';
 import { useToast } from '@/hooks/use-toast';
@@ -52,7 +56,6 @@ export function Header() {
   const { unit, toggleUnit } = useUnit();
   const { toast } = useToast();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = async () => {
     await signOut();
@@ -68,14 +71,6 @@ export function Header() {
     });
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/recipes?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-    }
-  };
-
   const toggleTheme = () => {
     if (theme === 'light') {
       setTheme('dark');
@@ -86,6 +81,7 @@ export function Header() {
 
   return (
     <>
+      <CommandPalette />
       {/* Slim Top Header */}
       <header className={cn(
         'sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative',
@@ -129,25 +125,20 @@ export function Header() {
       </Link>
 
           {/* Spacer for desktop */}
-          <div className="flex-1 hidden md:block" />
+          <div className="hidden md:block flex-1" />
 
           {/* Global Search Bar - Center Position */}
-          <div className="flex-1 max-w-md mx-4 hidden md:block">
-            <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search recipes..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
-              />
-            </form>
-          </div>
+          <EnhancedSearchBar />
 
 {/* Right side utilities */}
           <TooltipProvider delayDuration={300}>
             <div className='flex items-center justify-end gap-3 ml-auto'>
+  {/* Quick Actions */}
+              <QuickActions />
+
+              {/* Notifications */}
+              <NotificationsDropdown />
+
   {/* Shopping List */}
        <ShoppingList />
           

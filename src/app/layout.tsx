@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/header';
+import { DynamicBreadcrumbs } from '@/components/dynamic-breadcrumbs';
 import { Sidebar } from '@/components/sidebar';
 import { AuthProvider } from '@/context/auth-context';
+import { NavigationCountsProvider } from '@/context/navigation-counts-context';
 import { ShoppingListProvider } from '@/context/shopping-list-context';
 import { PrintProvider } from '@/context/print-context';
 import { PrintDialog } from '@/components/print-dialog';
@@ -83,31 +85,34 @@ export default function RootLayout({
                 disableTransitionOnChange
               >
                 <AuthProvider>
-                  <MaintenanceModeChecker>
-                    <ShoppingListProvider>
-                      <SavedRecipesProvider>
-                        <UnitProvider>
-                          <PrintProvider>
-                            <div className='relative flex min-h-screen w-full'>
-                              {/* Sidebar - fixed position, handled internally */}
-                              <Sidebar />
+                  <NavigationCountsProvider>
+                    <MaintenanceModeChecker>
+                      <ShoppingListProvider>
+                        <SavedRecipesProvider>
+                          <UnitProvider>
+                            <PrintProvider>
+                              <div className='relative flex min-h-screen w-full'>
+                                {/* Sidebar - fixed position, handled internally */}
+                                <Sidebar />
 
-                              {/* Main content area with sidebar offset */}
-                              <div className='flex flex-col flex-1 md:pl-64 transition-all duration-300'>
-                                <Header />
-                                <main className='flex-1'>{children}</main>
+                                {/* Main content area with sidebar offset */}
+                                <div className='flex flex-col flex-1 md:pl-64 transition-all duration-300'>
+                                  <Header />
+                                  <DynamicBreadcrumbs />
+                                  <main className='flex-1'>{children}</main>
+                                </div>
                               </div>
-                            </div>
-                            <Toaster />
-                            <PrintDialog />
-                            <PWAInstallPrompt />
-                            <PWAUpdatePrompt />
-                            <Hotkeys />
-                          </PrintProvider>
-                        </UnitProvider>
-                      </SavedRecipesProvider>
-                    </ShoppingListProvider>
-                  </MaintenanceModeChecker>
+                              <Toaster />
+                              <PrintDialog />
+                              <PWAInstallPrompt />
+                              <PWAUpdatePrompt />
+                              <Hotkeys />
+                            </PrintProvider>
+                          </UnitProvider>
+                        </SavedRecipesProvider>
+                      </ShoppingListProvider>
+                    </MaintenanceModeChecker>
+                  </NavigationCountsProvider>
                 </AuthProvider>
               </ThemeProvider>
             </QueryProvider>

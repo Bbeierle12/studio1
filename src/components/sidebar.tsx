@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
+import { useNavigationCounts } from '@/context/navigation-counts-context';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -31,6 +32,7 @@ interface NavItem {
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { counts } = useNavigationCounts();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -41,10 +43,10 @@ export function Sidebar() {
   // Navigation items
   const navItems: NavItem[] = [
     { href: '/', label: 'Foyer', icon: Home },
-    { href: '/recipes', label: 'Recipe Hub', icon: CookingPot },
-    { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays },
-    { href: '/household', label: 'Family', icon: Users },
-    { href: '/saved', label: 'Saved', icon: Bookmark },
+    { href: '/recipes', label: 'Recipe Hub', icon: CookingPot, badge: counts.recipes },
+    { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays, badge: counts.mealPlan },
+    { href: '/household', label: 'Family', icon: Users, badge: counts.family },
+    { href: '/saved', label: 'Saved', icon: Bookmark, badge: counts.saved },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
