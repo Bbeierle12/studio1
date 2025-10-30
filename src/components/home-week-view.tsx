@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
+import { AddMealDialog } from '@/components/calendar/add-meal-dialog';
+import { MealType, MealPlan as MealPlanType } from '@/lib/types';
 
 interface PlannedMeal {
   id: string;
@@ -17,11 +19,21 @@ interface PlannedMeal {
     slug: string;
   };
   customMealName?: string;
+  servings: number;
+  notes?: string;
+  recipeId?: string;
 }
 
 interface MealPlan {
   id: string;
+  userId: string;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  isActive: boolean;
   meals: PlannedMeal[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export function HomeWeekView() {
@@ -30,10 +42,28 @@ export function HomeWeekView() {
   );
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedMealType, setSelectedMealType] = useState<MealType>('DINNER');
+  const [showAddMeal, setShowAddMeal] = useState(false);
+  const [recipes, setRecipes] = useState<any[]>([]);
+  const [weatherForecast, setWeatherForecast] = useState<any[]>([]);
 
   useEffect(() => {
     fetchMealPlan();
+    fetchRecipes();
   }, [currentWeekStart]);
+
+  const fetchRecipes = async () => {
+    try {
+      const response = await fetch('/api/recipes/favorites');
+      if (response.ok) {
+        const data = await response.json();
+        setRecipes(data);
+      }
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+    }
+  };
 
   const fetchMealPlan = async () => {
     try {
@@ -77,6 +107,24 @@ export function HomeWeekView() {
 
   const goToCurrentWeek = () => {
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }));
+  };
+
+  const handleDayClick = (date: Date, mealType?: MealType) => {
+    setSelectedDate(date);
+    setSelectedMealType(mealType || 'DINNER');
+    setShowAddMeal(true);
+  };
+
+  const handleDialogClose = () => {
+    setShowAddMeal(false);
+    setSelectedDate(null);
+    // Refresh meal plan after changes
+    fetchMealPlan();
+  };
+
+  const getWeatherForDate = (date: Date) => {
+    // Simple weather lookup - you can enhance this
+    return weatherForecast.find(w => isSameDay(new Date(w.date), date)) || null;
   };
 
   if (loading) {
@@ -136,7 +184,7 @@ export function HomeWeekView() {
           return (
             <div
               key={index}
-              className={`p-2 min-h-[120px] ${
+              className={`p-2 min-h-[120px] transition-colors ${
                 isToday ? 'bg-orange-50 dark:bg-orange-950/20' : ''
               }`}
             >
@@ -157,29 +205,44 @@ export function HomeWeekView() {
               {/* Meals */}
               <div className="space-y-1">
                 {dayMeals.breakfast && (
-                  <div className="text-[10px] leading-tight bg-yellow-100 dark:bg-yellow-900/30 p-1 rounded truncate">
+                  <div
+                    onClick={() => handleDayClick(day, 'BREAKFAST')}
+                    className="text-[10px] leading-tight bg-yellow-100 dark:bg-yellow-900/30 p-1 rounded truncate cursor-pointer hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition-colors"
+                  >
                     🍳 {dayMeals.breakfast.recipe?.title || dayMeals.breakfast.customMealName}
                   </div>
                 )}
                 {dayMeals.lunch && (
-                  <div className="text-[10px] leading-tight bg-green-100 dark:bg-green-900/30 p-1 rounded truncate">
+                  <div
+                    onClick={() => handleDayClick(day, 'LUNCH')}
+                    className="text-[10px] leading-tight bg-green-100 dark:bg-green-900/30 p-1 rounded truncate cursor-pointer hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                  >
                     🥗 {dayMeals.lunch.recipe?.title || dayMeals.lunch.customMealName}
                   </div>
                 )}
                 {dayMeals.dinner && (
-                  <div className="text-[10px] leading-tight bg-blue-100 dark:bg-blue-900/30 p-1 rounded truncate">
+                  <div
+                    onClick={() => handleDayClick(day, 'DINNER')}
+                    className="text-[10px] leading-tight bg-blue-100 dark:bg-blue-900/30 p-1 rounded truncate cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                  >
                     🍽️ {dayMeals.dinner.recipe?.title || dayMeals.dinner.customMealName}
                   </div>
                 )}
                 {dayMeals.snack && (
-                  <div className="text-[10px] leading-tight bg-purple-100 dark:bg-purple-900/30 p-1 rounded truncate">
+                  <div
+                    onClick={() => handleDayClick(day, 'SNACK')}
+                    className="text-[10px] leading-tight bg-purple-100 dark:bg-purple-900/30 p-1 rounded truncate cursor-pointer hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
+                  >
                     🍪 {dayMeals.snack.recipe?.title || dayMeals.snack.customMealName}
                   </div>
                 )}
                 {meals.length === 0 && (
-                  <div className="text-[10px] text-center text-muted-foreground py-2">
-                    No meals
-                  </div>
+                  <button
+                    onClick={() => handleDayClick(day)}
+                    className="w-full text-[10px] text-center text-muted-foreground py-2 hover:bg-accent rounded transition-colors group"
+                  >
+                    <Plus className="h-3 w-3 mx-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
                 )}
               </div>
             </div>
@@ -195,6 +258,19 @@ export function HomeWeekView() {
           </Button>
         </Link>
       </div>
+
+      {/* Add/Edit Meal Dialog */}
+      {selectedDate && mealPlan && (
+        <AddMealDialog
+          open={showAddMeal}
+          onOpenChange={handleDialogClose}
+          date={selectedDate}
+          mealPlan={mealPlan as MealPlanType}
+          weather={getWeatherForDate(selectedDate)}
+          defaultMealType={selectedMealType}
+          recipes={recipes}
+        />
+      )}
     </Card>
   );
 }
