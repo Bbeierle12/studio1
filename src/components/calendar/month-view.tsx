@@ -74,13 +74,13 @@ export function MonthView({ currentDate, mealPlan, weatherForecast, recipes = []
   };
   
   return (
-    <div className="p-4">
+    <div className="p-4 bg-[#3D2B1F]">
       {/* Weekday headers */}
       <div className="grid grid-cols-7 gap-2 mb-2">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <div
             key={day}
-            className="text-center text-sm font-semibold text-muted-foreground py-2"
+            className="text-center text-sm font-semibold text-[#D4A574] py-2"
           >
             {day}
           </div>

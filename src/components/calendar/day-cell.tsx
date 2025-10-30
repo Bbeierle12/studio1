@@ -43,10 +43,10 @@ const weatherIcons: Record<string, any> = {
 };
 
 const mealTypeColors = {
-  BREAKFAST: 'bg-yellow-100 border-yellow-400 text-yellow-800',
-  LUNCH: 'bg-green-100 border-green-400 text-green-800',
-  DINNER: 'bg-blue-100 border-blue-400 text-blue-800',
-  SNACK: 'bg-purple-100 border-purple-400 text-purple-800'
+  BREAKFAST: 'bg-[#FFF9E6] border-[#D4A574] text-[#2D1F14]',
+  LUNCH: 'bg-[#E8DCC4] border-[#C9A96E] text-[#2D1F14]',
+  DINNER: 'bg-[#F4D9B0] border-[#D4A574] text-[#2D1F14]',
+  SNACK: 'bg-[#FFE4B5] border-[#D2691E] text-[#2D1F14]'
 };
 
 export function DayCell({
@@ -72,9 +72,9 @@ export function DayCell({
     <>
       <div
         className={cn(
-          'min-h-[120px] border rounded-lg p-2 transition-colors hover:bg-accent cursor-pointer',
+          'min-h-[120px] border border-[#2D1F14] rounded-lg p-2 transition-colors bg-[#4A3426] hover:bg-[#5C4033] cursor-pointer',
           !isCurrentMonth && 'opacity-40',
-          isToday && 'ring-2 ring-primary'
+          isToday && 'ring-2 ring-[#D4A574]'
         )}
         onClick={() => setShowAddMeal(true)}
       >
@@ -82,8 +82,8 @@ export function DayCell({
         <div className="flex items-center justify-between mb-2">
           <span
             className={cn(
-              'text-sm font-semibold',
-              isToday && 'bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center'
+              'text-sm font-semibold text-[#F5E6D3]',
+              isToday && 'bg-[#D4A574] text-[#2D1F14] rounded-full w-6 h-6 flex items-center justify-center'
             )}
           >
             {dayNumber}
@@ -92,8 +92,8 @@ export function DayCell({
           {/* Weather indicator */}
           {weather && isCurrentMonth && (
             <div className="flex items-center gap-1">
-              <WeatherIcon className="h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">
+              <WeatherIcon className="h-3 w-3 text-[#D4A574]" />
+              <span className="text-xs text-[#D4A574]">
                 {weather.temperature.high}°
               </span>
             </div>
@@ -116,7 +116,7 @@ export function DayCell({
           ))}
           
           {hiddenMealsCount > 0 && (
-            <div className="text-xs text-muted-foreground pl-2">
+            <div className="text-xs text-[#D4A574] pl-2">
               +{hiddenMealsCount} more
             </div>
           )}

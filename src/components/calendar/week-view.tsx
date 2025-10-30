@@ -66,7 +66,7 @@ export function WeekView({ currentDate, mealPlan, weatherForecast, recipes = [] 
   
   return (
     <>
-      <div className="p-4">
+      <div className="p-4 bg-[#3D2B1F]">
         <div className="grid grid-cols-8 gap-2">
           {/* Meal type labels column */}
           <div className="flex flex-col">
@@ -74,7 +74,7 @@ export function WeekView({ currentDate, mealPlan, weatherForecast, recipes = [] 
             {MEAL_TYPES.map(type => (
               <div
                 key={type}
-                className="flex items-center justify-end h-24 pr-2 text-sm font-semibold text-muted-foreground"
+                className="flex items-center justify-end h-24 pr-2 text-sm font-semibold text-[#D4A574]"
               >
                 {type}
               </div>
@@ -89,7 +89,7 @@ export function WeekView({ currentDate, mealPlan, weatherForecast, recipes = [] 
             return (
               <div key={dayIndex} className="flex flex-col">
                 {/* Day header */}
-                <div className={`h-16 border rounded-lg p-2 mb-2 ${isToday ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                <div className={`h-16 border border-[#2D1F14] rounded-lg p-2 mb-2 ${isToday ? 'bg-[#D4A574] text-[#2D1F14]' : 'bg-[#4A3426] text-[#F5E6D3]'}`}>
                   <div className="text-xs font-semibold">
                     {date.toLocaleDateString('en-US', { weekday: 'short' })}
                   </div>
@@ -110,7 +110,7 @@ export function WeekView({ currentDate, mealPlan, weatherForecast, recipes = [] 
                   return (
                     <div
                       key={mealType}
-                      className="h-24 border rounded-lg p-2 mb-2 hover:bg-accent transition-colors cursor-pointer"
+                      className="h-24 border border-[#2D1F14] rounded-lg p-2 mb-2 bg-[#4A3426] hover:bg-[#5C4033] transition-colors cursor-pointer"
                       onClick={() => handleAddMeal(date)}
                     >
                       {meals.length > 0 ? (
@@ -118,7 +118,7 @@ export function WeekView({ currentDate, mealPlan, weatherForecast, recipes = [] 
                           {meals.map(meal => (
                             <div
                               key={meal.id}
-                              className="text-xs font-medium truncate"
+                              className="text-xs font-medium truncate text-[#F5E6D3]"
                             >
                               {meal.recipe?.title || meal.customMealName}
                             </div>
@@ -134,7 +134,7 @@ export function WeekView({ currentDate, mealPlan, weatherForecast, recipes = [] 
                             handleAddMeal(date);
                           }}
                         >
-                          <Plus className="h-4 w-4 text-muted-foreground" />
+                          <Plus className="h-4 w-4 text-[#D4A574]" />
                         </Button>
                       )}
                     </div>

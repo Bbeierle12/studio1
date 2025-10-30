@@ -239,15 +239,15 @@ export function MealPlanningCalendar() {
 
       {/* Active Meal Plan Info */}
       {activeMealPlan && (
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-lg border border-[#2D1F14] bg-[#4A3426] p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">{activeMealPlan.name}</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="font-semibold text-[#F5E6D3]">{activeMealPlan.name}</h3>
+              <p className="text-sm text-[#D4A574]">
                 {new Date(activeMealPlan.startDate).toLocaleDateString()} - {new Date(activeMealPlan.endDate).toLocaleDateString()}
               </p>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-[#D4A574]">
               {activeMealPlan.meals?.length || 0} meals planned
             </div>
           </div>
@@ -271,7 +271,7 @@ export function MealPlanningCalendar() {
 
       {/* Calendar Views */}
       {activeMealPlan && (
-        <div className="rounded-lg border bg-card">
+        <div className="rounded-lg border border-[#2D1F14] bg-[#3D2B1F]">
           {view === 'month' && (
             <MonthView
               currentDate={currentDate}
