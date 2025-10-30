@@ -7,7 +7,6 @@ import { RecipeCreator } from '@/components/recipes/recipe-creator';
 import { MyRecipes } from '@/components/recipes/my-recipes';
 import { RecipeCollections } from '@/components/recipes/recipe-collections';
 import { RecipeDetailDrawer } from '@/components/recipes/recipe-detail-drawer';
-import { RecipeSidebar } from '@/components/recipes/recipe-sidebar';
 import { Book, Heart, ChefHat, Library, Grid, MessageSquare, PlusCircle } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -99,85 +98,77 @@ function RecipeHubContent() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
-      {/* Sidebar */}
-      <RecipeSidebar activeTab={activeTab} />
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="container mx-auto py-6 px-4">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <ChefHat className="h-8 w-8 text-primary" />
-              <h1 className="text-4xl font-bold">Recipe Hub</h1>
-            </div>
-            <p className="text-muted-foreground">
-              Browse, create, and manage all your recipes in one place
-            </p>
-          </div>
-
-          {/* Tab Navigation */}
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 max-w-2xl">
-              <TabsTrigger value="browse" className="gap-2">
-                <Book className="h-4 w-4" />
-                <span className="hidden sm:inline">Browse</span>
-              </TabsTrigger>
-              <TabsTrigger value="chat" className="gap-2">
-                <MessageSquare className="h-4 w-4" />
-                <span className="hidden sm:inline">Chat Create</span>
-              </TabsTrigger>
-              <TabsTrigger value="add" className="gap-2">
-                <PlusCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Recipe</span>
-              </TabsTrigger>
-              <TabsTrigger value="my-recipes" className="gap-2">
-                <Heart className="h-4 w-4" />
-                <span className="hidden sm:inline">My Recipes</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <Suspense fallback={<div>Loading...</div>}>
-              <TabsContent value="browse" className="space-y-4">
-                {/* Nested tabs for Browse: All Recipes and Collections */}
-                <Tabs value={browseSubTab} onValueChange={handleBrowseSubTabChange}>
-                  <TabsList className="grid w-full grid-cols-2 max-w-xs">
-                    <TabsTrigger value="all" className="gap-2">
-                      <Grid className="h-4 w-4" />
-                      <span>All Recipes</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="collections" className="gap-2">
-                      <Library className="h-4 w-4" />
-                      <span>Collections</span>
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="all" className="mt-4">
-                    <RecipeBrowser onSelectRecipe={handleSelectRecipe} />
-                  </TabsContent>
-
-                  <TabsContent value="collections" className="mt-4">
-                    <RecipeCollections />
-                  </TabsContent>
-                </Tabs>
-              </TabsContent>
-
-              <TabsContent value="chat" className="h-full">
-                {/* This won't render due to full-screen mode above */}
-              </TabsContent>
-
-              <TabsContent value="add" className="space-y-4">
-                <RecipeCreator />
-              </TabsContent>
-
-              <TabsContent value="my-recipes" className="space-y-4">
-                <MyRecipes onSelectRecipe={handleSelectRecipe} />
-              </TabsContent>
-            </Suspense>
-          </Tabs>
+    <div className="container mx-auto py-6 px-4">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <ChefHat className="h-8 w-8 text-primary" />
+          <h1 className="text-4xl font-bold">Recipe Hub</h1>
         </div>
+        <p className="text-muted-foreground">
+          Browse, create, and manage all your recipes in one place
+        </p>
       </div>
+
+      {/* Tab Navigation */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+          <TabsTrigger value="browse" className="gap-2">
+            <Book className="h-4 w-4" />
+            <span className="hidden sm:inline">Browse</span>
+          </TabsTrigger>
+          <TabsTrigger value="chat" className="gap-2">
+            <MessageSquare className="h-4 w-4" />
+            <span className="hidden sm:inline">Chat Create</span>
+          </TabsTrigger>
+          <TabsTrigger value="add" className="gap-2">
+            <PlusCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">Add Recipe</span>
+          </TabsTrigger>
+          <TabsTrigger value="my-recipes" className="gap-2">
+            <Heart className="h-4 w-4" />
+            <span className="hidden sm:inline">My Recipes</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <Suspense fallback={<div>Loading...</div>}>
+          <TabsContent value="browse" className="space-y-4">
+            {/* Nested tabs for Browse: All Recipes and Collections */}
+            <Tabs value={browseSubTab} onValueChange={handleBrowseSubTabChange}>
+              <TabsList className="grid w-full grid-cols-2 max-w-xs">
+                <TabsTrigger value="all" className="gap-2">
+                  <Grid className="h-4 w-4" />
+                  <span>All Recipes</span>
+                </TabsTrigger>
+                <TabsTrigger value="collections" className="gap-2">
+                  <Library className="h-4 w-4" />
+                  <span>Collections</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="all" className="mt-4">
+                <RecipeBrowser onSelectRecipe={handleSelectRecipe} />
+              </TabsContent>
+
+              <TabsContent value="collections" className="mt-4">
+                <RecipeCollections />
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+
+          <TabsContent value="chat" className="h-full">
+            {/* This won't render due to full-screen mode above */}
+          </TabsContent>
+
+          <TabsContent value="add" className="space-y-4">
+            <RecipeCreator />
+          </TabsContent>
+
+          <TabsContent value="my-recipes" className="space-y-4">
+            <MyRecipes onSelectRecipe={handleSelectRecipe} />
+          </TabsContent>
+        </Suspense>
+      </Tabs>
 
       {/* Recipe Detail Drawer */}
       <RecipeDetailDrawer
@@ -199,25 +190,17 @@ export default function RecipeHubPage() {
 
 function RecipeHubSkeleton() {
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
-      <div className="hidden md:block w-64 border-r bg-muted/30 p-4">
-        <Skeleton className="h-8 w-full mb-4" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-      <div className="flex-1 overflow-auto">
-        <div className="container mx-auto py-6 px-4">
-          <Skeleton className="h-12 w-64 mb-4" />
-          <Skeleton className="h-10 w-full max-w-md mb-6" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="h-48 w-full rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            ))}
+    <div className="container mx-auto py-6 px-4">
+      <Skeleton className="h-12 w-64 mb-4" />
+      <Skeleton className="h-10 w-full max-w-md mb-6" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton className="h-48 w-full rounded-lg" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
