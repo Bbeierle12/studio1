@@ -18,7 +18,6 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
-  PlusCircle,
 } from 'lucide-react';
 
 interface NavItem {
@@ -134,17 +133,6 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 px-2">
-          {(!isCollapsed || isMobile) && (
-            <div className="px-2 mb-4">
-              <Button asChild className="w-full justify-start gap-2" size="sm">
-                <Link href="/recipes/new">
-                  <PlusCircle className="h-4 w-4" />
-                  Add Recipe
-                </Link>
-              </Button>
-            </div>
-          )}
-
           <div className="space-y-1">
             {navItems.map((item) => {
               const isActive =
