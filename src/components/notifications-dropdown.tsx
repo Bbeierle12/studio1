@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,37 +38,83 @@ interface Notification {
   icon?: React.ComponentType<{ className?: string }>;
 }
 
+const NOTIFICATIONS_KEY = 'app_notifications';
+
+const defaultNotifications: Notification[] = [
+  {
+    id: '1',
+    type: 'success',
+    title: 'Recipe Saved',
+    message: 'Chocolate Chip Cookies saved to your collection',
+    time: '5 min ago',
+    read: false,
+    icon: CheckCircle2,
+  },
+  {
+    id: '2',
+    type: 'activity',
+    title: 'Family Member Joined',
+    message: 'Sarah joined your family household',
+    time: '1 hour ago',
+    read: false,
+    icon: UserPlus,
+  },
+  {
+    id: '3',
+    type: 'info',
+    title: 'Meal Plan Updated',
+    message: "This week's dinner plan is ready",
+    time: '3 hours ago',
+    read: true,
+    icon: ChefHat,
+  },
+];
+
 export function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'success',
-      title: 'Recipe Saved',
-      message: 'Chocolate Chip Cookies saved to your collection',
-      time: '5 min ago',
-      read: false,
-      icon: CheckCircle2,
-    },
-    {
-      id: '2',
-      type: 'activity',
-      title: 'Family Member Joined',
-      message: 'Sarah joined your family household',
-      time: '1 hour ago',
-      read: false,
-      icon: UserPlus,
-    },
-    {
-      id: '3',
-      type: 'info',
-      title: 'Meal Plan Updated',
-      message: "This week's dinner plan is ready",
-      time: '3 hours ago',
-      read: true,
-      icon: ChefHat,
-    },
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Load notifications from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(NOTIFICATIONS_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Map icon names back to components
+        const withIcons = parsed.map((n: any) => ({
+          ...n,
+          icon: n.iconName === 'CheckCircle2' ? CheckCircle2 
+              : n.iconName === 'UserPlus' ? UserPlus
+              : n.iconName === 'ChefHat' ? ChefHat
+              : undefined,
+        }));
+        setNotifications(withIcons);
+      } else {
+        setNotifications(defaultNotifications);
+      }
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+      setNotifications(defaultNotifications);
+    }
+  }, []);
+
+  // Save notifications to localStorage whenever they change
+  useEffect(() => {
+    if (notifications.length === 0 && !localStorage.getItem(NOTIFICATIONS_KEY)) {
+      return; // Don't save on initial empty state
+    }
+    try {
+      // Convert icon components to names for storage
+      const toStore = notifications.map(n => ({
+        ...n,
+        icon: undefined,
+        iconName: n.icon?.name || '',
+      }));
+      localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(toStore));
+    } catch (error) {
+      console.error('Failed to save notifications:', error);
+    }
+  }, [notifications]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
