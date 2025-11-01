@@ -114,13 +114,19 @@ export function FeaturedTodayCard({
             </div>
           )}
 
-          <div className="flex gap-2 justify-center pt-2">
+          <div className="flex gap-2 justify-center pt-2 flex-wrap">
             <Button onClick={onAddMeal}>
               <Plus className="h-4 w-4 mr-2" />
               Plan Meal
             </Button>
             <Button variant="outline" asChild>
               <Link href="/recipes">Browse Recipes</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/recipes/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Recipe
+              </Link>
             </Button>
           </div>
         </div>
