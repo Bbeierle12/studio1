@@ -147,19 +147,17 @@ export default function Home() {
                 </div>
               </Link>
               
-              <Link href='/collections'>
+              <Link href='/recipes'>
                 <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 border-transparent hover:border-primary/50'>
                   <h3 className='text-lg font-semibold mb-2'>📝 Family Notes</h3>
                   <p className='text-sm text-muted-foreground'>Collections & memories</p>
                 </div>
               </Link>
               
-              <Link href='/recipes/new'>
-                <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 border-transparent hover:border-primary/50'>
-                  <h3 className='text-lg font-semibold mb-2'>➕ Add Recipe</h3>
-                  <p className='text-sm text-muted-foreground'>Share a family favorite</p>
-                </div>
-              </Link>
+              <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 opacity-60'>
+                <h3 className='text-lg font-semibold mb-2'>📖 Cookbook Format</h3>
+                <p className='text-sm text-muted-foreground'>Coming soon...</p>
+              </div>
             </div>
           </div>
           
