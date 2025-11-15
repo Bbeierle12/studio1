@@ -1,37 +1,15 @@
 'use client';
 
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
 import { RecipeCreator } from '@/components/recipes/recipe-creator';
 import { MyRecipes } from '@/components/recipes/my-recipes';
 import { RecipeCollections } from '@/components/recipes/recipe-collections';
 import { RecipeDetailDrawer } from '@/components/recipes/recipe-detail-drawer';
-import { Book, Heart, ChefHat, Library, Grid, MessageSquare, PlusCircle } from 'lucide-react';
+import { Book, Heart, ChefHat, Library, Grid, PlusCircle } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-
-// Lazy load chat creator to avoid SSR issues with canvas
-const ChatRecipeCreator = lazy(() => 
-  import('@/components/recipes/chat-recipe-creator').then(mod => ({ 
-    default: mod.ChatRecipeCreator 
-  }))
-);
-
-function ChatRecipeCreatorWrapper() {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center h-[600px]">
-        <div className="text-center">
-          <Skeleton className="h-12 w-12 rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading chat interface...</p>
-        </div>
-      </div>
-    }>
-      <ChatRecipeCreator />
-    </Suspense>
-  );
-}
 
 function RecipeHubContent() {
   const searchParams = useSearchParams();
@@ -45,15 +23,15 @@ function RecipeHubContent() {
     const tab = searchParams.get('tab');
     const recipeId = searchParams.get('recipe');
     const subTab = searchParams.get('subTab');
-    
-    if (tab && ['browse', 'add', 'chat', 'my-recipes'].includes(tab)) {
+
+    if (tab && ['browse', 'add', 'my-recipes'].includes(tab)) {
       setActiveTab(tab);
     }
 
     if (subTab && ['all', 'collections'].includes(subTab)) {
       setBrowseSubTab(subTab);
     }
-    
+
     if (recipeId) {
       setSelectedRecipe(recipeId);
     }
@@ -92,11 +70,6 @@ function RecipeHubContent() {
     router.push(newUrl, { scroll: false });
   };
 
-  // Full-screen chat mode for Chat tab
-  if (activeTab === 'chat') {
-    return <ChatRecipeCreatorWrapper />;
-  }
-
   return (
     <div className="container mx-auto py-6 px-4">
       {/* Header */}
@@ -112,14 +85,10 @@ function RecipeHubContent() {
 
       {/* Tab Navigation */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+        <TabsList className="grid w-full grid-cols-3 max-w-2xl">
           <TabsTrigger value="browse" className="gap-2">
             <Book className="h-4 w-4" />
             <span className="hidden sm:inline">Browse</span>
-          </TabsTrigger>
-          <TabsTrigger value="chat" className="gap-2">
-            <MessageSquare className="h-4 w-4" />
-            <span className="hidden sm:inline">Chat Create</span>
           </TabsTrigger>
           <TabsTrigger value="add" className="gap-2">
             <PlusCircle className="h-4 w-4" />
@@ -154,10 +123,6 @@ function RecipeHubContent() {
                 <RecipeCollections />
               </TabsContent>
             </Tabs>
-          </TabsContent>
-
-          <TabsContent value="chat" className="h-full">
-            {/* This won't render due to full-screen mode above */}
           </TabsContent>
 
           <TabsContent value="add" className="space-y-4">

@@ -19,6 +19,7 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  MessageSquare,
 } from 'lucide-react';
 
 interface NavItem {
@@ -47,6 +48,7 @@ export function Sidebar() {
     { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays, badge: counts.mealPlan },
     { href: '/household', label: 'Family', icon: Users, badge: counts.family },
     { href: '/saved', label: 'Saved', icon: Bookmark, badge: counts.saved },
+    { href: '/recipe-chat', label: 'AI Recipe Chat', icon: MessageSquare },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
