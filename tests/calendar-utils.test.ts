@@ -5,7 +5,7 @@
  * Run with: npm test
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
   getPastDays,
   getFutureDays,
@@ -24,6 +24,10 @@ import {
 import type { PlannedMeal, MealType } from '@/lib/types';
 
 describe('Calendar Utilities', () => {
+  afterEach(() => {
+    // Cleanup timers and mocks after each test
+    vi.useRealTimers();
+  });
   describe('getPastDays', () => {
     it('should return up to 3 days before today', () => {
       const today = new Date('2024-01-10'); // Wednesday
