@@ -1,6 +1,6 @@
 'use client';
 
-import { MealPlanningCalendar } from '@/components/meal-planning-calendar';
+import { WeekView } from '@/components/calendar/week-view';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -30,8 +30,12 @@ export default function MealPlanPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <MealPlanningCalendar />
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Meal Plan</h1>
+        <p className="text-muted-foreground">Plan your meals for the week</p>
+      </div>
+      <WeekView />
     </div>
   );
 }

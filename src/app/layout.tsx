@@ -5,53 +5,20 @@ import { Header } from '@/components/header';
 import { DynamicBreadcrumbs } from '@/components/dynamic-breadcrumbs';
 import { Sidebar } from '@/components/sidebar';
 import { AuthProvider } from '@/context/auth-context';
-import { NavigationCountsProvider } from '@/context/navigation-counts-context';
-import { ShoppingListProvider } from '@/context/shopping-list-context';
-import { PrintProvider } from '@/context/print-context';
-import { PrintDialog } from '@/components/print-dialog';
 import { ThemeProvider } from '@/context/theme-context';
-import { UnitProvider } from '@/context/unit-context';
-import { SavedRecipesProvider } from '@/context/saved-recipes-context';
 import { ClientSessionProvider } from '@/components/client-session-provider';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { QueryProvider } from '@/components/query-provider';
-import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
-import { PWAUpdatePrompt } from '@/components/pwa-update-prompt';
-import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
-import { MaintenanceModeChecker } from '@/components/maintenance-mode-checker';
-import { Hotkeys } from '@/app/providers/Hotkeys';
 
 export const metadata: Metadata = {
-  title: 'Studio1 Meal Planner',
-  description: 'AI-powered meal planning and recipe management',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Studio1',
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  openGraph: {
-    type: 'website',
-    siteName: 'Studio1 Meal Planner',
-    title: 'Studio1 Meal Planner',
-    description: 'AI-powered meal planning and recipe management',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'Studio1 Meal Planner',
-    description: 'AI-powered meal planning and recipe management',
-  },
+  title: 'Recipe App',
+  description: 'Simple recipe storage and meal planning',
 };
 
 export const viewport: Viewport = {
   themeColor: '#000000',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -72,7 +39,6 @@ export default function RootLayout({
           href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400&display=swap'
           rel='stylesheet'
         />
-        <link rel='apple-touch-icon' href='/icons/icon-192x192.png' />
       </head>
       <body className='font-body antialiased'>
         <ErrorBoundary>
@@ -85,40 +51,20 @@ export default function RootLayout({
                 disableTransitionOnChange
               >
                 <AuthProvider>
-                  <NavigationCountsProvider>
-                    <MaintenanceModeChecker>
-                      <ShoppingListProvider>
-                        <SavedRecipesProvider>
-                          <UnitProvider>
-                            <PrintProvider>
-                              <div className='relative flex min-h-screen w-full'>
-                                {/* Sidebar - fixed position, handled internally */}
-                                <Sidebar />
-
-                                {/* Main content area with sidebar offset */}
-                                <div className='flex flex-col flex-1 md:pl-64 transition-all duration-300'>
-                                  <Header />
-                                  <DynamicBreadcrumbs />
-                                  <main className='flex-1'>{children}</main>
-                                </div>
-                              </div>
-                              <Toaster />
-                              <PrintDialog />
-                              <PWAInstallPrompt />
-                              <PWAUpdatePrompt />
-                              <Hotkeys />
-                            </PrintProvider>
-                          </UnitProvider>
-                        </SavedRecipesProvider>
-                      </ShoppingListProvider>
-                    </MaintenanceModeChecker>
-                  </NavigationCountsProvider>
+                  <div className='relative flex min-h-screen w-full'>
+                    <Sidebar />
+                    <div className='flex flex-col flex-1 md:pl-64 transition-all duration-300'>
+                      <Header />
+                      <DynamicBreadcrumbs />
+                      <main className='flex-1'>{children}</main>
+                    </div>
+                  </div>
+                  <Toaster />
                 </AuthProvider>
               </ThemeProvider>
             </QueryProvider>
           </ClientSessionProvider>
         </ErrorBoundary>
-        <ServiceWorkerRegistration />
       </body>
     </html>
   );

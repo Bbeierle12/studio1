@@ -1,52 +1,95 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSavedRecipes } from '@/context/saved-recipes-context';
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 import { RecipeCard } from '@/components/recipe-card';
-import { Bookmark } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
+interface Recipe {
+  id: string;
+  title: string;
+  slug: string;
+  imageUrl?: string;
+  prepTime?: number;
+  servings?: number;
+  course?: string;
+  cuisine?: string;
+  difficulty?: string;
+  summary?: string;
+}
+
 export default function SavedRecipesPage() {
-  const { savedRecipes } = useSavedRecipes();
-  const [isClient, setIsClient] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
-  if (!isClient) {
-    // You can return a loading skeleton here if you want
+  useEffect(() => {
+    async function fetchFavorites() {
+      try {
+        const response = await fetch('/api/recipes/favorites');
+        if (response.ok) {
+          const data = await response.json();
+          setRecipes(data.recipes || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch favorites:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user]);
+
+  if (authLoading || loading) {
+    return (
+      <div className='flex min-h-[80vh] items-center justify-center'>
+        <div className='animate-pulse text-lg text-muted-foreground'>
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return null;
   }
 
-  // Sort recipes by most recently saved
-  const sortedRecipes = [...savedRecipes].sort((a, b) => b.savedAt - a.savedAt);
-
   return (
-    <div className='container mx-auto py-8'>
+    <div className='container mx-auto py-8 px-4'>
       <div className='mb-8 space-y-2'>
         <h1 className='text-3xl font-extrabold tracking-tight font-headline lg:text-4xl'>
-          Saved Recipes
+          Favorite Recipes
         </h1>
         <p className='text-muted-foreground'>
-          Your collection of recipes saved for offline access.
+          Your collection of favorite recipes.
         </p>
       </div>
 
-      {sortedRecipes.length > 0 ? (
+      {recipes.length > 0 ? (
         <div className='mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-          {sortedRecipes.map(item => (
-            <RecipeCard key={item.id} recipe={item.recipe} />
+          {recipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </div>
       ) : (
         <Alert className='max-w-xl mx-auto'>
-          <Bookmark className='h-4 w-4' />
-          <AlertTitle>No Recipes Saved for Offline</AlertTitle>
+          <Heart className='h-4 w-4' />
+          <AlertTitle>No Favorites Yet</AlertTitle>
           <AlertDescription>
-            You haven&apos;t saved any recipes yet. Click the &quot;Save
-            Offline&quot; button on a recipe page to add it to this list for
-            easy access, even without an internet connection.
+            You haven&apos;t saved any favorites yet. Click the heart icon on a
+            recipe to add it to this list.
           </AlertDescription>
         </Alert>
       )}

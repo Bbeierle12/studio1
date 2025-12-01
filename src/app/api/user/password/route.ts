@@ -3,14 +3,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/data';
 import bcrypt from 'bcryptjs';
-import { isPasswordReused, addPasswordToHistory } from '@/lib/password-history';
-import { logPasswordChange } from '@/lib/security-webhooks';
-import { getClientInfo } from '@/lib/login-anomaly';
 
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -24,38 +21,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Strengthen password requirements to match registration
-    if (newPassword.length < 12) {
+    if (newPassword.length < 8) {
       return NextResponse.json(
-        { error: 'New password must be at least 12 characters' },
-        { status: 400 }
-      );
-    }
-    
-    if (!/[a-z]/.test(newPassword)) {
-      return NextResponse.json(
-        { error: 'Password must contain at least one lowercase letter' },
-        { status: 400 }
-      );
-    }
-    
-    if (!/[A-Z]/.test(newPassword)) {
-      return NextResponse.json(
-        { error: 'Password must contain at least one uppercase letter' },
-        { status: 400 }
-      );
-    }
-    
-    if (!/[0-9]/.test(newPassword)) {
-      return NextResponse.json(
-        { error: 'Password must contain at least one number' },
-        { status: 400 }
-      );
-    }
-    
-    if (!/[^a-zA-Z0-9]/.test(newPassword)) {
-      return NextResponse.json(
-        { error: 'Password must contain at least one special character' },
+        { error: 'New password must be at least 8 characters' },
         { status: 400 }
       );
     }
@@ -82,15 +50,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if password was used recently
-    const isReused = await isPasswordReused(user.id, newPassword);
-    if (isReused) {
-      return NextResponse.json(
-        { error: 'Password was used recently. Please choose a different password.' },
-        { status: 400 }
-      );
-    }
-
     // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
@@ -99,13 +58,6 @@ export async function POST(req: NextRequest) {
       where: { id: user.id },
       data: { password: hashedPassword },
     });
-
-    // Add to password history
-    await addPasswordToHistory(user.id, newPassword);
-
-    // Log security event
-    const { ipAddress, userAgent } = getClientInfo(req);
-    await logPasswordChange(user.id, ipAddress, userAgent);
 
     return NextResponse.json({ message: 'Password updated successfully' });
   } catch (error) {

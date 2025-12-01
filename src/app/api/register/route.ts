@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '@/lib/data';
-import { addPasswordToHistory } from '@/lib/password-history';
-import { getClientInfo, logLoginAttempt } from '@/lib/login-anomaly';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50),
@@ -14,7 +12,7 @@ const registerSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validate input
     const validatedData = registerSchema.parse(body);
     const { name, email, password } = validatedData;
@@ -41,19 +39,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Add initial password to history
-    await addPasswordToHistory(user.id, password);
-
-    // Log successful registration
-    const { ipAddress, userAgent } = getClientInfo(request);
-    await logLoginAttempt({
-      email: user.email,
-      ipAddress,
-      userAgent,
-      successful: true,
-      userId: user.id,
-    });
-
     // Return success (don't include password in response)
     return NextResponse.json({
       success: true,
@@ -63,13 +48,12 @@ export async function POST(request: NextRequest) {
         name: user.name,
       },
     });
-
   } catch (error) {
     console.error('Registration error:', error);
 
     // Handle validation errors
     if (error instanceof z.ZodError) {
-      const fieldErrors = error.errors.map(err => ({
+      const fieldErrors = error.errors.map((err) => ({
         field: err.path[0],
         message: err.message,
       }));
@@ -81,30 +65,26 @@ export async function POST(request: NextRequest) {
 
     // Handle Prisma errors
     if (error instanceof Error) {
-      // Database connection errors
-      if (error.message.includes('connect') || error.message.includes('DATABASE_URL')) {
-        console.error('Database connection error:', error.message);
+      if (
+        error.message.includes('connect') ||
+        error.message.includes('DATABASE_URL')
+      ) {
         return NextResponse.json(
-          { error: 'Database connection failed. Please try again later or contact support.' },
+          { error: 'Database connection failed. Please try again later.' },
           { status: 503 }
         );
       }
 
-      // Prisma unique constraint violations
       if (error.message.includes('Unique constraint')) {
         return NextResponse.json(
           { error: 'An account with this email address already exists.' },
           { status: 400 }
         );
       }
-
-      // Log the actual error message for debugging
-      console.error('Registration error details:', error.message);
     }
 
-    // Handle other errors
     return NextResponse.json(
-      { error: 'Registration failed. Please try again or contact support if the problem persists.' },
+      { error: 'Registration failed. Please try again.' },
       { status: 500 }
     );
   }
