@@ -31,14 +31,7 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
         env:
-          DATABASE_URL: "file:./test.db"
-
-      - name: Run database setup
-        run: |
-          npx prisma migrate reset --force --skip-seed
-          npx prisma db push
-        env:
-          DATABASE_URL: "file:./test.db"
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/testdb"
 
       - name: Run TypeScript type checking
         run: npm run typecheck
@@ -54,8 +47,8 @@ jobs:
         env:
           # Skip telemetry during CI
           NEXT_TELEMETRY_DISABLED: 1
-          # Database URL for build
-          DATABASE_URL: "file:./test.db"
+          # Database URL for build (valid format for Prisma schema validation)
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/testdb"
           # Dummy auth secret for build
           NEXTAUTH_SECRET: "test-secret-for-ci"
           NEXTAUTH_URL: "http://localhost:3000"
