@@ -181,7 +181,9 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signIn({ user, account, profile, isNewUser }) {
-      console.log('User signed in:', { userId: user.id, email: user.email });
+      // Log the user id only — email is PII and is already persisted to the
+      // audit log; it does not belong in application stdout.
+      console.log('User signed in:', { userId: user.id });
     },
     async signOut({ token }) {
       console.log('User signed out:', { userId: token?.id });
