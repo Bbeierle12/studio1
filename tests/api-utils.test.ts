@@ -338,7 +338,7 @@ describe('API Utilities', () => {
       });
 
       const data = { count: '42' };
-      const result = validateRequestBody(schema, data);
+      const result = validateRequestBody<{ count: number }>(schema, data);
 
       expect(result.count).toBe(42);
       expect(typeof result.count).toBe('number');
@@ -351,7 +351,7 @@ describe('API Utilities', () => {
       });
 
       const data = { name: 'Test' };
-      const result = validateRequestBody(schema, data);
+      const result = validateRequestBody<{ name: string; active: boolean }>(schema, data);
 
       expect(result.active).toBe(true);
     });

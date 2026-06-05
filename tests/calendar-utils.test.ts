@@ -103,13 +103,13 @@ describe('Calendar Utilities', () => {
   describe('getFeaturedMeal', () => {
     const createMeal = (mealType: MealType): PlannedMeal => ({
       id: `meal-${mealType}`,
-      userId: 'user-1',
+      mealPlanId: 'plan-1',
       date: new Date(),
       mealType,
       recipeId: 'recipe-1',
       servings: 2,
       notes: null,
-      scheduledTime: null,
+      isCompleted: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -187,13 +187,13 @@ describe('Calendar Utilities', () => {
   describe('getOtherMeals', () => {
     const createMeal = (id: string, mealType: MealType): PlannedMeal => ({
       id,
-      userId: 'user-1',
+      mealPlanId: 'plan-1',
       date: new Date(),
       mealType,
       recipeId: 'recipe-1',
       servings: 2,
       notes: null,
-      scheduledTime: null,
+      isCompleted: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -379,13 +379,13 @@ describe('Calendar Utilities', () => {
   describe('hasMealsForDay', () => {
     const createMeal = (date: Date): PlannedMeal => ({
       id: 'meal-1',
-      userId: 'user-1',
+      mealPlanId: 'plan-1',
       date,
       mealType: 'BREAKFAST',
       recipeId: 'recipe-1',
       servings: 2,
       notes: null,
-      scheduledTime: null,
+      isCompleted: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -417,13 +417,13 @@ describe('Calendar Utilities', () => {
   describe('getMealsForDay', () => {
     const createMeal = (date: Date, mealType: MealType): PlannedMeal => ({
       id: `meal-${mealType}`,
-      userId: 'user-1',
+      mealPlanId: 'plan-1',
       date,
       mealType,
       recipeId: 'recipe-1',
       servings: 2,
       notes: null,
-      scheduledTime: null,
+      isCompleted: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -453,13 +453,13 @@ describe('Calendar Utilities', () => {
   describe('countMealsInRange', () => {
     const createMeal = (date: Date): PlannedMeal => ({
       id: `meal-${date.getDate()}`,
-      userId: 'user-1',
+      mealPlanId: 'plan-1',
       date,
       mealType: 'BREAKFAST',
       recipeId: 'recipe-1',
       servings: 2,
       notes: null,
-      scheduledTime: null,
+      isCompleted: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
