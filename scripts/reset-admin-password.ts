@@ -34,9 +34,12 @@ async function main() {
   // Hash password
   const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-  // Find and update the admin user
+  // Find and update the admin user. Scope selects to only the columns we
+  // need so a schema-drifted DB (e.g. prod missing a newer column) can't
+  // break the reset via Prisma's default select-all.
   const existingUser = await prisma.user.findUnique({
     where: { email: adminEmail },
+    select: { id: true },
   });
 
   if (!existingUser) {
@@ -50,6 +53,7 @@ async function main() {
     data: {
       password: hashedPassword,
     },
+    select: { email: true },
   });
 
   console.log('✅ Password reset successfully!');
