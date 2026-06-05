@@ -4,8 +4,8 @@
   "description": "AI-powered meal planning and recipe management",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#f8f9fa",
+  "theme_color": "#ffffff",
   "orientation": "portrait-primary",
   "icons": [
     {

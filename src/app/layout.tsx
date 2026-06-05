@@ -19,6 +19,7 @@ import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { PWAUpdatePrompt } from '@/components/pwa-update-prompt';
 import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 import { MaintenanceModeChecker } from '@/components/maintenance-mode-checker';
+import { BottomNav } from '@/components/ui/bottom-nav';
 import { Hotkeys } from '@/app/providers/Hotkeys';
 
 export const metadata: Metadata = {
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#000000',
+  themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -96,10 +97,11 @@ export default function RootLayout({
                                 <Sidebar />
 
                                 {/* Main content area with sidebar offset */}
-                                <div className='flex flex-col flex-1 md:pl-64 transition-all duration-300'>
+                                <div className='flex flex-col flex-1 md:pl-64 transition-all duration-300 pb-20 md:pb-0'>
                                   <Header />
                                   <DynamicBreadcrumbs />
                                   <main className='flex-1'>{children}</main>
+                                  <BottomNav />
                                 </div>
                               </div>
                               <Toaster />
