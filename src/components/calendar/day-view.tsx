@@ -150,7 +150,7 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
             </CardHeader>
             <CardContent>
               <WeatherSuggestions
-                recipes={recipes}
+                recipes={recipes as any}
                 weather={{
                   temperature: weather.temperature.current || weather.temperature.high,
                   condition: weather.condition,
@@ -291,7 +291,7 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
         weather={weather}
         defaultMealType={selectedMealType}
         existingMeal={editingMeal || undefined}
-        recipes={recipes}
+        recipes={recipes as any}
       />
       
       {/* Quick Delete Confirmation */}

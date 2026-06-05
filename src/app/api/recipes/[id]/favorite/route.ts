@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -22,7 +22,7 @@ export async function POST(
       );
     }
 
-    const recipeId = params.id;
+    const recipeId = (await params).id;
     const userId = session.user.id;
 
     // Check if recipe exists

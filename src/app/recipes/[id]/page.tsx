@@ -23,9 +23,9 @@ import type { Recipe } from '@/lib/types';
 import { SaveRecipeButton } from '@/components/save-recipe-button';
 
 type RecipePageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default async function RecipePage({ params }: RecipePageProps) {

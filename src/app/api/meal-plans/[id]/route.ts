@@ -13,7 +13,7 @@ type RouteContext = {
  * GET /api/meal-plans/[id]
  * Get a specific meal plan with all meals
  */
-export async function GET(request: NextRequest, { params }: RouteContext) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     }
 
     const userId = (session.user as any).id;
-    const { id } = params;
+    const { id } = await params;
 
     const mealPlan = await prisma.mealPlan.findUnique({
       where: {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
  * PATCH /api/meal-plans/[id]
  * Update a meal plan
  */
-export async function PATCH(request: NextRequest, { params }: RouteContext) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -68,7 +68,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     }
 
     const userId = (session.user as any).id;
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     // Verify ownership
@@ -125,7 +125,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
  * DELETE /api/meal-plans/[id]
  * Delete a meal plan
  */
-export async function DELETE(request: NextRequest, { params }: RouteContext) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -134,7 +134,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
     }
 
     const userId = (session.user as any).id;
-    const { id } = params;
+    const { id } = await params;
 
     // Verify ownership
     const existing = await prisma.mealPlan.findUnique({

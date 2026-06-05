@@ -6,7 +6,7 @@ import { prisma } from '@/lib/data';
 // DELETE /api/meal-templates/[id] - Delete a template
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +25,7 @@ export async function DELETE(
 
     // Verify ownership
     const template = await prisma.mealTemplate.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!template) {
@@ -37,7 +37,7 @@ export async function DELETE(
     }
 
     await prisma.mealTemplate.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ success: true });

@@ -54,6 +54,7 @@ model User {
   favorites           FavoriteRecipe[] @relation("UserFavorites")
   reactions           RecipeReaction[] @relation("UserReactions")
   auditLogs           AuditLog[]
+  securityEvents      SecurityEvent[]
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
 
@@ -422,6 +423,7 @@ model WebAuthnChallenge {
 model SecurityEvent {
   id          String   @id @default(cuid())
   userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   eventType   String   // "password_changed", "2fa_enabled", "login_anomaly", "account_locked", etc.
   severity    String   // "low", "medium", "high", "critical"
   description String

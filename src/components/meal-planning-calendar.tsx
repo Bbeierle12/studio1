@@ -277,7 +277,7 @@ export function MealPlanningCalendar() {
               currentDate={currentDate}
               mealPlan={activeMealPlan}
               weatherForecast={weatherForecast || []}
-              recipes={recipes}
+              recipes={recipes as any}
             />
           )}
           
@@ -286,7 +286,7 @@ export function MealPlanningCalendar() {
               currentDate={currentDate}
               mealPlan={activeMealPlan}
               weatherForecast={weatherForecast || []}
-              recipes={recipes}
+              recipes={recipes as any}
             />
           )}
           
@@ -295,7 +295,7 @@ export function MealPlanningCalendar() {
               currentDate={currentDate}
               mealPlan={activeMealPlan}
               weatherForecast={weatherForecast || []}
-              recipes={recipes}
+              recipes={recipes as any}
             />
           )}
         </div>
@@ -325,7 +325,7 @@ export function MealPlanningCalendar() {
             open={showTemplates}
             onOpenChange={setShowTemplates}
             mealPlan={activeMealPlan}
-            recipes={recipes}
+            recipes={recipes as any}
             onLoadTemplate={handleLoadTemplate}
           />
 
