@@ -193,7 +193,7 @@ export default function HouseholdPage() {
                     <p className="font-medium flex items-center gap-2">
                       {member.name || member.email}
                       {member.id === household.ownerId && (
-                        <Crown className="h-4 w-4 text-yellow-600" />
+                        <Crown className="h-4 w-4 text-warning" />
                       )}
                     </p>
                     <p className="text-sm text-muted-foreground">{member.email}</p>

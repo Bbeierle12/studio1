@@ -294,7 +294,7 @@ export default function SettingsPage() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground">
           Manage your account settings and preferences
         </p>
       </div>
@@ -387,9 +387,9 @@ export default function SettingsPage() {
                   type="email"
                   value={email}
                   disabled
-                  className="bg-gray-100 dark:bg-gray-800"
+                  className="bg-muted text-muted-foreground"
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Email cannot be changed. Contact support if needed.
                 </p>
               </div>
@@ -405,7 +405,7 @@ export default function SettingsPage() {
                   className="w-full min-h-[100px] px-3 py-2 border rounded-md resize-none"
                   maxLength={500}
                 />
-                <p className="text-sm text-gray-500 text-right">
+                <p className="text-sm text-muted-foreground text-right">
                   {bio.length}/500 characters
                 </p>
               </div>
@@ -484,7 +484,7 @@ export default function SettingsPage() {
                     )}
                   </Button>
                 </div>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Must be at least 8 characters long
                 </p>
               </div>
@@ -535,7 +535,7 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   API Key Configuration
-                  <Badge className="bg-orange-500 text-white">Admin Only</Badge>
+                  <Badge variant="warning-solid">Admin Only</Badge>
                 </CardTitle>
                 <CardDescription>
                   Manage API keys for AI-powered features. Keys are encrypted and stored securely.
@@ -568,13 +568,13 @@ export default function SettingsPage() {
                     )}
                   </Button>
                 </div>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Used for AI recipe generation and voice features. Get your key from{' '}
                   <a
                     href="https://platform.openai.com/api-keys"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-info hover:underline"
                   >
                     OpenAI Platform
                   </a>
@@ -582,12 +582,12 @@ export default function SettingsPage() {
               </div>
 
               {/* Info Box */}
-              <div className="p-4 border border-blue-200 dark:border-blue-900 rounded-lg bg-blue-50 dark:bg-blue-950">
-                <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+              <div className="p-4 border border-info/30 rounded-lg bg-info-muted">
+                <h3 className="font-semibold text-info mb-2 flex items-center gap-2">
                   <Shield className="h-4 w-4" />
                   Security Notice
                 </h3>
-                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 list-disc list-inside">
+                <ul className="text-sm text-info space-y-1 list-disc list-inside">
                   <li>API keys are encrypted before storage</li>
                   <li>Keys are only accessible to your account</li>
                   <li>Never share your API keys with others</li>
@@ -614,7 +614,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold">Analytics & Insights</h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-muted-foreground">
                   Track your meal planning patterns and get personalized recommendations
                 </p>
               </div>
@@ -636,7 +636,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Email Notifications</Label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Receive email updates about your account
                   </p>
                 </div>
@@ -649,7 +649,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Recipe Updates</Label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Get notified when recipes you follow are updated
                   </p>
                 </div>
@@ -662,7 +662,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Collection Shares</Label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Notifications when someone shares a collection with you
                   </p>
                 </div>
@@ -675,7 +675,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Weekly Digest</Label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Get a weekly summary of new recipes and updates
                   </p>
                 </div>
@@ -735,7 +735,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Measurement Units</Label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Current: {unit === 'imperial' ? 'Imperial (cups, °F)' : 'Metric (grams, °C)'}
                   </p>
                 </div>
@@ -759,25 +759,25 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="p-4 border border-border rounded-lg">
                   <h3 className="font-semibold mb-2">Account Status</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <p className="text-sm text-muted-foreground mb-2">
                     Your account is active and in good standing
                   </p>
                   {user.role && user.role !== 'USER' && (
                     <div className="mt-2">
-                      <Badge className="bg-orange-500 text-white">
+                      <Badge variant="warning-solid">
                         {user.role.replace(/_/g, ' ')}
                       </Badge>
                     </div>
                   )}
                 </div>
 
-                <div className="p-4 border border-red-200 dark:border-red-900 rounded-lg bg-red-50 dark:bg-red-950">
-                  <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">
+                <div className="p-4 border border-danger/35 rounded-lg bg-danger-muted">
+                  <h3 className="font-semibold text-danger mb-2">
                     Danger Zone
                   </h3>
-                  <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+                  <p className="text-sm text-danger mb-4">
                     Once you delete your account, there is no going back. All your recipes, collections, and data will be permanently deleted.
                   </p>
                   <Button variant="destructive" className="w-full">

@@ -38,19 +38,19 @@ const Section: React.FC<SectionProps> = ({ title, icon, children, defaultOpen = 
     <div className="border rounded-lg overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between bg-muted hover:bg-muted transition-colors"
       >
         <div className="flex items-center gap-2">
           {icon}
           <span className="font-medium">{title}</span>
         </div>
         {isOpen ? (
-          <ChevronDown className="w-4 h-4 text-gray-500" />
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-gray-500" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
         )}
       </button>
-      {isOpen && <div className="p-4 bg-white">{children}</div>}
+      {isOpen && <div className="p-4 bg-card">{children}</div>}
     </div>
   );
 };
@@ -65,8 +65,8 @@ const Chip: React.FC<{
     onClick={onClick}
     className={`px-3 py-1.5 rounded-full text-sm transition-all ${
       selected
-        ? 'bg-blue-500 text-white shadow-sm'
-        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+        ? 'bg-primary text-primary-foreground shadow-sm'
+        : 'bg-muted text-muted-foreground hover:bg-muted'
     }`}
   >
     {label}
@@ -232,7 +232,7 @@ export const ClassificationSelector: React.FC<ClassificationSelectorProps> = ({
       >
         <div className="space-y-4">
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Europe</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Europe</h4>
             <div className="flex flex-wrap gap-2">
               {['french', 'italian', 'spanish', 'german', 'british', 'eastern_european', 'balkans', 'russian'].map(region => (
                 <Chip
@@ -247,7 +247,7 @@ export const ClassificationSelector: React.FC<ClassificationSelectorProps> = ({
           </div>
 
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Middle East & Africa</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Middle East & Africa</h4>
             <div className="flex flex-wrap gap-2">
               {['middle_eastern', 'levantine', 'north_african', 'west_african', 'east_african', 'southern_african'].map(region => (
                 <Chip
@@ -262,7 +262,7 @@ export const ClassificationSelector: React.FC<ClassificationSelectorProps> = ({
           </div>
 
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Asia</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Asia</h4>
             <div className="flex flex-wrap gap-2">
               {['south_asian', 'indian', 'chinese', 'japanese', 'korean', 'thai', 'vietnamese', 'filipino', 'southeast_asian'].map(region => (
                 <Chip
@@ -277,7 +277,7 @@ export const ClassificationSelector: React.FC<ClassificationSelectorProps> = ({
           </div>
 
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Americas</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Americas</h4>
             <div className="flex flex-wrap gap-2">
               {['mexican', 'central_american', 'south_american', 'caribbean', 'cajun', 'southwestern', 'pacific_northwest', 'southern_us'].map(region => (
                 <Chip
@@ -325,17 +325,17 @@ export const ClassificationSelector: React.FC<ClassificationSelectorProps> = ({
               onClick={() => handleAromaticBaseToggle(key)}
               className={`p-3 rounded-lg border cursor-pointer transition-all ${
                 value.aromaticBase === key
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-info bg-info-muted'
+                  : 'border-border hover:border-border'
               }`}
             >
               <div className="flex justify-between items-start">
                 <div>
                   <h4 className="font-medium">{base.name}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{base.description}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{base.description}</p>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {base.ingredients.map(ing => (
-                      <span key={ing} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      <span key={ing} className="text-xs bg-muted px-2 py-1 rounded">
                         {ing.replace(/_/g, ' ')}
                       </span>
                     ))}
@@ -360,8 +360,8 @@ export const ClassificationSelector: React.FC<ClassificationSelectorProps> = ({
               onClick={() => handleSpiceSignatureToggle(key)}
               className={`p-3 rounded-lg border cursor-pointer transition-all ${
                 value.spiceSignature === key
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-info bg-info-muted'
+                  : 'border-border hover:border-border'
               }`}
             >
               <div>
@@ -369,16 +369,16 @@ export const ClassificationSelector: React.FC<ClassificationSelectorProps> = ({
                   <h4 className="font-medium">{sig.name}</h4>
                   <div className="flex gap-1">
                     {[...Array(5)].map((_, i) => (
-                      <span key={i} className={i < sig.heatLevel ? 'text-red-500' : 'text-gray-300'}>
+                      <span key={i} className={i < sig.heatLevel ? 'text-danger' : 'text-muted'}>
                         🌶️
                       </span>
                     ))}
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mt-1">{sig.description}</p>
+                <p className="text-sm text-muted-foreground mt-1">{sig.description}</p>
                 <div className="flex flex-wrap gap-1 mt-2">
                   {sig.spices.map(spice => (
-                    <span key={spice} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                    <span key={spice} className="text-xs bg-muted px-2 py-1 rounded">
                       {spice.replace(/_/g, ' ')}
                     </span>
                   ))}

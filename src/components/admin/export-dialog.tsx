@@ -211,7 +211,7 @@ export function ExportDialog({
                 <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                   <RadioGroupItem value="csv" />
                   <div className="flex items-center gap-3 flex-1">
-                    <FileText className="h-5 w-5 text-green-600" />
+                    <FileText className="h-5 w-5 text-success" />
                     <div>
                       <p className="font-medium">CSV</p>
                       <p className="text-xs text-muted-foreground">
@@ -224,7 +224,7 @@ export function ExportDialog({
                 <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                   <RadioGroupItem value="json" />
                   <div className="flex items-center gap-3 flex-1">
-                    <FileJson className="h-5 w-5 text-blue-600" />
+                    <FileJson className="h-5 w-5 text-info" />
                     <div>
                       <p className="font-medium">JSON</p>
                       <p className="text-xs text-muted-foreground">
@@ -237,7 +237,7 @@ export function ExportDialog({
                 <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                   <RadioGroupItem value="excel" />
                   <div className="flex items-center gap-3 flex-1">
-                    <Table className="h-5 w-5 text-purple-600" />
+                    <Table className="h-5 w-5 text-info" />
                     <div>
                       <p className="font-medium">Excel</p>
                       <p className="text-xs text-muted-foreground">
@@ -324,14 +324,14 @@ export function ExportDialog({
                 </div>
               )}
 
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="p-4 bg-warning-muted border border-warning rounded-lg">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
+                  <AlertCircle className="h-4 w-4 text-warning mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-amber-900">
+                    <p className="text-sm font-medium text-warning">
                       Export Notice
                     </p>
-                    <p className="text-xs text-amber-700 mt-1">
+                    <p className="text-xs text-warning mt-1">
                       Large exports may take several seconds. The download will start automatically when ready.
                     </p>
                   </div>
@@ -349,7 +349,7 @@ export function ExportDialog({
             </div>
             <Progress value={progress} className="h-2" />
             {progress === 100 && (
-              <div className="flex items-center gap-2 text-green-600">
+              <div className="flex items-center gap-2 text-success">
                 <CheckCircle2 className="h-4 w-4" />
                 <span className="text-sm">Export complete!</span>
               </div>

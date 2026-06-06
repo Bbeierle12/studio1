@@ -137,9 +137,9 @@ export function AutoTagButton({
           ) : (
             <div className="space-y-4">
               {applied && (
-                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  <p className="text-sm text-green-800 font-medium">
+                <div className="flex items-center gap-2 p-3 bg-success-muted border border-success rounded-lg">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                  <p className="text-sm text-success font-medium">
                     Tags applied successfully!
                   </p>
                 </div>
@@ -174,7 +174,7 @@ export function AutoTagButton({
                   <p className="text-sm font-medium mb-2">Dietary Labels:</p>
                   <div className="flex flex-wrap gap-2">
                     {result.dietaryLabels.map((label, i) => (
-                      <Badge key={i} variant="outline" className="bg-green-50">
+                      <Badge key={i} variant="outline" className="bg-success-muted">
                         {label}
                       </Badge>
                     ))}

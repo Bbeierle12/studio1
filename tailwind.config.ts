@@ -17,8 +17,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['Roboto', 'sans-serif'],
-        headline: ['Playfair Display', 'serif'],
+        body: ['var(--font-body-src)', 'Roboto', 'sans-serif'],
+        headline: ['var(--font-headline-src)', 'Playfair Display', 'serif'],
         code: ['monospace'],
       },
       colors: {
@@ -62,18 +62,60 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        meal: {
+          breakfast: {
+            DEFAULT: 'hsl(var(--meal-breakfast))',
+            foreground: 'hsl(var(--meal-breakfast-foreground))',
+            muted: 'hsl(var(--meal-breakfast-muted))',
+          },
+          lunch: {
+            DEFAULT: 'hsl(var(--meal-lunch))',
+            foreground: 'hsl(var(--meal-lunch-foreground))',
+            muted: 'hsl(var(--meal-lunch-muted))',
+          },
+          dinner: {
+            DEFAULT: 'hsl(var(--meal-dinner))',
+            foreground: 'hsl(var(--meal-dinner-foreground))',
+            muted: 'hsl(var(--meal-dinner-muted))',
+          },
+          snack: {
+            DEFAULT: 'hsl(var(--meal-snack))',
+            foreground: 'hsl(var(--meal-snack-foreground))',
+            muted: 'hsl(var(--meal-snack-muted))',
+          },
+        },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+          muted: 'hsl(var(--success-muted))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+          muted: 'hsl(var(--warning-muted))',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+          muted: 'hsl(var(--info-muted))',
+        },
+        danger: {
+          DEFAULT: 'hsl(var(--danger))',
+          foreground: 'hsl(var(--danger-foreground))',
+          muted: 'hsl(var(--danger-muted))',
+        },
       },
       boxShadow: {
-        'md3-1': '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)',
-        'md3-2': '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)',
-        'md3-3': '0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)',
-        'md3-4': '0px 2px 3px 0px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15)',
-        'md3-5': '0px 4px 4px 0px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15)',
+        'md3-1': 'var(--md3-1)',
+        'md3-2': 'var(--md3-2)',
+        'md3-3': 'var(--md3-3)',
+        'md3-4': 'var(--md3-4)',
+        'md3-5': 'var(--md3-5)',
       },
       borderRadius: {
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 6px)',
+        sm: 'calc(var(--radius) - 8px)',
         'md3-xs': '4px',
         'md3-sm': '8px',
         'md3-md': '12px',

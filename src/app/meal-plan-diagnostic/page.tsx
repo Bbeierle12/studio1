@@ -29,7 +29,7 @@ export default function DiagnosticPage() {
       <div className="space-y-4">
         <section className="border p-4 rounded">
           <h2 className="font-semibold mb-2">Authentication</h2>
-          <pre className="text-sm bg-gray-100 p-2 rounded overflow-auto">
+          <pre className="text-sm bg-muted p-2 rounded overflow-auto">
             {JSON.stringify({ user: { id: user.id, email: user.email }, loading: authLoading }, null, 2)}
           </pre>
         </section>
@@ -40,7 +40,7 @@ export default function DiagnosticPage() {
           <p>Total Plans: {mealPlans?.length || 0}</p>
           <p>Active Plan: {activeMealPlan ? 'Yes' : 'No'}</p>
           {activeMealPlan && (
-            <pre className="text-sm bg-gray-100 p-2 rounded overflow-auto mt-2">
+            <pre className="text-sm bg-muted p-2 rounded overflow-auto mt-2">
               {JSON.stringify({
                 id: activeMealPlan.id,
                 name: activeMealPlan.name,
@@ -71,7 +71,7 @@ export default function DiagnosticPage() {
           <p>Loading: {weatherLoading ? 'Yes' : 'No'}</p>
           <p>Forecast Count: {weatherForecast?.length || 0}</p>
           {weatherForecast && weatherForecast.length > 0 && (
-            <pre className="text-sm bg-gray-100 p-2 rounded overflow-auto mt-2">
+            <pre className="text-sm bg-muted p-2 rounded overflow-auto mt-2">
               {JSON.stringify(weatherForecast[0], null, 2)}
             </pre>
           )}

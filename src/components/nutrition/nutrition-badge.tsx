@@ -69,7 +69,7 @@ export function NutritionBadge({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <div className="flex items-center gap-1 text-sm">
-        <Flame className="h-4 w-4 text-orange-500" />
+        <Flame className="h-4 w-4 text-primary" />
         <span className="font-medium">{Math.round(calories)}</span>
         <span className="text-xs text-muted-foreground">kcal</span>
       </div>

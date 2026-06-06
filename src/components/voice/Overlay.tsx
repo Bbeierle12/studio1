@@ -299,7 +299,7 @@ export default function VoiceOverlay({
         size="lg"
         className={cn(
           "rounded-full h-14 w-14 shadow-lg",
-          isListening && "bg-red-500 hover:bg-red-600"
+          isListening && "bg-danger hover:bg-danger/90"
         )}
         onClick={() => {
           setShowOverlay(true);
@@ -358,19 +358,19 @@ export default function VoiceOverlay({
             {/* Status indicator */}
             <div className="flex items-center gap-2 mb-3">
               {isListening && (
-                <div className="flex items-center gap-2 text-red-500">
-                  <div className="h-3 w-3 bg-red-500 rounded-full animate-pulse" />
+                <div className="flex items-center gap-2 text-danger">
+                  <div className="h-3 w-3 bg-danger rounded-full animate-pulse" />
                   <span className="text-sm">Listening...</span>
                 </div>
               )}
               {isProcessing && (
-                <div className="flex items-center gap-2 text-orange-500">
+                <div className="flex items-center gap-2 text-primary">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   <span className="text-sm">Processing...</span>
                 </div>
               )}
               {isSpeaking && (
-                <div className="flex items-center gap-2 text-blue-500">
+                <div className="flex items-center gap-2 text-info">
                   <Volume2 className="h-3 w-3" />
                   <span className="text-sm">Speaking...</span>
                 </div>
@@ -379,16 +379,16 @@ export default function VoiceOverlay({
 
             {/* Transcript */}
             {transcript && (
-              <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-800 rounded">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">You said:</p>
+              <div className="mb-3 p-3 bg-muted rounded">
+                <p className="text-sm text-muted-foreground mb-1">You said:</p>
                 <p className="text-sm">{transcript}</p>
               </div>
             )}
 
             {/* Response */}
             {response && (
-              <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Assistant:</p>
+              <div className="mb-3 p-3 bg-info-muted rounded">
+                <p className="text-sm text-muted-foreground mb-1">Assistant:</p>
                 <p className="text-sm">{response}</p>
               </div>
             )}

@@ -225,7 +225,7 @@ export function ChatRecipeCreator() {
                 </Button>
                 <div className="relative">
                   <ChefHat className="h-8 w-8 text-primary" />
-                  <Sparkles className="h-4 w-4 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
+                  <Sparkles className="h-4 w-4 text-warning absolute -top-1 -right-1 animate-pulse" />
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold">Recipe Creator</h1>

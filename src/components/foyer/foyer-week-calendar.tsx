@@ -219,7 +219,7 @@ export function FoyerWeekCalendar() {
   // Loading state
   if (loading) {
     return (
-      <Card className="bg-[#3D2B1F]/90 backdrop-blur-sm p-6 border-[#2D1F14]">
+      <Card className="p-6">
         <div className="space-y-4">
           <Skeleton className="h-6 w-1/3" />
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-4">
@@ -234,19 +234,19 @@ export function FoyerWeekCalendar() {
 
   return (
     <>
-      <Card className="bg-[#3D2B1F]/90 dark:bg-[#3D2B1F]/90 backdrop-blur-sm overflow-hidden border-[#2D1F14]">
+      <Card className="overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-[#2D1F14] bg-[#4A3426]/50">
+        <div className="p-4 border-b border-border bg-muted/40">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-[#F5E6D3]">
-              📅 This Week&apos;s Meals
+            <h3 className="font-headline text-lg font-semibold text-foreground">
+              This Week&apos;s Meals
             </h3>
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={previousWeek}
-                className="text-[#D4A574] hover:text-[#F5E6D3]"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -263,13 +263,13 @@ export function FoyerWeekCalendar() {
                 variant="ghost"
                 size="icon"
                 onClick={nextWeek}
-                className="text-[#D4A574] hover:text-[#F5E6D3]"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
-          <p className="text-sm text-[#D4A574]">
+          <p className="text-sm text-muted-foreground">
             {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
           </p>
         </div>
@@ -285,7 +285,7 @@ export function FoyerWeekCalendar() {
             <div className="space-y-3" role="group" aria-label="Past days">
               {pastDays.length > 0 ? (
                 <>
-                  <h4 className="text-xs font-semibold text-[#D4A574] uppercase tracking-wide">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Past {pastDays.length} Days
                   </h4>
                   {pastDays.map((date) => (
@@ -324,7 +324,7 @@ export function FoyerWeekCalendar() {
             <div className="space-y-3" role="group" aria-label="Future days">
               {futureDays.length > 0 ? (
                 <>
-                  <h4 className="text-xs font-semibold text-[#D4A574] uppercase tracking-wide">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Next {futureDays.length} Days
                   </h4>
                   {futureDays.map((date) => (
@@ -426,9 +426,9 @@ export function FoyerWeekCalendar() {
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-[#2D1F14] bg-[#4A3426]/50 text-center">
+        <div className="p-3 border-t border-border bg-muted/40 text-center">
           <Link href="/meal-plan">
-            <Button variant="link" size="sm" className="text-xs text-[#D4A574] hover:text-[#F5E6D3]">
+            <Button variant="link" size="sm" className="text-xs text-muted-foreground hover:text-foreground">
               View Full Calendar →
             </Button>
           </Link>
