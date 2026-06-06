@@ -225,16 +225,16 @@ export default function RecipeManagementPage() {
   };
 
   const getDifficultyColor = (difficulty: string | null) => {
-    if (!difficulty) return 'bg-gray-100 text-gray-800';
+    if (!difficulty) return 'bg-muted text-muted-foreground';
     switch (difficulty.toLowerCase()) {
       case 'easy':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success-muted text-success';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-warning-muted text-warning';
       case 'hard':
-        return 'bg-red-100 text-red-800';
+        return 'bg-danger-muted text-danger';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -417,7 +417,7 @@ export default function RecipeManagementPage() {
                                   <DropdownMenuItem
                                     onClick={() => handleToggleFeatured(recipe.id, recipe.isFeatured || false, recipe.title)}
                                   >
-                                    <Star className={`h-4 w-4 mr-2 ${recipe.isFeatured ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                                    <Star className={`h-4 w-4 mr-2 ${recipe.isFeatured ? 'fill-warning text-warning' : ''}`} />
                                     {recipe.isFeatured ? 'Unfeature' : 'Feature'}
                                   </DropdownMenuItem>
                                 </>
@@ -444,13 +444,13 @@ export default function RecipeManagementPage() {
                         </p>
                         <div className='flex flex-wrap gap-2'>
                           {recipe.isFeatured && (
-                            <Badge className='bg-yellow-100 text-yellow-800'>
-                              <Star className='h-3 w-3 mr-1 fill-yellow-600' />
+                            <Badge variant='warning'>
+                              <Star className='h-3 w-3 mr-1 fill-warning' />
                               Featured
                             </Badge>
                           )}
                           {recipe.isReported && (
-                            <Badge className='bg-red-100 text-red-800'>
+                            <Badge variant='danger'>
                               <Flag className='h-3 w-3 mr-1' />
                               Reported {recipe.reportCount ? `(${recipe.reportCount})` : ''}
                             </Badge>

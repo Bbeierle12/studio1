@@ -176,10 +176,10 @@ function RegisterForm() {
                 value={formData.name}
                 onChange={handleInputChange}
                 disabled={isLoading}
-                className={errors.name ? 'border-red-500' : ''}
+                className={errors.name ? 'border-danger' : ''}
               />
               {errors.name && (
-                <p className='text-sm text-red-500'>{errors.name}</p>
+                <p className='text-sm text-danger'>{errors.name}</p>
               )}
             </div>
 
@@ -193,10 +193,10 @@ function RegisterForm() {
                 value={formData.email}
                 onChange={handleInputChange}
                 disabled={isLoading}
-                className={errors.email ? 'border-red-500' : ''}
+                className={errors.email ? 'border-danger' : ''}
               />
               {errors.email && (
-                <p className='text-sm text-red-500'>{errors.email}</p>
+                <p className='text-sm text-danger'>{errors.email}</p>
               )}
             </div>
 
@@ -210,10 +210,10 @@ function RegisterForm() {
                 value={formData.password}
                 onChange={handleInputChange}
                 disabled={isLoading}
-                className={errors.password ? 'border-red-500' : ''}
+                className={errors.password ? 'border-danger' : ''}
               />
               {errors.password && (
-                <p className='text-sm text-red-500'>{errors.password}</p>
+                <p className='text-sm text-danger'>{errors.password}</p>
               )}
             </div>
 
@@ -227,10 +227,10 @@ function RegisterForm() {
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 disabled={isLoading}
-                className={errors.confirmPassword ? 'border-red-500' : ''}
+                className={errors.confirmPassword ? 'border-danger' : ''}
               />
               {errors.confirmPassword && (
-                <p className='text-sm text-red-500'>{errors.confirmPassword}</p>
+                <p className='text-sm text-danger'>{errors.confirmPassword}</p>
               )}
             </div>
 
@@ -259,7 +259,7 @@ function RegisterForm() {
             <Button
               type="button"
               variant="outline"
-              className="w-full bg-white text-gray-900 border-gray-300 hover:bg-gray-50 font-medium"
+              className="w-full bg-card text-foreground border-border hover:bg-accent font-medium"
               onClick={() => signIn('google', { callbackUrl: redirect })}
               disabled={isLoading}
             >

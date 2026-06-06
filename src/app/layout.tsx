@@ -21,34 +21,61 @@ import { ServiceWorkerRegistration } from '@/components/service-worker-registrat
 import { MaintenanceModeChecker } from '@/components/maintenance-mode-checker';
 import { BottomNav } from '@/components/ui/bottom-nav';
 import { Hotkeys } from '@/app/providers/Hotkeys';
+import { Playfair_Display, Roboto } from 'next/font/google';
+
+// Self-hosted via next/font (no layout shift). Loads the weights the type scale
+// actually uses — previously only Playfair 700 + Roboto 400 were loaded, so
+// font-medium/semibold body text was browser-synthesized faux-bold.
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+  variable: '--font-headline-src',
+  display: 'swap',
+});
+
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+  variable: '--font-body-src',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'Studio1 Meal Planner',
-  description: 'AI-powered meal planning and recipe management',
+  title: {
+    default: 'Our Family Table',
+    template: '%s · Our Family Table',
+  },
+  description: 'A warm home for your family’s recipes and weekly meal planning.',
+  applicationName: 'Our Family Table',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Studio1',
+    title: 'Our Family Table',
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: 'website',
-    siteName: 'Studio1 Meal Planner',
-    title: 'Studio1 Meal Planner',
-    description: 'AI-powered meal planning and recipe management',
+    siteName: 'Our Family Table',
+    title: 'Our Family Table',
+    description:
+      'A warm home for your family’s recipes and weekly meal planning.',
   },
   twitter: {
-    card: 'summary',
-    title: 'Studio1 Meal Planner',
-    description: 'AI-powered meal planning and recipe management',
+    card: 'summary_large_image',
+    title: 'Our Family Table',
+    description:
+      'A warm home for your family’s recipes and weekly meal planning.',
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#ffffff',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f7f3ef' },
+    { media: '(prefers-color-scheme: dark)', color: '#251b13' },
+  ],
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -61,18 +88,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' suppressHydrationWarning>
+    <html
+      lang='en'
+      className={`${playfair.variable} ${roboto.variable}`}
+      suppressHydrationWarning
+    >
       <head>
-        <link rel='preconnect' href='https://fonts.googleapis.com' />
-        <link
-          rel='preconnect'
-          href='https://fonts.gstatic.com'
-          crossOrigin='anonymous'
-        />
-        <link
-          href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400&display=swap'
-          rel='stylesheet'
-        />
         <link rel='apple-touch-icon' href='/icons/icon-192x192.png' />
       </head>
       <body className='font-body antialiased'>

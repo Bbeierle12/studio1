@@ -91,18 +91,18 @@ export class ErrorBoundary extends Component<Props, State> {
       const isDevelopment = process.env.NODE_ENV === 'development';
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
           <Card className="max-w-2xl w-full">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-red-600" />
+              <div className="mx-auto mb-4 w-16 h-16 bg-danger-muted rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-danger" />
               </div>
-              <CardTitle className="text-2xl text-red-700">
+              <CardTitle className="text-2xl text-danger">
                 Oops! Something went wrong
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="text-center text-gray-600">
+              <div className="text-center text-muted-foreground">
                 <p>
                   We're sorry, but something unexpected happened while preparing your recipe.
                   Our kitchen staff (developers) have been notified and are working on a fix.
@@ -110,11 +110,11 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
 
               {isDevelopment && this.state.error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-red-800 mb-2">
+                <div className="bg-danger-muted border border-danger rounded-lg p-4">
+                  <h3 className="font-semibold text-danger mb-2">
                     Development Error Details:
                   </h3>
-                  <div className="text-sm text-red-700 font-mono bg-white p-3 rounded border overflow-auto max-h-40">
+                  <div className="text-sm text-danger font-mono bg-card p-3 rounded border overflow-auto max-h-40">
                     <div className="font-semibold">{this.state.error.name}: </div>
                     <div className="mb-2">{this.state.error.message}</div>
                     {this.state.error.stack && (
@@ -145,7 +145,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </Button>
               </div>
 
-              <div className="text-center text-sm text-gray-500">
+              <div className="text-center text-sm text-muted-foreground">
                 <p>
                   If this problem persists, please try refreshing the page or 
                   contact support with the error details above.

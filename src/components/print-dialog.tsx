@@ -68,7 +68,7 @@ export function PrintDialog() {
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className='flex-grow border rounded-md overflow-y-auto bg-white p-4 h-[60vh]'>
+          <div className='flex-grow border rounded-md overflow-y-auto bg-card p-4 h-[60vh]'>
             <div
               className='prose prose-sm max-w-none'
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(printContent) }}

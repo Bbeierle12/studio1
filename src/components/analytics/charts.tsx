@@ -34,7 +34,7 @@ import {
 } from '@/lib/analytics-engine'
 
 // Color palette for charts
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
+const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))']
 
 interface RecipeFrequencyChartProps {
   data: RecipeFrequency[]
@@ -65,7 +65,7 @@ export function RecipeFrequencyChart({ data, title }: RecipeFrequencyChartProps)
             />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
@@ -94,7 +94,7 @@ export function CuisineDistributionChart({ data }: CuisineDistributionChartProps
               labelLine={false}
               label={(entry) => `${entry.cuisine} (${entry.percentage}%)`}
               outerRadius={80}
-              fill="#8884d8"
+              fill="hsl(var(--chart-1))"
               dataKey="count"
             >
               {data.map((entry, index) => (
@@ -131,12 +131,12 @@ export function MealTypeChart({ data }: MealTypeChartProps) {
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis yAxisId="left" orientation="left" stroke="#3b82f6" />
-            <YAxis yAxisId="right" orientation="right" stroke="#10b981" />
+            <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--chart-1))" />
+            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" />
             <Tooltip />
             <Legend />
-            <Bar yAxisId="left" dataKey="meals" fill="#3b82f6" name="Count" />
-            <Bar yAxisId="right" dataKey="calories" fill="#10b981" name="Avg Calories" />
+            <Bar yAxisId="left" dataKey="meals" fill="hsl(var(--chart-1))" name="Count" />
+            <Bar yAxisId="right" dataKey="calories" fill="hsl(var(--chart-2))" name="Avg Calories" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
@@ -175,7 +175,7 @@ export function WeeklyTrendsChart({ data }: WeeklyTrendsChartProps) {
               yAxisId="left"
               type="monotone"
               dataKey="meals"
-              stroke="#3b82f6"
+              stroke="hsl(var(--chart-1))"
               name="Total Meals"
               strokeWidth={2}
             />
@@ -183,7 +183,7 @@ export function WeeklyTrendsChart({ data }: WeeklyTrendsChartProps) {
               yAxisId="left"
               type="monotone"
               dataKey="unique"
-              stroke="#10b981"
+              stroke="hsl(var(--chart-2))"
               name="Unique Recipes"
               strokeWidth={2}
             />
@@ -191,7 +191,7 @@ export function WeeklyTrendsChart({ data }: WeeklyTrendsChartProps) {
               yAxisId="right"
               type="monotone"
               dataKey="completion"
-              stroke="#f59e0b"
+              stroke="hsl(var(--chart-3))"
               name="Completion %"
               strokeWidth={2}
               strokeDasharray="5 5"
@@ -244,7 +244,7 @@ export function NutritionTrendsCard({ data }: NutritionTrendsCardProps) {
             <PolarGrid />
             <PolarAngleAxis dataKey="name" />
             <PolarRadiusAxis angle={90} domain={[0, 'dataMax']} />
-            <Radar name="Macros" dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
+            <Radar name="Macros" dataKey="value" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.6} />
             <Tooltip />
           </RadarChart>
         </ResponsiveContainer>

@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Loader2, Lock } from 'lucide-react';
-import Link from 'next/link';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -124,14 +123,14 @@ function LoginFormInner() {
             name='email'
             type='email'
             placeholder='you@example.com'
-            className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
+            className={`pl-10 ${errors.email ? 'border-danger' : ''}`}
             value={formData.email}
             onChange={handleInputChange}
             disabled={loading}
           />
         </div>
         {errors.email && (
-          <p className='text-sm text-red-500'>{errors.email}</p>
+          <p className='text-sm text-danger'>{errors.email}</p>
         )}
       </div>
 
@@ -144,25 +143,15 @@ function LoginFormInner() {
             name='password'
             type='password'
             placeholder='••••••••'
-            className={`pl-10 ${errors.password ? 'border-red-500' : ''}`}
+            className={`pl-10 ${errors.password ? 'border-danger' : ''}`}
             value={formData.password}
             onChange={handleInputChange}
             disabled={loading}
           />
         </div>
         {errors.password && (
-          <p className='text-sm text-red-500'>{errors.password}</p>
+          <p className='text-sm text-danger'>{errors.password}</p>
         )}
-        
-        {/* Forgot Password Link */}
-        <div className="text-right">
-          <Link
-            href="/forgot-password"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            Forgot your password?
-          </Link>
-        </div>
       </div>
 
       <Button
@@ -194,7 +183,7 @@ function LoginFormInner() {
       <Button
         type="button"
         variant="outline"
-        className="w-full bg-white text-gray-900 border-gray-300 hover:bg-gray-50 font-medium"
+        className="w-full bg-card text-foreground border-border hover:bg-accent font-medium"
         onClick={() => signIn('google', { callbackUrl: redirect })}
         disabled={loading}
       >

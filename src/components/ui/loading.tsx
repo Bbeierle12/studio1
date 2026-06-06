@@ -121,7 +121,7 @@ export function LoadingBar({
   return (
     <div
       className={cn(
-        'w-full bg-gray-200 rounded-full overflow-hidden',
+        'w-full bg-muted rounded-full overflow-hidden',
         barSizeClasses[size],
         className
       )}

@@ -12,6 +12,18 @@ export function AnimatedBackground() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Read token HSL triplets from CSS variables so canvas colors follow the theme
+    const rootStyle = getComputedStyle(document.documentElement);
+    const tokenHsl = (name: string, fallback: string) => {
+      const v = rootStyle.getPropertyValue(name).trim();
+      return v || fallback;
+    };
+    const accentHsl = tokenHsl('--accent', '28 40% 90%');
+    const primaryHsl = tokenHsl('--primary', '24 50% 30%');
+    const mutedFgHsl = tokenHsl('--muted-foreground', '28 13% 43%');
+    const mealDinnerHsl = tokenHsl('--meal-dinner', '14 64% 49%');
+    const hsla = (triplet: string, alpha: number) => `hsla(${triplet} / ${alpha})`;
+
     // Set canvas size
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -41,12 +53,12 @@ export function AnimatedBackground() {
         this.vy = (Math.random() - 0.5) * 0.5;
         this.size = Math.random() * 3 + 1;
         
-        // Color palette: subtle oranges, grays, and purples
+        // Color palette: theme-token-derived warm/neutral tones
         const colors = [
-          'rgba(251, 146, 60, 0.6)',  // orange-400
-          'rgba(249, 115, 22, 0.6)',  // orange-500
-          'rgba(168, 85, 247, 0.4)',  // purple-500
-          'rgba(156, 163, 175, 0.4)',  // gray-400
+          hsla(mealDinnerHsl, 0.6),  // meal-dinner (terracotta)
+          hsla(primaryHsl, 0.6),     // primary (espresso)
+          hsla(accentHsl, 0.4),      // accent
+          hsla(mutedFgHsl, 0.4),     // muted-foreground
         ];
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.opacity = Math.random() * 0.5 + 0.3;
@@ -100,7 +112,7 @@ export function AnimatedBackground() {
             ctx.lineTo(particles[j].x, particles[j].y);
             
             const opacity = (1 - distance / connectionDistance) * 0.15;
-            ctx.strokeStyle = `rgba(251, 146, 60, ${opacity})`;
+            ctx.strokeStyle = hsla(mealDinnerHsl, opacity);
             ctx.lineWidth = 1;
             ctx.stroke();
           }
@@ -123,7 +135,7 @@ export function AnimatedBackground() {
       const x1 = canvas.width * 0.2 + Math.sin(time) * 50;
       const y1 = canvas.height * 0.3 + Math.cos(time) * 50;
       ctx.arc(x1, y1, 200, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(251, 146, 60, 1)';
+      ctx.strokeStyle = hsla(mealDinnerHsl, 1);
       ctx.lineWidth = 2;
       ctx.stroke();
 
@@ -132,7 +144,7 @@ export function AnimatedBackground() {
       const x2 = canvas.width * 0.8 + Math.cos(time * 0.7) * 30;
       const y2 = canvas.height * 0.7 + Math.sin(time * 0.7) * 30;
       ctx.arc(x2, y2, 150, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(168, 85, 247, 1)';
+      ctx.strokeStyle = hsla(primaryHsl, 1);
       ctx.lineWidth = 2;
       ctx.stroke();
 
@@ -144,7 +156,7 @@ export function AnimatedBackground() {
       ctx.lineTo(tx - 25, ty + 20);
       ctx.lineTo(tx + 25, ty + 20);
       ctx.closePath();
-      ctx.strokeStyle = 'rgba(249, 115, 22, 1)';
+      ctx.strokeStyle = hsla(mealDinnerHsl, 1);
       ctx.lineWidth = 2;
       ctx.stroke();
 
@@ -184,8 +196,8 @@ export function AnimatedBackground() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ 
-        background: 'linear-gradient(135deg, #ffffff 0%, #fef3f2 50%, #faf5ff 100%)',
+      style={{
+        background: 'linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--accent)) 50%, hsl(var(--muted)) 100%)',
         zIndex: 0
       }}
     />

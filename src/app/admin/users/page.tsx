@@ -277,12 +277,12 @@ export default function UserManagementPage() {
 
   const getRoleBadgeColor = (role: UserRole) => {
     const colors: Record<UserRole, string> = {
-      USER: 'bg-gray-100 text-gray-800',
-      SUPPORT_ADMIN: 'bg-blue-100 text-blue-800',
-      CONTENT_ADMIN: 'bg-purple-100 text-purple-800',
-      SUPER_ADMIN: 'bg-red-100 text-red-800',
+      USER: 'bg-muted text-muted-foreground',
+      SUPPORT_ADMIN: 'bg-info-muted text-info',
+      CONTENT_ADMIN: 'bg-info-muted text-info',
+      SUPER_ADMIN: 'bg-danger-muted text-danger',
     };
-    return colors[role] || 'bg-gray-100 text-gray-800';
+    return colors[role] || 'bg-muted text-muted-foreground';
   };
 
   if (loading || !user) {
@@ -461,11 +461,11 @@ export default function UserManagementPage() {
                           </TableCell>
                           <TableCell>
                             {u.isActive ? (
-                              <Badge className='bg-green-100 text-green-800'>
+                              <Badge variant='success'>
                                 Active
                               </Badge>
                             ) : (
-                              <Badge className='bg-gray-100 text-gray-800'>
+                              <Badge className='bg-muted text-muted-foreground'>
                                 Inactive
                               </Badge>
                             )}

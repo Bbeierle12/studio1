@@ -22,39 +22,39 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
           <h2 className="text-2xl font-bold">{recipe.name || 'Untitled Recipe'}</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-muted rounded-lg transition-colors"
           >
             ?
           </button>
         </div>
-        
+
         {recipe.description && (
-          <p className="text-gray-600 mb-4">{recipe.description}</p>
+          <p className="text-muted-foreground mb-4">{recipe.description}</p>
         )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-3">
           {recipe.prepTime && (
             <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-gray-400" />
+              <Clock className="w-4 h-4 text-muted-foreground" />
               <span>Prep: {recipe.prepTime} min</span>
             </div>
           )}
           {recipe.cookTime && (
             <div className="flex items-center gap-2 text-sm">
-              <Flame className="w-4 h-4 text-gray-400" />
+              <Flame className="w-4 h-4 text-muted-foreground" />
               <span>Cook: {recipe.cookTime} min</span>
             </div>
           )}
           {recipe.servings && (
             <div className="flex items-center gap-2 text-sm">
-              <Users className="w-4 h-4 text-gray-400" />
+              <Users className="w-4 h-4 text-muted-foreground" />
               <span>{recipe.servings} servings</span>
             </div>
           )}
           {recipe.difficulty && (
             <div className="flex items-center gap-2 text-sm">
-              <ChefHat className="w-4 h-4 text-gray-400" />
+              <ChefHat className="w-4 h-4 text-muted-foreground" />
               <span>{recipe.difficulty}</span>
             </div>
           )}
@@ -69,8 +69,8 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
             onClick={() => setActiveTab(tab as any)}
             className={`flex-1 py-3 capitalize transition-colors ${
               activeTab === tab
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab}
@@ -92,7 +92,7 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
                 <h3 className="font-semibold">Ingredients</h3>
                 <button
                   onClick={() => onEdit('ingredients')}
-                  className="text-sm text-blue-500 hover:text-blue-600"
+                  className="text-sm text-primary hover:text-primary"
                 >
                   Edit
                 </button>
@@ -105,14 +105,14 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
                       <span>
                         {ingredient.amount} {ingredient.unit} {ingredient.name}
                         {ingredient.preparation && (
-                          <span className="text-gray-500">, {ingredient.preparation}</span>
+                          <span className="text-muted-foreground">, {ingredient.preparation}</span>
                         )}
                       </span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-500">No ingredients added yet</p>
+                <p className="text-muted-foreground">No ingredients added yet</p>
               )}
             </motion.div>
           )}
@@ -128,7 +128,7 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
                 <h3 className="font-semibold">Instructions</h3>
                 <button
                   onClick={() => onEdit('instructions')}
-                  className="text-sm text-blue-500 hover:text-blue-600"
+                  className="text-sm text-primary hover:text-primary"
                 >
                   Edit
                 </button>
@@ -137,13 +137,13 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
                 <ol className="space-y-3">
                   {recipe.instructions.map((step: any, index: number) => (
                     <li key={index} className="flex gap-3">
-                      <span className="flex-shrink-0 w-7 h-7 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                      <span className="flex-shrink-0 w-7 h-7 bg-info-muted text-info rounded-full flex items-center justify-center text-sm font-semibold">
                         {index + 1}
                       </span>
                       <div>
                         <p>{step.instruction}</p>
                         {step.duration && (
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-muted-foreground">
                             Time: {step.duration} minutes
                           </span>
                         )}
@@ -152,7 +152,7 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
                   ))}
                 </ol>
               ) : (
-                <p className="text-gray-500">No instructions added yet</p>
+                <p className="text-muted-foreground">No instructions added yet</p>
               )}
             </motion.div>
           )}
@@ -168,7 +168,7 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
                 <h3 className="font-semibold">Nutrition Info</h3>
                 <button
                   onClick={() => onEdit('nutrition')}
-                  className="text-sm text-blue-500 hover:text-blue-600"
+                  className="text-sm text-primary hover:text-primary"
                 >
                   Calculate
                 </button>
@@ -193,7 +193,7 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-500">Nutrition info not calculated yet</p>
+                <p className="text-muted-foreground">Nutrition info not calculated yet</p>
               )}
             </motion.div>
           )}
@@ -202,10 +202,10 @@ export function RecipePreview({ recipe, onClose, onEdit }: RecipePreviewProps) {
 
       {/* Action Buttons */}
       <div className="p-4 border-t space-y-2">
-        <button className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+        <button className="w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary transition-colors">
           Save Recipe
         </button>
-        <button className="w-full py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+        <button className="w-full py-2 border border-border rounded-lg hover:bg-muted transition-colors">
           Export as PDF
         </button>
       </div>

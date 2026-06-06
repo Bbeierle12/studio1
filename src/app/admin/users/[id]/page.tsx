@@ -124,8 +124,8 @@ export default function UserDetailsPage() {
               <Badge
                 className={
                   userDetails.isActive
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
+                    ? 'bg-success-muted text-success'
+                    : 'bg-muted text-muted-foreground'
                 }
               >
                 {userDetails.isActive ? 'Active' : 'Inactive'}
@@ -141,7 +141,7 @@ export default function UserDetailsPage() {
           </div>
 
           <div className='flex flex-col items-end gap-2'>
-            <Badge className='bg-purple-100 text-purple-800'>
+            <Badge variant='info'>
               <Shield className='h-3 w-3 mr-1' />
               {ROLE_LABELS[userDetails.role]}
             </Badge>

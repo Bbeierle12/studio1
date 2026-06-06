@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { RecipeImageFallback } from '@/components/recipe-image-fallback';
 
 type RecipeCardProps = {
   recipe: Recipe;
@@ -27,14 +28,18 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         </CardHeader>
         <CardContent className='flex-grow p-0'>
           <div className='aspect-video overflow-hidden'>
-            <Image
-              src='https://placehold.co/600x400/FFFFFF/FFFFFF'
-              alt={recipe.title}
-              width={600}
-              height={400}
-              data-ai-hint={recipe.imageHint}
-              className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-            />
+            {recipe.imageUrl ? (
+              <Image
+                src={recipe.imageUrl}
+                alt={recipe.title}
+                width={600}
+                height={400}
+                data-ai-hint={recipe.imageHint}
+                className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
+              />
+            ) : (
+              <RecipeImageFallback className='h-full w-full transition-transform duration-300 group-hover:scale-105' />
+            )}
           </div>
           <p className='mt-4 px-6 text-sm text-muted-foreground line-clamp-3'>
             {recipe.summary}

@@ -240,20 +240,20 @@ export function UnifiedRecipeForm() {
     <>
       <Card className="p-6">
         {helperSource && (
-          <div className="mb-6 rounded-lg border border-blue-500/50 bg-blue-500/10 p-4">
+          <div className="mb-6 rounded-lg border border-info/50 bg-info-muted p-4">
             <div className="flex items-start gap-3">
               {helperSource === 'ai' ? (
-                <Sparkles className="h-5 w-5 text-blue-400 mt-0.5" />
+                <Sparkles className="h-5 w-5 text-info mt-0.5" />
               ) : (
-                <Globe className="h-5 w-5 text-blue-400 mt-0.5" />
+                <Globe className="h-5 w-5 text-info mt-0.5" />
               )}
               <div>
-                <p className="text-sm font-medium text-blue-300">
-                  {helperSource === 'ai' 
-                    ? 'Recipe generated with AI' 
+                <p className="text-sm font-medium text-info">
+                  {helperSource === 'ai'
+                    ? 'Recipe generated with AI'
                     : 'Recipe imported from URL'}
                 </p>
-                <p className="text-xs text-blue-300/70 mt-1">
+                <p className="text-xs text-info/70 mt-1">
                   Review and edit any fields as needed before saving
                 </p>
               </div>
@@ -679,9 +679,9 @@ export function UnifiedRecipeForm() {
             </div>
 
             {!title && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/50">
-                <AlertCircle className="h-4 w-4 text-yellow-500" />
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-warning-muted border border-warning/50">
+                <AlertCircle className="h-4 w-4 text-warning" />
+                <p className="text-xs text-warning">
                   Please enter a recipe title
                 </p>
               </div>

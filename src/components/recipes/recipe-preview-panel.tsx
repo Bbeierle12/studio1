@@ -150,7 +150,7 @@ export function RecipePreviewPanel({
         </div>
         <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-orange-400 to-orange-600 transition-all duration-500"
+            className="h-full bg-gradient-to-r from-meal-dinner/70 to-meal-dinner transition-all duration-500"
             style={{ width: `${completionPercentage()}%` }}
           />
         </div>
@@ -163,7 +163,7 @@ export function RecipePreviewPanel({
           {recipeData.title ? (
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
                 <h4 className="font-semibold text-lg">{recipeData.title}</h4>
               </div>
             </div>
@@ -209,7 +209,7 @@ export function RecipePreviewPanel({
           <div>
             <h5 className="font-semibold mb-2 flex items-center gap-2">
               {recipeData.ingredients.length > 0 ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               ) : (
                 <AlertCircle className="h-4 w-4 text-muted-foreground" />
               )}
@@ -237,7 +237,7 @@ export function RecipePreviewPanel({
           <div>
             <h5 className="font-semibold mb-2 flex items-center gap-2">
               {recipeData.instructions.length > 0 ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               ) : (
                 <AlertCircle className="h-4 w-4 text-muted-foreground" />
               )}

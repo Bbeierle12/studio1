@@ -44,9 +44,9 @@ export function ConnectionStatus() {
       <Toast>
         <div className="flex items-center gap-2">
           {online ? (
-            <Wifi className="h-5 w-5 text-green-500" />
+            <Wifi className="h-5 w-5 text-success" />
           ) : (
-            <WifiOff className="h-5 w-5 text-red-500" />
+            <WifiOff className="h-5 w-5 text-danger" />
           )}
           <div>
             <ToastTitle>

@@ -41,7 +41,7 @@ export function SaveRecipeButton({ recipe }: SaveRecipeButtonProps) {
     <Button onClick={handleToggle} variant='outline' size='sm'>
       {saved ? (
         <>
-          <BookmarkCheck className='mr-2 h-4 w-4 text-green-500' />
+          <BookmarkCheck className='mr-2 h-4 w-4 text-success' />
           Saved
         </>
       ) : (

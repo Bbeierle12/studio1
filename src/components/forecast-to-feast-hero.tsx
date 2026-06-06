@@ -76,12 +76,12 @@ export default function ForecastToFeastHero({ className = '' }: ForecastToFeastH
 
   if (error || !weatherContext) {
     return (
-      <div className={`bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-8 ${className}`}>
-        <div className="flex items-center gap-3 text-orange-600 mb-4">
+      <div className={`bg-background bg-[radial-gradient(120%_90%_at_80%_0%,hsl(var(--meal-dinner)/0.12)_0%,transparent_55%)] rounded-xl p-8 ${className}`}>
+        <div className="flex items-center gap-3 text-warning mb-4">
           <AlertCircle className="w-6 h-6" />
           <h2 className="text-xl font-semibold">Weather Data Unavailable</h2>
         </div>
-        <p className="text-gray-600 mb-6">
+        <p className="text-muted-foreground mb-6">
           We couldn&apos;t get current weather conditions for personalized recommendations.
           Browse our recipe collection instead!
         </p>
@@ -93,30 +93,30 @@ export default function ForecastToFeastHero({ className = '' }: ForecastToFeastH
 
   return (
     <div className={`
-      bg-gradient-to-br from-blue-50 via-white to-orange-50 
-      rounded-xl p-6 lg:p-8 border border-gray-100 shadow-lg
+      bg-card bg-[radial-gradient(120%_90%_at_80%_0%,hsl(var(--meal-dinner)/0.12)_0%,transparent_55%)]
+      rounded-xl p-6 lg:p-8 border border-border shadow-lg
       ${className}
     `}>
       {/* Header with Weather Summary */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
             Forecast-to-Feast
           </h1>
           <div className="text-right">
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-muted-foreground">
               {weatherContext.date.toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 month: 'long', 
                 day: 'numeric' 
               })}
             </div>
-            <div className="text-xs text-gray-400 capitalize">
+            <div className="text-xs text-muted-foreground capitalize">
               {weatherContext.season} • {weatherContext.location.city}
             </div>
           </div>
         </div>
-        <p className="text-lg text-gray-600 mb-4">
+        <p className="text-lg text-muted-foreground mb-4">
           {weatherSummary}
         </p>
         
@@ -130,8 +130,8 @@ export default function ForecastToFeastHero({ className = '' }: ForecastToFeastH
       {/* Recipe Recommendations */}
       <div className="space-y-6">
         <div className="flex items-center gap-2 mb-4">
-          <ChefHat className="w-5 h-5 text-orange-500" />
-          <h2 className="text-lg font-semibold text-gray-900">
+          <ChefHat className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">
             Perfect for Right Now
           </h2>
         </div>
@@ -148,10 +148,10 @@ export default function ForecastToFeastHero({ className = '' }: ForecastToFeastH
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               No recipes match the current weather conditions.
             </p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Try browsing our full recipe collection instead.
             </p>
           </div>
@@ -160,14 +160,14 @@ export default function ForecastToFeastHero({ className = '' }: ForecastToFeastH
         {/* Weather & Seasonal Explanation */}
         {recommendations.length > 0 && (
           <div className="space-y-4">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="bg-warning-muted border border-warning/30 rounded-lg p-4">
               <div className="flex items-start gap-3">
-                <Lightbulb className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                <Lightbulb className="w-5 h-5 text-warning mt-0.5 flex-shrink-0" />
                 <div>
-                  <h3 className="font-medium text-amber-900 mb-1">
+                  <h3 className="font-medium text-warning mb-1">
                     Why we&apos;re suggesting {recommendations[0].recipe.title}?
                   </h3>
-                  <p className="text-sm text-amber-800">
+                  <p className="text-sm text-warning">
                     {recommendations[0].reason}. Our algorithm considers temperature, 
                     precipitation, wind, air quality, time of day, and seasonal produce 
                     to suggest the most suitable cooking methods and ingredients.
@@ -177,14 +177,14 @@ export default function ForecastToFeastHero({ className = '' }: ForecastToFeastH
             </div>
             
             {/* Seasonal Produce Info */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-success-muted border border-success/30 rounded-lg p-4">
               <div className="flex items-start gap-3">
-                <div className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0">🌱</div>
+                <div className="w-5 h-5 text-success mt-0.5 flex-shrink-0">🌱</div>
                 <div>
-                  <h3 className="font-medium text-green-900 mb-1">
+                  <h3 className="font-medium text-success mb-1">
                     What&apos;s in Season Now ({weatherContext.season})
                   </h3>
-                  <p className="text-sm text-green-800">
+                  <p className="text-sm text-success">
                     Peak season: {getSeasonalProduce(weatherContext.season, weatherContext.month)}.
                     Perfect time to enjoy the freshest flavors at their best quality and price!
                   </p>
@@ -216,9 +216,9 @@ function RecommendationCard({
       <div className="absolute top-2 right-2 z-10">
         <div className={`
           px-2 py-1 rounded-full text-xs font-medium
-          ${confidence >= 0.8 ? 'bg-green-100 text-green-700' :
-            confidence >= 0.6 ? 'bg-yellow-100 text-yellow-700' :
-            'bg-gray-100 text-gray-600'}
+          ${confidence >= 0.8 ? 'bg-success-muted text-success' :
+            confidence >= 0.6 ? 'bg-warning-muted text-warning' :
+            'bg-muted text-muted-foreground'}
         `}>
           {Math.round(confidence * 100)}% match
         </div>
@@ -232,13 +232,13 @@ function RecommendationCard({
         {tags.slice(0, 3).map((tag) => (
           <span
             key={tag}
-            className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
+            className="px-2 py-1 bg-info-muted text-info rounded-full text-xs font-medium"
           >
             {tag}
           </span>
         ))}
         {tags.length > 3 && (
-          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+          <span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
             +{tags.length - 3} more
           </span>
         )}
@@ -253,47 +253,47 @@ function RecommendationCard({
 export function ForecastToFeastHeroSkeleton({ className = '' }: { className?: string }) {
   return (
     <div className={`
-      bg-gradient-to-br from-gray-50 to-gray-100 
-      rounded-xl p-6 lg:p-8 border border-gray-200 animate-pulse
+      bg-muted
+      rounded-xl p-6 lg:p-8 border border-border animate-pulse
       ${className}
     `}>
       {/* Header skeleton */}
       <div className="mb-6">
-        <div className="h-8 w-64 bg-gray-300 rounded mb-2" />
-        <div className="h-6 w-80 bg-gray-300 rounded mb-4" />
+        <div className="h-8 w-64 bg-muted rounded mb-2" />
+        <div className="h-6 w-80 bg-muted rounded mb-4" />
         <WeatherBarometerSkeleton className="mb-4" />
       </div>
 
       {/* Recommendations skeleton */}
       <div className="space-y-6">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-5 h-5 bg-gray-300 rounded" />
-          <div className="h-6 w-40 bg-gray-300 rounded" />
+          <div className="w-5 h-5 bg-muted rounded" />
+          <div className="h-6 w-40 bg-muted rounded" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="space-y-2">
-              <div className="h-40 bg-gray-300 rounded-lg" />
-              <div className="h-4 w-3/4 bg-gray-300 rounded" />
-              <div className="h-4 w-1/2 bg-gray-300 rounded" />
+              <div className="h-40 bg-muted rounded-lg" />
+              <div className="h-4 w-3/4 bg-muted rounded" />
+              <div className="h-4 w-1/2 bg-muted rounded" />
               <div className="flex gap-1">
-                <div className="h-6 w-12 bg-gray-300 rounded-full" />
-                <div className="h-6 w-16 bg-gray-300 rounded-full" />
+                <div className="h-6 w-12 bg-muted rounded-full" />
+                <div className="h-6 w-16 bg-muted rounded-full" />
               </div>
             </div>
           ))}
         </div>
 
         {/* Explanation skeleton */}
-        <div className="bg-gray-100 border border-gray-200 rounded-lg p-4">
+        <div className="bg-muted border border-border rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <div className="w-5 h-5 bg-gray-300 rounded mt-0.5" />
+            <div className="w-5 h-5 bg-muted rounded mt-0.5" />
             <div className="flex-1">
-              <div className="h-5 w-32 bg-gray-300 rounded mb-2" />
+              <div className="h-5 w-32 bg-muted rounded mb-2" />
               <div className="space-y-2">
-                <div className="h-4 w-full bg-gray-300 rounded" />
-                <div className="h-4 w-3/4 bg-gray-300 rounded" />
+                <div className="h-4 w-full bg-muted rounded" />
+                <div className="h-4 w-3/4 bg-muted rounded" />
               </div>
             </div>
           </div>

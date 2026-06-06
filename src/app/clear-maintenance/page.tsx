@@ -19,10 +19,10 @@ export default function ClearMaintenancePage() {
   }, [router]);
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex h-screen items-center justify-center bg-background">
       <Card className="w-96 shadow-xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-600">
+          <CardTitle className="flex items-center gap-2 text-success">
             <CheckCircle className="h-6 w-6" />
             Maintenance Cookie Cleared!
           </CardTitle>

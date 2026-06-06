@@ -18,12 +18,12 @@ interface Point {
 }
 
 const DIMENSIONS = [
-  { key: 'spice', label: 'Spice 🌶️', color: '#EF4444' },
-  { key: 'acid', label: 'Acid 🍋', color: '#EAB308' },
-  { key: 'fat', label: 'Fat 🧈', color: '#F59E0B' },
-  { key: 'umami', label: 'Umami 🍄', color: '#10B981' },
-  { key: 'sweet', label: 'Sweet 🍯', color: '#EC4899' },
-  { key: 'bitter', label: 'Bitter 🌿', color: '#8B5CF6' },
+  { key: 'spice', label: 'Spice 🌶️', color: 'hsl(var(--chart-1))' },
+  { key: 'acid', label: 'Acid 🍋', color: 'hsl(var(--chart-2))' },
+  { key: 'fat', label: 'Fat 🧈', color: 'hsl(var(--chart-3))' },
+  { key: 'umami', label: 'Umami 🍄', color: 'hsl(var(--chart-4))' },
+  { key: 'sweet', label: 'Sweet 🍯', color: 'hsl(var(--chart-5))' },
+  { key: 'bitter', label: 'Bitter 🌿', color: 'hsl(var(--chart-1))' },
 ] as const;
 
 export const FlavorRadar: React.FC<FlavorRadarProps> = ({
@@ -72,7 +72,7 @@ export const FlavorRadar: React.FC<FlavorRadarProps> = ({
           cy={center}
           r={radius}
           fill="none"
-          stroke="#E5E7EB"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           opacity="0.5"
         />
@@ -91,7 +91,7 @@ export const FlavorRadar: React.FC<FlavorRadarProps> = ({
           y1={center}
           x2={x}
           y2={y}
-          stroke="#E5E7EB"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           opacity="0.5"
         />
@@ -132,17 +132,16 @@ export const FlavorRadar: React.FC<FlavorRadarProps> = ({
         {/* Flavor profile polygon */}
         <path
           d={profilePath}
-          fill="url(#flavorGradient)"
-          fillOpacity="0.3"
-          stroke="#3B82F6"
+          fill="hsl(var(--primary) / 0.2)"
+          stroke="hsl(var(--primary))"
           strokeWidth="2"
         />
 
         {/* Gradient definition */}
         <defs>
           <linearGradient id="flavorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#3B82F6" />
-            <stop offset="100%" stopColor="#8B5CF6" />
+            <stop offset="0%" stopColor="hsl(var(--primary))" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" />
           </linearGradient>
         </defs>
 
@@ -156,7 +155,7 @@ export const FlavorRadar: React.FC<FlavorRadarProps> = ({
                 cy={point.y}
                 r="6"
                 fill={dim.color}
-                stroke="white"
+                stroke="hsl(var(--background))"
                 strokeWidth="2"
                 className={interactive ? 'cursor-pointer' : ''}
                 onClick={(e) => handleDimensionClick(dim.key, e)}
@@ -189,7 +188,7 @@ export const FlavorRadar: React.FC<FlavorRadarProps> = ({
               y={y}
               textAnchor="middle"
               dominantBaseline="middle"
-              className="text-sm font-medium fill-gray-700"
+              className="text-sm font-medium fill-muted-foreground"
             >
               {dim.label}
             </text>
@@ -211,7 +210,7 @@ export const FlavorRadar: React.FC<FlavorRadarProps> = ({
               y={y}
               textAnchor="middle"
               dominantBaseline="middle"
-              className="text-xs fill-gray-500"
+              className="text-xs fill-muted-foreground"
             >
               {value}/5
             </text>
@@ -241,7 +240,7 @@ export const FlavorRadar: React.FC<FlavorRadarProps> = ({
                     accentColor: dim.color,
                   }}
                 />
-                <span className="text-sm text-gray-600 w-8 text-right">{value}/5</span>
+                <span className="text-sm text-muted-foreground w-8 text-right">{value}/5</span>
               </div>
             );
           })}
@@ -293,8 +292,8 @@ export const FlavorPresetSelector: React.FC<FlavorPresetSelectorProps> = ({
             onClick={() => onSelect(dimensions)}
             className={`p-3 rounded-lg border text-sm transition-all ${
               isSelected
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                ? 'border-info bg-info-muted text-info'
+                : 'border-border hover:border-border text-muted-foreground'
             }`}
           >
             <div className="font-medium">{presetNames[key]}</div>
@@ -306,7 +305,7 @@ export const FlavorPresetSelector: React.FC<FlavorPresetSelectorProps> = ({
                     <span
                       key={dim.key}
                       className="text-xs px-1.5 py-0.5 rounded"
-                      style={{ backgroundColor: `${dim.color}20`, color: dim.color }}
+                      style={{ backgroundColor: dim.color.replace('))', ') / 0.125)'), color: dim.color }}
                     >
                       {dim.label.split(' ')[0]}
                     </span>
