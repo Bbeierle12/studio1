@@ -94,7 +94,7 @@ describe('Calendar Utilities', () => {
     });
 
     it('should return correct week for dates at boundaries', () => {
-      const sunday = new Date('2024-01-07');
+      const sunday = new Date(2024, 0, 7); // Sunday — local-time constructor (TZ-independent)
       const { weekStart } = getWeekBoundaries(sunday);
       expect(weekStart.getDate()).toBe(7);
     });
@@ -429,11 +429,11 @@ describe('Calendar Utilities', () => {
     });
 
     it('should return all meals for a specific date', () => {
-      const targetDate = new Date('2024-01-10');
+      const targetDate = new Date(2024, 0, 10);
       const meals = [
-        createMeal(new Date('2024-01-10'), 'BREAKFAST'),
-        createMeal(new Date('2024-01-10'), 'LUNCH'),
-        createMeal(new Date('2024-01-11'), 'DINNER'),
+        createMeal(new Date(2024, 0, 10), 'BREAKFAST'), // local-time constructor (TZ-independent)
+        createMeal(new Date(2024, 0, 10), 'LUNCH'),
+        createMeal(new Date(2024, 0, 11), 'DINNER'),
       ];
       
       const result = getMealsForDay(targetDate, meals);
