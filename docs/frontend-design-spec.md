@@ -1,4 +1,4 @@
-# Frontend Design Handoff Spec — "Our Family Table"
+Merge# Frontend Design Handoff Spec — "Our Family Table"
 
 **Repo:** `/home/bbeierle12/studio1` · **Live:** craicnkuche.com (Vercel)
 **Stack:** Next.js 15 (App Router) · React 18 · TypeScript · Tailwind CSS 3 · shadcn/ui + Radix · lucide-react · framer-motion · next-themes
