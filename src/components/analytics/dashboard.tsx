@@ -26,6 +26,8 @@ import { RecommendationsPanel } from './recommendations-panel'
 
 type DateRangePreset = '7d' | '14d' | '30d' | '90d' | 'custom'
 
+import { DateRange } from 'react-day-picker';
+
 export function AnalyticsDashboard() {
   const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('30d')
   const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>()
@@ -130,7 +132,7 @@ export function AnalyticsDashboard() {
                 <Calendar
                   mode="range"
                   selected={customDateRange}
-                  onSelect={setCustomDateRange}
+                  onSelect={(range: DateRange | undefined) => setCustomDateRange(range as any)}
                   initialFocus
                 />
               </PopoverContent>

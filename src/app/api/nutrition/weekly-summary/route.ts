@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
         startDate: { lte: weekEnd },
         OR: [
           { endDate: { gte: weekStart } },
-          { endDate: null },
+          { endDate: undefined },
         ],
       },
       include: {
@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
         startDate: { lte: weekEnd },
         OR: [
           { endDate: { gte: weekStart } },
-          { endDate: null },
+          { endDate: undefined },
         ],
       },
     });

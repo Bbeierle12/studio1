@@ -227,7 +227,7 @@ export function AddMealDialog({
               
               <TabsContent value="recipe" className="mt-4">
                 <RecipeSelector
-                  recipes={recipes}
+                  recipes={recipes as any}
                   onSelect={handleRecipeSelect}
                   selectedRecipeId={selectedRecipe?.id}
                 />
@@ -242,7 +242,7 @@ export function AddMealDialog({
               <TabsContent value="suggested" className="mt-4">
                 {weather ? (
                   <WeatherSuggestions
-                    recipes={recipes}
+                    recipes={recipes as any}
                     weather={{
                       temperature: weather.temperature.current || weather.temperature.high,
                       condition: weather.condition,
@@ -251,7 +251,7 @@ export function AddMealDialog({
                     }}
                     mealType={mealType}
                     onSelectRecipe={(recipe) => {
-                      setSelectedRecipe(recipe);
+                      setSelectedRecipe(recipe as any);
                       setActiveTab('recipe');
                       if (recipe.servings) {
                         setServings(recipe.servings);

@@ -621,19 +621,19 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
           <div className="fixed top-20 left-6 z-50">
             <Button
               onClick={toggleMinimized}
-              className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-br from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white transition-all duration-300 hover:scale-110"
+              className="h-16 w-16 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-white transition-all duration-300 hover:scale-110"
             >
               <MessageSquare className="h-8 w-8" />
             </Button>
             
             {/* Pulsing indicator when listening */}
             {isListening && (
-              <div className="absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-75" />
+              <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
             )}
             
             {/* Badge for weather-aware mode */}
             {weather && (
-              <Badge className="absolute -top-2 -right-2 bg-blue-500 text-white border-2 border-white">
+              <Badge className="absolute -top-2 -right-2 bg-info text-white border-2 border-white">
                 {Math.round(weather.temperature)}°
               </Badge>
             )}
@@ -642,10 +642,10 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
 
         {/* Minimized Widget */}
         {!isMinimized && (
-          <div className="fixed top-20 left-6 z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-4 w-80 border-2 border-orange-500">
+          <div className="fixed top-20 left-6 z-50 bg-card rounded-2xl shadow-2xl p-4 w-80 border-2 border-primary">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-lg flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-orange-500" />
+                <MessageSquare className="h-5 w-5 text-primary" />
                 Cooking Assistant
               </h3>
               <div className="flex gap-1">
@@ -668,14 +668,14 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
             </div>
             
             {weather && (
-              <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
+              <div className="mb-3 p-2 bg-info-muted rounded-lg">
+                <p className="text-sm text-info">
                   🌤️ {Math.round(weather.temperature)}°F - {weather.condition}
                 </p>
               </div>
             )}
             
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-sm text-muted-foreground mb-3">
               I'm your cooking assistant! I can help with timers, reading recipes, unit conversions, and cooking tips.
               {weather && " I can also suggest recipes based on today's weather!"}
             </p>
@@ -700,14 +700,14 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
                     setIsMinimized(false);
                     handleVoiceCommand("what should i cook today");
                   }}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                  className="w-full bg-info hover:bg-info/90 text-white"
                 >
                   🌤️ Get Weather Recipe Ideas
                 </Button>
               )}
             </div>
             
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+            <p className="text-xs text-muted-foreground mt-3">
               Try: "Set timer for 15 minutes", "Read ingredients", "Convert 2 cups to tablespoons", "What should I cook today?"
             </p>
           </div>
@@ -717,12 +717,12 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
   }
 
   return (
-    <div className="fixed top-20 left-6 z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border-2 border-orange-500">
+    <div className="fixed top-20 left-6 z-50 bg-card rounded-2xl shadow-2xl border-2 border-primary">
       <div className="w-96 max-h-[600px] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className={`h-3 w-3 rounded-full ${isListening ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`} />
+            <div className={`h-3 w-3 rounded-full ${isListening ? 'bg-danger animate-pulse' : 'bg-success'}`} />
             <h3 className="font-semibold text-lg">Cooking Assistant</h3>
           </div>
           <div className="flex gap-1">
@@ -746,17 +746,17 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
 
         {/* Weather Info Bar */}
         {weather && (
-          <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-orange-50 dark:from-blue-900/20 dark:to-orange-900/20 border-b border-gray-200 dark:border-gray-700">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="px-4 py-2 bg-info-muted border-b border-border">
+            <p className="text-sm font-medium text-muted-foreground">
               🌤️ {Math.round(weather.temperature)}°F - {weather.condition}
-              <Badge className="ml-2 bg-orange-500 text-white text-xs">Weather-Aware</Badge>
+              <Badge className="ml-2 bg-primary text-white text-xs">Weather-Aware</Badge>
             </p>
           </div>
         )}
 
         {/* Conversation Display */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-96">
-          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <div className="text-sm font-semibold text-muted-foreground mb-2">
             Conversation
           </div>
           {messages.slice(-5).map((message: AssistantMessage, index: number) => (
@@ -764,8 +764,8 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
               key={index}
               className={`p-4 rounded-lg shadow-sm max-w-[90%] ${
                 message.type === 'user'
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 ml-0'
-                  : 'bg-green-100 dark:bg-green-900 text-green-900 dark:text-green-100 ml-0'
+                  ? 'bg-primary text-primary-foreground ml-0'
+                  : 'bg-card text-foreground border border-border ml-0'
               }`}
             >
               <p className="text-sm font-medium mb-1">
@@ -775,20 +775,20 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
             </div>
           ))}
           {currentTranscript && (
-            <div className="p-4 rounded-lg bg-gray-100 dark:bg-gray-700 max-w-[90%] ml-0">
-              <p className="text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">You (listening...)</p>
-              <p className="text-base text-gray-600 dark:text-gray-400">{currentTranscript}</p>
+            <div className="p-4 rounded-lg bg-muted max-w-[90%] ml-0">
+              <p className="text-sm font-medium mb-1 text-muted-foreground">You (listening...)</p>
+              <p className="text-base text-muted-foreground">{currentTranscript}</p>
             </div>
           )}
         </div>
 
         {/* Controls */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+        <div className="p-4 border-t border-border space-y-3">
           <div className="flex gap-2">
             <Button
               onClick={isListening ? stopListening : startListening}
               disabled={isSpeaking}
-              className={`flex-1 ${isListening ? 'bg-red-500 hover:bg-red-600' : ''}`}
+              className={`flex-1 ${isListening ? 'bg-danger hover:bg-danger/90' : ''}`}
             >
               {isListening ? (
                 <>
@@ -816,13 +816,13 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
           {weather && (
             <Button
               onClick={() => handleVoiceCommand("what should i cook today")}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+              className="w-full bg-info hover:bg-info/90 text-white"
             >
               🌤️ Get Recipe Suggestions
             </Button>
           )}
 
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="text-xs text-muted-foreground">
             <p className="font-semibold mb-1">Try saying:</p>
             <ul className="list-disc list-inside space-y-0.5">
               <li>"Set timer for 15 minutes"</li>

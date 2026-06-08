@@ -6,7 +6,7 @@ import { hasPermission } from '@/lib/admin-permissions';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +25,7 @@ export async function GET(
     }
 
     const recipe = await prisma.recipe.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         user: {
           select: {
@@ -62,7 +62,7 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -84,7 +84,7 @@ export async function PATCH(
 
     // Get the recipe before update for audit log
     const existingRecipe = await prisma.recipe.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       select: {
         title: true,
         course: true,
@@ -99,7 +99,7 @@ export async function PATCH(
 
     // Update recipe
     const updatedRecipe = await prisma.recipe.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: body,
       select: {
         id: true,
@@ -118,7 +118,7 @@ export async function PATCH(
         userId: adminUser.id,
         action: 'UPDATE',
         entityType: 'Recipe',
-        entityId: params.id,
+        entityId: (await params).id,
         changes: {
           before: existingRecipe,
           after: body,
@@ -140,7 +140,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -160,7 +160,7 @@ export async function DELETE(
 
     // Get recipe before deletion for audit log
     const recipe = await prisma.recipe.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       select: {
         title: true,
         slug: true,
@@ -179,7 +179,7 @@ export async function DELETE(
         userId: adminUser.id,
         action: 'DELETE',
         entityType: 'Recipe',
-        entityId: params.id,
+        entityId: (await params).id,
         changes: { deletedRecipe: recipe },
         ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
         userAgent: req.headers.get('user-agent') || 'unknown',
@@ -188,7 +188,7 @@ export async function DELETE(
 
     // Delete recipe (cascade will handle related records)
     await prisma.recipe.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ success: true });

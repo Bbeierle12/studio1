@@ -29,8 +29,17 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search') || '';
     const role = searchParams.get('role') as UserRole | null;
     const status = searchParams.get('status'); // 'active' | 'inactive' | null
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    // Allowlist sort fields/order — these flow into Prisma's orderBy, and an
+    // unrecognized field would throw a schema-leaking error.
+    const SORTABLE_FIELDS = [
+      'id', 'email', 'name', 'role', 'isActive',
+      'lastLogin', 'createdAt', 'updatedAt',
+    ] as const;
+    const requestedSortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortBy = (SORTABLE_FIELDS as readonly string[]).includes(requestedSortBy)
+      ? requestedSortBy
+      : 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc';
 
     const skip = (page - 1) * limit;
 

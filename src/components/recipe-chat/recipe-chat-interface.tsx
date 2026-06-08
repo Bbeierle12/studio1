@@ -197,15 +197,15 @@ export function RecipeChatInterface() {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-orange-50 via-white to-green-50">
+    <div className="flex h-screen bg-background bg-[radial-gradient(120%_90%_at_80%_0%,hsl(var(--meal-dinner)/0.12)_0%,transparent_55%)]">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b px-6 py-4">
+        <div className="bg-card shadow-sm border-b px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Recipe Creator AI</h1>
-              <p className="text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-foreground">Recipe Creator AI</h1>
+              <p className="text-sm text-muted-foreground">
                 {mode.replace('_', ' ').charAt(0).toUpperCase() + mode.slice(1).replace('_', ' ')}
               </p>
             </div>
@@ -213,7 +213,7 @@ export function RecipeChatInterface() {
               {currentRecipe && (
                 <button
                   onClick={() => setShowPreview(!showPreview)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary transition-colors"
                 >
                   {showPreview ? 'Hide' : 'Show'} Recipe
                 </button>
@@ -230,10 +230,10 @@ export function RecipeChatInterface() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-12"
             >
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+              <h2 className="text-3xl font-bold text-foreground mb-4">
                 Let's cook something amazing! 👨‍🍳
               </h2>
-              <p className="text-gray-600 mb-8">
+              <p className="text-muted-foreground mb-8">
                 I can help you create, modify, or discover recipes. What would you like to do?
               </p>
 
@@ -243,7 +243,7 @@ export function RecipeChatInterface() {
                   <button
                     key={action.mode}
                     onClick={() => handleQuickAction(action)}
-                    className="p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all text-left"
+                    className="p-4 bg-card rounded-xl shadow-md hover:shadow-lg transition-all text-left"
                   >
                     <div className="text-2xl mb-2">{action.icon}</div>
                     <div className="font-medium text-sm">{action.label}</div>
@@ -267,14 +267,14 @@ export function RecipeChatInterface() {
                 <div
                   className={`max-w-2xl p-4 rounded-2xl ${
                     message.role === 'user'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-white shadow-md border'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-card text-foreground border border-border shadow-md'
                   }`}
                 >
                   {message.role === 'assistant' && index === messages.length - 1 && (
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <span className="text-xs text-gray-500">Chef AI</span>
+                      <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                      <span className="text-xs text-muted-foreground">Chef AI</span>
                     </div>
                   )}
                   <div className="prose prose-sm max-w-none">
@@ -291,14 +291,14 @@ export function RecipeChatInterface() {
               animate={{ opacity: 1 }}
               className="flex justify-start"
             >
-              <div className="bg-white shadow-md border rounded-2xl p-4">
+              <div className="bg-card text-foreground border border-border shadow-md rounded-2xl p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                   </div>
-                  <span className="text-sm text-gray-500">Chef AI is thinking...</span>
+                  <span className="text-sm text-muted-foreground">Chef AI is thinking...</span>
                 </div>
               </div>
             </motion.div>
@@ -306,7 +306,7 @@ export function RecipeChatInterface() {
         </div>
 
         {/* Input Area */}
-        <div className="border-t bg-white p-4">
+        <div className="border-t bg-card p-4">
           {/* Contextual Suggestions */}
           {messages.length > 0 && (
             <div className="mb-3 flex gap-2 overflow-x-auto">
@@ -314,7 +314,7 @@ export function RecipeChatInterface() {
                 <button
                   key={suggestion}
                   onClick={() => handleSuggestion(suggestion)}
-                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm whitespace-nowrap transition-colors"
+                  className="px-3 py-1.5 bg-muted hover:bg-muted rounded-full text-sm whitespace-nowrap transition-colors"
                 >
                   {suggestion}
                 </button>
@@ -327,13 +327,13 @@ export function RecipeChatInterface() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask me anything about recipes..."
-              className="flex-1 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-50 transition-colors"
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary disabled:opacity-50 transition-colors"
             >
               Send
             </button>
@@ -349,7 +349,7 @@ export function RecipeChatInterface() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 20 }}
-            className="w-96 bg-white shadow-xl border-l overflow-y-auto"
+            className="w-96 bg-card shadow-xl border-l overflow-y-auto"
           >
             <RecipePreview
               recipe={currentRecipe}

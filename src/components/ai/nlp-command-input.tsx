@@ -88,13 +88,13 @@ export function NLPCommandInput({ onSuccess, placeholder }: NLPCommandInputProps
 
       {/* Results */}
       {result && (
-        <Card className={result.success ? 'border-green-500' : 'border-yellow-500'}>
+        <Card className={result.success ? 'border-success' : 'border-warning'}>
           <CardContent className="pt-6">
             <div className="space-y-3">
               {/* Clarification Needed */}
               {result.clarificationNeeded && result.question && (
                 <div className="flex items-start gap-2">
-                  <MessageSquare className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <MessageSquare className="h-5 w-5 text-warning mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-medium mb-1">Clarification Needed</p>
                     <p className="text-sm text-muted-foreground">{result.question}</p>
@@ -105,7 +105,7 @@ export function NLPCommandInput({ onSuccess, placeholder }: NLPCommandInputProps
               {/* Success Message */}
               {result.success && !result.clarificationNeeded && (
                 <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-medium mb-2">Command Processed Successfully</p>
                     {result.intent && (
@@ -118,9 +118,9 @@ export function NLPCommandInput({ onSuccess, placeholder }: NLPCommandInputProps
                         {result.results.map((actionResult, i) => (
                           <div key={i} className="flex items-center gap-2 text-sm">
                             {actionResult.success ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <CheckCircle2 className="h-4 w-4 text-success" />
                             ) : (
-                              <XCircle className="h-4 w-4 text-red-500" />
+                              <XCircle className="h-4 w-4 text-danger" />
                             )}
                             <span className="text-muted-foreground">
                               {actionResult.action === 'add' && actionResult.success && (

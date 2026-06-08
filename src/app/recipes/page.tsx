@@ -9,7 +9,9 @@ import { RecipeCollections } from '@/components/recipes/recipe-collections';
 import { RecipeDetailDrawer } from '@/components/recipes/recipe-detail-drawer';
 import { Book, Heart, ChefHat, Library, Grid, PlusCircle } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 function RecipeHubContent() {
   const searchParams = useSearchParams();
@@ -71,7 +73,7 @@ function RecipeHubContent() {
   };
 
   return (
-    <div className="container mx-auto py-6 px-4">
+    <div className="container mx-auto py-6 px-4 relative pb-24 md:pb-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
@@ -86,15 +88,15 @@ function RecipeHubContent() {
       {/* Tab Navigation */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 max-w-2xl">
-          <TabsTrigger value="browse" className="gap-2">
+          <TabsTrigger value="browse" className="gap-2 rounded-full">
             <Book className="h-4 w-4" />
             <span className="hidden sm:inline">Browse</span>
           </TabsTrigger>
-          <TabsTrigger value="add" className="gap-2">
+          <TabsTrigger value="add" className="gap-2 rounded-full">
             <PlusCircle className="h-4 w-4" />
             <span className="hidden sm:inline">Add Recipe</span>
           </TabsTrigger>
-          <TabsTrigger value="my-recipes" className="gap-2">
+          <TabsTrigger value="my-recipes" className="gap-2 rounded-full">
             <Heart className="h-4 w-4" />
             <span className="hidden sm:inline">My Recipes</span>
           </TabsTrigger>
@@ -105,11 +107,11 @@ function RecipeHubContent() {
             {/* Nested tabs for Browse: All Recipes and Collections */}
             <Tabs value={browseSubTab} onValueChange={handleBrowseSubTabChange}>
               <TabsList className="grid w-full grid-cols-2 max-w-xs">
-                <TabsTrigger value="all" className="gap-2">
+                <TabsTrigger value="all" className="gap-2 rounded-full">
                   <Grid className="h-4 w-4" />
                   <span>All Recipes</span>
                 </TabsTrigger>
-                <TabsTrigger value="collections" className="gap-2">
+                <TabsTrigger value="collections" className="gap-2 rounded-full">
                   <Library className="h-4 w-4" />
                   <span>Collections</span>
                 </TabsTrigger>
@@ -134,6 +136,23 @@ function RecipeHubContent() {
           </TabsContent>
         </Suspense>
       </Tabs>
+
+      {/* MD3 Floating Action Button (Mobile Only) */}
+      <div 
+        className={cn(
+          "fixed bottom-24 right-4 z-40 md:hidden transition-transform duration-300",
+          activeTab === 'add' ? "scale-0 pointer-events-none" : "scale-100"
+        )}
+      >
+        <Button 
+          size="icon" 
+          className="h-14 w-14 rounded-md3-xl shadow-md3-3 bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md3-4 transition-all duration-200"
+          onClick={() => handleTabChange('add')}
+        >
+          <PlusCircle className="h-6 w-6" />
+          <span className="sr-only">Add Recipe</span>
+        </Button>
+      </div>
 
       {/* Recipe Detail Drawer */}
       <RecipeDetailDrawer

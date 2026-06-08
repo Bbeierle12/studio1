@@ -28,7 +28,8 @@ enum HouseholdRole {
 model User {
   id                  String          @id @default(cuid())
   email               String          @unique
-  password            String
+  emailVerified       DateTime?
+  password            String?
   name                String?
   avatarUrl           String?
   bio                 String?
@@ -42,6 +43,8 @@ model User {
   twoFactorSecret     String?         // Encrypted TOTP secret for 2FA
   twoFactorEnabled    Boolean         @default(false)
   twoFactorVerifiedAt DateTime?       // Last 2FA verification timestamp
+  accounts            Account[]
+  sessions            Session[]
   recipes             Recipe[]
   plans               Plan[]
   mealPlans           MealPlan[]      @relation("UserMealPlans")
@@ -51,6 +54,7 @@ model User {
   favorites           FavoriteRecipe[] @relation("UserFavorites")
   reactions           RecipeReaction[] @relation("UserReactions")
   auditLogs           AuditLog[]
+  securityEvents      SecurityEvent[]
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
 
@@ -419,6 +423,7 @@ model WebAuthnChallenge {
 model SecurityEvent {
   id          String   @id @default(cuid())
   userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   eventType   String   // "password_changed", "2fa_enabled", "login_anomaly", "account_locked", etc.
   severity    String   // "low", "medium", "high", "critical"
   description String
@@ -504,3 +509,36 @@ model CookingSession {
   @@index([recipeId])
   @@index([startedAt])
 }
+
+// === NEXTAUTH OAUTH ===
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+

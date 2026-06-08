@@ -238,17 +238,17 @@ export function RecipeDetailDrawer({
 
               {/* Cook Mode Hint */}
               <div className="pt-6 border-t">
-                <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
+                <div className="bg-meal-dinner-muted rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <ChefHat className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
+                    <ChefHat className="h-5 w-5 text-meal-dinner mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-orange-900 dark:text-orange-100 mb-1">
+                      <p className="text-sm font-medium text-meal-dinner mb-1">
                         Cook with Voice Assistance
                       </p>
-                      <p className="text-sm text-orange-800 dark:text-orange-200">
+                      <p className="text-sm text-meal-dinner">
                         Click "Start Cook Mode" above for hands-free cooking with voice commands, timers, and step-by-step guidance.
                       </p>
-                      <p className="text-xs text-orange-700 dark:text-orange-300 mt-2">
+                      <p className="text-xs text-meal-dinner mt-2">
                         Tip: Press Ctrl+K anywhere to quickly access voice commands
                       </p>
                     </div>

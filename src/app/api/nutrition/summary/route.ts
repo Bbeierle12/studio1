@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
         startDate: { lte: dayEnd },
         OR: [
           { endDate: { gte: dayStart } },
-          { endDate: null },
+          { endDate: undefined },
         ],
       },
       include: {
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
         startDate: { lte: date },
         OR: [
           { endDate: { gte: date } },
-          { endDate: null },
+          { endDate: undefined },
         ],
       },
     });

@@ -196,7 +196,7 @@ export async function GET(req: NextRequest) {
           prisma.mealPlan.count({
             where: dateFilter.gte || dateFilter.lte ? { createdAt: dateFilter } : {},
           }),
-          prisma.favorite.count({
+          prisma.favoriteRecipe.count({
             where: dateFilter.gte || dateFilter.lte ? { createdAt: dateFilter } : {},
           }),
           prisma.user.groupBy({
@@ -223,19 +223,19 @@ export async function GET(req: NextRequest) {
           { Metric: 'Total Favorites', Value: totalFavorites },
           { Metric: '', Value: '' }, // Empty row
           { Metric: 'Users by Role', Value: '' },
-          ...usersByRole.map((item) => ({
+          ...usersByRole.map((item: any) => ({
             Metric: `  ${item.role}`,
             Value: item._count,
           })),
           { Metric: '', Value: '' }, // Empty row
           { Metric: 'Recipes by Course', Value: '' },
-          ...recipesByCourse.map((item) => ({
+          ...recipesByCourse.map((item: any) => ({
             Metric: `  ${item.course || 'Unspecified'}`,
             Value: item._count,
           })),
           { Metric: '', Value: '' }, // Empty row
           { Metric: 'Recipes by Cuisine', Value: '' },
-          ...recipesByCuisine.map((item) => ({
+          ...recipesByCuisine.map((item: any) => ({
             Metric: `  ${item.cuisine || 'Unspecified'}`,
             Value: item._count,
           })),

@@ -101,7 +101,7 @@ export function DailySummary({ nutrition, goal, date, className = '' }: DailySum
           current={nutrition.calories}
           target={goal?.targetCalories}
           unit=" kcal"
-          color="text-orange-500"
+          color="text-primary"
         />
 
         {/* Protein */}
@@ -111,7 +111,7 @@ export function DailySummary({ nutrition, goal, date, className = '' }: DailySum
           current={nutrition.protein}
           target={goal?.targetProtein || undefined}
           unit="g"
-          color="text-red-500"
+          color="text-danger"
         />
 
         {/* Carbs */}
@@ -121,7 +121,7 @@ export function DailySummary({ nutrition, goal, date, className = '' }: DailySum
           current={nutrition.carbs}
           target={goal?.targetCarbs || undefined}
           unit="g"
-          color="text-yellow-500"
+          color="text-warning"
         />
 
         {/* Fat */}
@@ -131,7 +131,7 @@ export function DailySummary({ nutrition, goal, date, className = '' }: DailySum
           current={nutrition.fat}
           target={goal?.targetFat || undefined}
           unit="g"
-          color="text-blue-500"
+          color="text-info"
         />
 
         {/* Fiber */}
@@ -142,7 +142,7 @@ export function DailySummary({ nutrition, goal, date, className = '' }: DailySum
             current={nutrition.fiber}
             target={goal?.targetFiber || undefined}
             unit="g"
-            color="text-green-500"
+            color="text-success"
           />
         )}
 
@@ -152,19 +152,19 @@ export function DailySummary({ nutrition, goal, date, className = '' }: DailySum
             <h4 className="text-sm font-medium mb-3">Macro Distribution</h4>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-red-500">
+                <div className="text-2xl font-bold text-danger">
                   {macroRatios.proteinPercent}%
                 </div>
                 <div className="text-xs text-muted-foreground">Protein</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-yellow-500">
+                <div className="text-2xl font-bold text-warning">
                   {macroRatios.carbsPercent}%
                 </div>
                 <div className="text-xs text-muted-foreground">Carbs</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-500">
+                <div className="text-2xl font-bold text-info">
                   {macroRatios.fatPercent}%
                 </div>
                 <div className="text-xs text-muted-foreground">Fat</div>

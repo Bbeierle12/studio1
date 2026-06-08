@@ -108,10 +108,13 @@ export async function POST(req: NextRequest) {
       message: 'Maintenance settings updated successfully',
     });
 
-    // Set cookie to match maintenance mode state
+    // Set cookie to match maintenance mode state.
+    // httpOnly so client JS cannot flip maintenance_mode to bypass the gate;
+    // the cookie is read only server-side by middleware.
     response.cookies.set('maintenance_mode', maintenanceMode ? 'true' : 'false', {
       path: '/',
-      httpOnly: false,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 365, // 1 year
     });

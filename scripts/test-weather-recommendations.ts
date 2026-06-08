@@ -35,7 +35,10 @@ const hotSummerDay: WeatherContext = {
     timezone: 'America/Los_Angeles'
   },
   isWeeknight: false,
-  timeOfDay: 'afternoon'
+  timeOfDay: 'afternoon',
+  season: 'summer',
+  month: 7,
+  date: new Date('2025-07-15')
 };
 
 const rainyWinterDay: WeatherContext = {
@@ -67,7 +70,10 @@ const rainyWinterDay: WeatherContext = {
     timezone: 'America/Los_Angeles'
   },
   isWeeknight: true,
-  timeOfDay: 'evening'
+  timeOfDay: 'evening',
+  season: 'winter',
+  month: 1,
+  date: new Date('2025-01-15')
 };
 
 const windyPoorAirDay: WeatherContext = {
@@ -99,7 +105,10 @@ const windyPoorAirDay: WeatherContext = {
     timezone: 'America/Los_Angeles'
   },
   isWeeknight: true,
-  timeOfDay: 'afternoon'
+  timeOfDay: 'afternoon',
+  season: 'fall',
+  month: 10,
+  date: new Date('2025-10-15')
 };
 
 const goldenHourGrillDay: WeatherContext = {
@@ -131,7 +140,10 @@ const goldenHourGrillDay: WeatherContext = {
     timezone: 'America/New_York'
   },
   isWeeknight: false,
-  timeOfDay: 'evening'
+  timeOfDay: 'evening',
+  season: 'fall',
+  month: 9,
+  date: new Date('2025-09-15')
 };
 
 function runTests() {
@@ -201,4 +213,4 @@ if (require.main === module) {
   runTests();
 }
 
-export { runTests };
+export { runTests };;

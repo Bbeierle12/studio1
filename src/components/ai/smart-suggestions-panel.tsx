@@ -43,9 +43,9 @@ export function SmartSuggestionsPanel({
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'bg-green-500';
-    if (confidence >= 0.6) return 'bg-yellow-500';
-    return 'bg-gray-500';
+    if (confidence >= 0.8) return 'bg-success';
+    if (confidence >= 0.6) return 'bg-warning';
+    return 'bg-muted-foreground';
   };
 
   return (

@@ -223,8 +223,8 @@ export function MediaUpload() {
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Media Upload & AI Transcription</h1>
-        <p className="text-gray-600">Upload photos of recipes and let AI transcribe them automatically - perfect for handwritten family recipes!</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Media Upload & AI Transcription</h1>
+        <p className="text-muted-foreground">Upload photos of recipes and let AI transcribe them automatically - perfect for handwritten family recipes!</p>
       </div>
 
       <Tabs defaultValue="upload" className="w-full">
@@ -238,22 +238,22 @@ export function MediaUpload() {
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer
-              ${isDragActive 
-                ? 'border-blue-400 bg-blue-50' 
-                : 'border-gray-300 hover:border-gray-400'
+              ${isDragActive
+                ? 'border-info bg-info-muted'
+                : 'border-border hover:border-border'
               }`}
           >
             <input {...getInputProps()} />
             <div className="flex flex-col items-center">
-              <Upload className="w-12 h-12 text-gray-400 mb-4" />
+              <Upload className="w-12 h-12 text-muted-foreground mb-4" />
               {isDragActive ? (
-                <p className="text-blue-600 text-lg font-medium">Drop files here...</p>
+                <p className="text-info text-lg font-medium">Drop files here...</p>
               ) : (
                 <>
-                  <p className="text-gray-600 text-lg mb-2">
+                  <p className="text-muted-foreground text-lg mb-2">
                     Drag and drop recipe photos here, or click to select
                   </p>
-                  <p className="text-gray-500 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     AI will automatically transcribe recipe text from images
                   </p>
                 </>
@@ -265,13 +265,13 @@ export function MediaUpload() {
           {mediaFiles.length > 0 && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-xl font-semibold text-foreground">
                   Uploaded Files ({mediaFiles.length})
                 </h2>
                 <Button
                   onClick={uploadFiles}
                   disabled={uploading || mediaFiles.every(f => f.uploaded)}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
+                  className="bg-info hover:bg-info disabled:bg-muted"
                 >
                   {uploading ? 'Uploading...' : 'Upload All'}
                 </Button>
@@ -280,7 +280,7 @@ export function MediaUpload() {
               <div className="grid gap-6 lg:grid-cols-2">
                 {mediaFiles.map((mediaFile) => (
                   <Card key={mediaFile.id} className="overflow-hidden">
-                    <div className="aspect-video bg-gray-100 flex items-center justify-center relative">
+                    <div className="aspect-video bg-muted flex items-center justify-center relative">
                       {mediaFile.type === 'image' && mediaFile.preview ? (
                         <NextImage
                           src={mediaFile.preview}
@@ -289,7 +289,7 @@ export function MediaUpload() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="text-gray-400">
+                        <div className="text-muted-foreground">
                           {getFileIcon(mediaFile.type)}
                         </div>
                       )}
@@ -297,7 +297,7 @@ export function MediaUpload() {
                       {/* Remove button */}
                       <button
                         onClick={() => removeFile(mediaFile.id)}
-                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full transition-colors"
+                        className="absolute top-2 right-2 bg-danger hover:bg-danger text-white p-1 rounded-full transition-colors"
                         title="Remove file"
                         aria-label="Remove uploaded file"
                       >
@@ -307,17 +307,17 @@ export function MediaUpload() {
                       {/* Status badges */}
                       <div className="absolute top-2 left-2 flex flex-col gap-1">
                         {mediaFile.uploaded && (
-                          <Badge className="bg-green-500 text-white text-xs">
+                          <Badge className="bg-success text-white text-xs">
                             ✓ Uploaded
                           </Badge>
                         )}
                         {mediaFile.transcription?.isHandwritten && (
-                          <Badge className="bg-purple-500 text-white text-xs">
+                          <Badge className="bg-info text-white text-xs">
                             📝 Handwritten
                           </Badge>
                         )}
                         {mediaFile.error && (
-                          <Badge className="bg-red-500 text-white text-xs">
+                          <Badge className="bg-danger text-white text-xs">
                             ✗ Error
                           </Badge>
                         )}
@@ -337,19 +337,19 @@ export function MediaUpload() {
                     </div>
 
                     <CardContent className="p-4">
-                      <h3 className="font-medium text-gray-900 truncate mb-1">
+                      <h3 className="font-medium text-foreground truncate mb-1">
                         {mediaFile.file.name}
                       </h3>
-                      <div className="flex justify-between text-sm text-gray-500 mb-3">
+                      <div className="flex justify-between text-sm text-muted-foreground mb-3">
                         <span className="capitalize">{mediaFile.type}</span>
                         <span>{formatFileSize(mediaFile.file.size)}</span>
                       </div>
 
                       {/* Progress bar */}
                       {mediaFile.uploadProgress !== undefined && !mediaFile.uploaded && (
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                          <div 
-                            className={`bg-blue-600 h-2 rounded-full transition-all duration-300`}
+                        <div className="w-full bg-muted rounded-full h-2 mb-3">
+                          <div
+                            className={`bg-info h-2 rounded-full transition-all duration-300`}
                             // eslint-disable-next-line react/forbid-dom-props
                             style={{width: `${mediaFile.uploadProgress}%`} as React.CSSProperties}
                           ></div>
@@ -371,15 +371,15 @@ export function MediaUpload() {
                             </Button>
                           ) : mediaFile.transcription.processing ? (
                             <div className="text-center py-4">
-                              <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div>
-                              <p className="text-sm text-gray-600">
+                              <div className="animate-spin w-6 h-6 border-2 border-info border-t-transparent rounded-full mx-auto mb-2"></div>
+                              <p className="text-sm text-muted-foreground">
                                 AI is reading your recipe...
                               </p>
                             </div>
                           ) : (
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-gray-700">
+                                <span className="text-sm font-medium text-muted-foreground">
                                   Transcribed Text
                                 </span>
                                 <div className="flex items-center gap-2">
@@ -388,7 +388,7 @@ export function MediaUpload() {
                                   </Badge>
                                   <button
                                     onClick={() => copyToClipboard(mediaFile.transcription?.text || '')}
-                                    className="text-blue-600 hover:text-blue-800"
+                                    className="text-info hover:text-info"
                                   >
                                     {copiedText === mediaFile.transcription.text ? (
                                       <Check className="w-4 h-4" />
@@ -398,27 +398,27 @@ export function MediaUpload() {
                                   </button>
                                 </div>
                               </div>
-                              <div className="max-h-40 overflow-y-auto bg-gray-50 p-3 rounded text-sm text-gray-700 whitespace-pre-wrap">
+                              <div className="max-h-40 overflow-y-auto bg-muted p-3 rounded text-sm text-muted-foreground whitespace-pre-wrap">
                                 {mediaFile.transcription.text}
                               </div>
                               
                               {/* Structured Recipe Display */}
                               {mediaFile.transcription.structuredRecipe && (
-                                <div className="mt-3 p-3 bg-green-50 rounded border border-green-200">
-                                  <h4 className="font-medium text-green-900 mb-2 flex items-center gap-2">
+                                <div className="mt-3 p-3 bg-success-muted rounded border border-success/30">
+                                  <h4 className="font-medium text-success mb-2 flex items-center gap-2">
                                     <Wand2 className="w-4 h-4" />
                                     AI Structured Recipe
                                   </h4>
                                   {mediaFile.transcription.structuredRecipe.title && (
                                     <div className="mb-2">
-                                      <span className="font-medium text-green-800">Title: </span>
-                                      <span className="text-green-700">{mediaFile.transcription.structuredRecipe.title}</span>
+                                      <span className="font-medium text-success">Title: </span>
+                                      <span className="text-success">{mediaFile.transcription.structuredRecipe.title}</span>
                                     </div>
                                   )}
                                   {mediaFile.transcription.structuredRecipe.ingredients && (
                                     <div className="mb-2">
-                                      <span className="font-medium text-green-800">Ingredients:</span>
-                                      <ul className="mt-1 text-sm text-green-700">
+                                      <span className="font-medium text-success">Ingredients:</span>
+                                      <ul className="mt-1 text-sm text-success">
                                         {mediaFile.transcription.structuredRecipe.ingredients.map((ingredient, idx) => (
                                           <li key={idx} className="ml-4">• {ingredient}</li>
                                         ))}
@@ -427,8 +427,8 @@ export function MediaUpload() {
                                   )}
                                   {mediaFile.transcription.structuredRecipe.instructions && (
                                     <div className="mb-2">
-                                      <span className="font-medium text-green-800">Instructions:</span>
-                                      <ol className="mt-1 text-sm text-green-700">
+                                      <span className="font-medium text-success">Instructions:</span>
+                                      <ol className="mt-1 text-sm text-success">
                                         {mediaFile.transcription.structuredRecipe.instructions.map((instruction, idx) => (
                                           <li key={idx} className="ml-4">{idx + 1}. {instruction}</li>
                                         ))}
@@ -454,7 +454,7 @@ export function MediaUpload() {
                           variant="outline"
                           size="sm"
                           onClick={() => removeFile(mediaFile.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-danger hover:text-danger"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -468,7 +468,7 @@ export function MediaUpload() {
         </TabsContent>
 
         <TabsContent value="gallery">
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-muted-foreground">
             <ImageIcon className="w-12 h-12 mx-auto mb-4" />
             <p>Media gallery coming soon...</p>
           </div>
@@ -476,14 +476,14 @@ export function MediaUpload() {
       </Tabs>
 
       {/* AI Features Info */}
-      <div className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6">
-        <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <Wand2 className="w-5 h-5 text-purple-600" />
+      <div className="mt-8 bg-card bg-[radial-gradient(120%_90%_at_80%_0%,hsl(var(--meal-dinner)/0.12)_0%,transparent_55%)] rounded-lg p-6">
+        <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Wand2 className="w-5 h-5 text-info" />
           AI Transcription Features
         </h3>
-        <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-700">
+        <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
           <div>
-            <h4 className="font-medium text-gray-800 mb-2">📸 Recipe Photos</h4>
+            <h4 className="font-medium text-foreground mb-2">📸 Recipe Photos</h4>
             <ul className="space-y-1">
               <li>• Automatic text extraction from images</li>
               <li>• Special handling for handwritten recipes</li>
@@ -492,7 +492,7 @@ export function MediaUpload() {
             </ul>
           </div>
           <div>
-            <h4 className="font-medium text-gray-800 mb-2">🧠 Smart Processing</h4>
+            <h4 className="font-medium text-foreground mb-2">🧠 Smart Processing</h4>
             <ul className="space-y-1">
               <li>• AI structures ingredients and instructions</li>
               <li>• Enhanced reasoning for cursive handwriting</li>
@@ -509,7 +509,7 @@ export function MediaUpload() {
           <div className="max-w-4xl max-h-[90vh] relative">
             <button
               onClick={() => setSelectedFile(null)}
-              className="absolute top-4 right-4 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full z-10"
+              className="absolute top-4 right-4 bg-card/80 hover:bg-card text-foreground p-2 rounded-full z-10"
               title="Close viewer"
               aria-label="Close image viewer"
             >

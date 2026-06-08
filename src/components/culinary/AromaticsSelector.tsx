@@ -100,8 +100,8 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
       {/* Aromatic Bases */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium text-gray-900">Aromatic Foundation</h3>
-          <span className="text-xs text-gray-500">Select one base</span>
+          <h3 className="font-medium text-foreground">Aromatic Foundation</h3>
+          <span className="text-xs text-muted-foreground">Select one base</span>
         </div>
         <div className="grid gap-2">
           {Object.entries(AromaticBases).map(([key, base]) => {
@@ -112,8 +112,8 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
                 onClick={() => onBaseChange?.(isSelected ? undefined : key as any)}
                 className={`p-3 rounded-lg border cursor-pointer transition-all ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                    ? 'border-info bg-info-muted'
+                    : 'border-border hover:border-border bg-card'
                 }`}
               >
                 <div className="flex justify-between items-start mb-2">
@@ -122,22 +122,22 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
                     {base.region.map(r => (
                       <span
                         key={r}
-                        className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600"
+                        className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
                       >
                         {getRegionDisplayName(r)}
                       </span>
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-gray-600 mb-2">{base.description}</p>
+                <p className="text-xs text-muted-foreground mb-2">{base.description}</p>
                 <div className="flex flex-wrap gap-1">
                   {base.ingredients.map(ing => (
                     <span
                       key={ing}
                       className={`text-xs px-2 py-1 rounded ${
                         isSelected
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-gray-50 text-gray-700'
+                          ? 'bg-info-muted text-info'
+                          : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       {ing.replace(/_/g, ' ')}
@@ -153,8 +153,8 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
       {/* Spice Signatures */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium text-gray-900">Spice Signature</h3>
-          <span className="text-xs text-gray-500">Select one blend</span>
+          <h3 className="font-medium text-foreground">Spice Signature</h3>
+          <span className="text-xs text-muted-foreground">Select one blend</span>
         </div>
         <div className="grid gap-2">
           {Object.entries(SpiceSignatures).map(([key, sig]) => {
@@ -165,8 +165,8 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
                 onClick={() => onSignatureChange?.(isSelected ? undefined : key as any)}
                 className={`p-3 rounded-lg border cursor-pointer transition-all ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                    ? 'border-info bg-info-muted'
+                    : 'border-border hover:border-border bg-card'
                 }`}
               >
                 <div className="flex justify-between items-start mb-2">
@@ -177,7 +177,7 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
                         <span
                           key={i}
                           className={`text-xs ${
-                            i < sig.heatLevel ? 'text-red-500' : 'text-gray-300'
+                            i < sig.heatLevel ? 'text-danger' : 'text-muted'
                           }`}
                         >
                           🌶️
@@ -188,7 +188,7 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
                       {sig.region.map(r => (
                         <span
                           key={r}
-                          className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600"
+                          className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
                         >
                           {getRegionDisplayName(r)}
                         </span>
@@ -196,15 +196,15 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-600 mb-2">{sig.description}</p>
+                <p className="text-xs text-muted-foreground mb-2">{sig.description}</p>
                 <div className="flex flex-wrap gap-1">
                   {sig.spices.map(spice => (
                     <span
                       key={spice}
                       className={`text-xs px-2 py-1 rounded ${
                         isSelected
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-gray-50 text-gray-700'
+                          ? 'bg-info-muted text-info'
+                          : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       {spice.replace(/_/g, ' ')}
@@ -220,15 +220,15 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
       {/* Custom Spices */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium text-gray-900">Key Spices & Herbs</h3>
-          <span className="text-xs text-gray-500">
+          <h3 className="font-medium text-foreground">Key Spices & Herbs</h3>
+          <span className="text-xs text-muted-foreground">
             {customSpices.length}/{maxCustomSpices} selected
           </span>
         </div>
 
         {/* Warning message */}
         {showLimitWarning && (
-          <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
+          <div className="mb-3 p-2 bg-warning-muted border border-warning rounded text-sm text-warning">
             Maximum of {maxCustomSpices} spices reached. Remove one to add more.
           </div>
         )}
@@ -239,12 +239,12 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
             {customSpices.map(spice => (
               <div
                 key={spice}
-                className="flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm"
+                className="flex items-center gap-1 px-3 py-1.5 bg-success-muted text-success rounded-full text-sm"
               >
                 <span>{spice}</span>
                 <button
                   onClick={() => handleRemoveSpice(spice)}
-                  className="hover:text-green-900 transition-colors"
+                  className="hover:text-success transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -272,14 +272,14 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
                     }
                   }}
                   placeholder="Add a spice or herb..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm"
                 />
-                <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
+                <Search className="absolute right-3 top-2.5 w-4 h-4 text-muted-foreground" />
               </div>
               <button
                 onClick={() => spiceInput.trim() && handleAddSpice(spiceInput.trim())}
                 disabled={!spiceInput.trim()}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -287,12 +287,12 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
 
             {/* Suggestions dropdown */}
             {showSpiceSuggestions && spiceSuggestions.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                 {spiceSuggestions.map(spice => (
                   <button
                     key={spice}
                     onClick={() => handleAddSpice(spice)}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors"
                   >
                     {spice}
                   </button>
@@ -305,8 +305,8 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
         {/* Quick add common spices */}
         <div className="mt-3">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-3 h-3 text-gray-400" />
-            <span className="text-xs text-gray-500">Quick add:</span>
+            <Sparkles className="w-3 h-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Quick add:</span>
           </div>
           <div className="flex flex-wrap gap-1">
             {COMMON_SPICES.slice(0, 12)
@@ -316,7 +316,7 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
                   key={spice}
                   onClick={() => handleAddSpice(spice)}
                   disabled={customSpices.length >= maxCustomSpices}
-                  className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {spice}
                 </button>
@@ -326,12 +326,12 @@ export const AromaticsSelector: React.FC<AromaticsSelectorProps> = ({
       </div>
 
       {/* Smart combinations */}
-      <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+      <div className="p-3 bg-warning-muted rounded-lg border border-warning">
         <div className="flex items-center gap-2 mb-2">
-          <Sparkles className="w-4 h-4 text-amber-600" />
-          <span className="text-sm font-medium text-amber-900">Flavor Synergies</span>
+          <Sparkles className="w-4 h-4 text-warning" />
+          <span className="text-sm font-medium text-warning">Flavor Synergies</span>
         </div>
-        <div className="text-xs text-amber-800 space-y-1">
+        <div className="text-xs text-warning space-y-1">
           {selectedBase && (
             <p>
               <strong>{AromaticBases[selectedBase].name}</strong> pairs well with{' '}

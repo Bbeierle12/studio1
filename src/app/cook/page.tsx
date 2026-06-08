@@ -158,10 +158,10 @@ function CookModeContent() {
 
   if (!recipeId) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <main className="min-h-screen bg-background bg-[radial-gradient(120%_90%_at_80%_0%,hsl(var(--meal-dinner)/0.12)_0%,transparent_55%)]">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto text-center space-y-6">
-            <ChefHat className="h-24 w-24 mx-auto text-orange-500" />
+            <ChefHat className="h-24 w-24 mx-auto text-primary" />
             <h1 className="text-4xl font-bold">Cook Mode</h1>
             <p className="text-lg text-muted-foreground">
               Start Cook Mode from any recipe to get hands-free cooking assistance with voice commands, timers, and step-by-step guidance.
@@ -182,7 +182,7 @@ function CookModeContent() {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <ChefHat className="h-16 w-16 mx-auto animate-pulse text-orange-500" />
+          <ChefHat className="h-16 w-16 mx-auto animate-pulse text-primary" />
           <p className="text-lg">Loading recipe...</p>
         </div>
       </main>
@@ -193,7 +193,7 @@ function CookModeContent() {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-lg text-red-600">Recipe not found</p>
+          <p className="text-lg text-danger">Recipe not found</p>
           <Link href="/recipes">
             <Button>Back to Recipes</Button>
           </Link>
@@ -203,9 +203,9 @@ function CookModeContent() {
   }
 
   return (
-    <main className="h-dvh flex flex-col bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <main className="h-dvh flex flex-col bg-background bg-[radial-gradient(120%_90%_at_80%_0%,hsl(var(--meal-dinner)/0.12)_0%,transparent_55%)]">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+      <header className="flex items-center justify-between p-4 border-b bg-card/80 backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <Link href={`/recipes?openRecipe=${recipeId}`}>
             <Button variant="ghost" size="sm" className="gap-2">
@@ -253,7 +253,7 @@ function CookModeContent() {
           </div>
 
           {/* Current step card */}
-          <Card className="flex-1 p-8 mb-6 bg-white dark:bg-gray-800">
+          <Card className="flex-1 p-8 mb-6 bg-card">
             <p className="text-xl leading-relaxed">
               {recipeSteps[currentStep]}
             </p>
@@ -293,10 +293,10 @@ function CookModeContent() {
                 className={cn(
                   "w-3 h-3 rounded-full transition-all",
                   i === currentStep
-                    ? "w-8 bg-orange-500"
+                    ? "w-8 bg-primary"
                     : completedSteps.has(i)
-                      ? "bg-green-500"
-                      : "bg-gray-300 dark:bg-gray-600"
+                      ? "bg-success"
+                      : "bg-muted"
                 )}
               />
             ))}
@@ -304,7 +304,7 @@ function CookModeContent() {
         </div>
 
         {/* Right panel - Ingredients & Timers */}
-        <div className="w-96 border-l bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm p-6 space-y-6">
+        <div className="w-96 border-l bg-card/50 backdrop-blur-sm p-6 space-y-6">
           {/* Timers section */}
           <div>
             <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -349,7 +349,7 @@ function CookModeContent() {
                 <ul className="space-y-2">
                   {recipeIngredients.map((ingredient, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-orange-500 mt-1">•</span>
+                      <span className="text-primary mt-1">•</span>
                       <span className="text-sm">{ingredient}</span>
                     </li>
                   ))}
@@ -361,7 +361,7 @@ function CookModeContent() {
       </div>
 
       {/* Voice hint footer */}
-      <div className="p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-t text-center">
+      <div className="p-4 bg-card/80 backdrop-blur-sm border-t text-center">
         <p className="text-sm text-muted-foreground">
           💡 Try saying: "Next step" • "Set timer for 10 minutes" • "Read ingredients" • "What's the current step?"
         </p>
@@ -389,7 +389,7 @@ export default function CookMode() {
     <Suspense fallback={
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <ChefHat className="h-16 w-16 mx-auto animate-pulse text-orange-500" />
+          <ChefHat className="h-16 w-16 mx-auto animate-pulse text-primary" />
           <p className="text-lg">Loading Cook Mode...</p>
         </div>
       </main>

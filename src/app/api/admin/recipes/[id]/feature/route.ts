@@ -6,7 +6,7 @@ import { hasPermission } from '@/lib/admin-permissions';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -36,7 +36,7 @@ export async function POST(
 
     // Get the recipe before update for audit log
     const existingRecipe = await prisma.recipe.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       select: {
         title: true,
         isFeatured: true,
@@ -49,7 +49,7 @@ export async function POST(
 
     // Update recipe featured status
     const updatedRecipe = await prisma.recipe.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         isFeatured,
         featuredAt: isFeatured ? new Date() : null,
@@ -69,7 +69,7 @@ export async function POST(
         userId: adminUser.id,
         action: isFeatured ? 'FEATURE' : 'UNFEATURE',
         entityType: 'Recipe',
-        entityId: params.id,
+        entityId: (await params).id,
         changes: {
           before: { isFeatured: existingRecipe.isFeatured },
           after: { isFeatured },

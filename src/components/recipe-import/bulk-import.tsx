@@ -187,9 +187,9 @@ https://www.foodnetwork.com/recipes/..."
                       className="flex items-start gap-2 p-2 rounded-lg hover:bg-accent"
                     >
                       {result.success ? (
-                        <Check className="h-4 w-4 text-green-600 mt-0.5" />
+                        <Check className="h-4 w-4 text-success mt-0.5" />
                       ) : (
-                        <X className="h-4 w-4 text-red-600 mt-0.5" />
+                        <X className="h-4 w-4 text-danger mt-0.5" />
                       )}
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
@@ -213,7 +213,7 @@ https://www.foodnetwork.com/recipes/..."
                           {result.url}
                         </p>
                         {result.error && (
-                          <p className="text-xs text-red-600">{result.error}</p>
+                          <p className="text-xs text-danger">{result.error}</p>
                         )}
                       </div>
                     </div>

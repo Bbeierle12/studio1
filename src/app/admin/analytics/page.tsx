@@ -71,10 +71,10 @@ interface AnalyticsData {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  USER: '#94a3b8',
-  SUPPORT_ADMIN: '#60a5fa',
-  CONTENT_ADMIN: '#a78bfa',
-  SUPER_ADMIN: '#f87171',
+  USER: 'hsl(var(--chart-1))',
+  SUPPORT_ADMIN: 'hsl(var(--chart-2))',
+  CONTENT_ADMIN: 'hsl(var(--chart-3))',
+  SUPER_ADMIN: 'hsl(var(--chart-4))',
 };
 
 export default function AnalyticsPage() {
@@ -297,7 +297,7 @@ export default function AnalyticsPage() {
                       labelFormatter={(value) => new Date(value).toLocaleDateString()}
                       formatter={(value: any) => [value, 'New Users']}
                     />
-                    <Line type='monotone' dataKey='count' stroke='#8b5cf6' strokeWidth={2} />
+                    <Line type='monotone' dataKey='count' stroke='hsl(var(--chart-1))' strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -323,7 +323,7 @@ export default function AnalyticsPage() {
                       labelFormatter={(value) => new Date(value).toLocaleDateString()}
                       formatter={(value: any) => [value, 'New Recipes']}
                     />
-                    <Line type='monotone' dataKey='count' stroke='#f59e0b' strokeWidth={2} />
+                    <Line type='monotone' dataKey='count' stroke='hsl(var(--chart-2))' strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -454,7 +454,7 @@ export default function AnalyticsPage() {
                       label={(entry) => `${entry.course}: ${entry.count}`}
                     >
                       {(analytics.recipesByCourse || []).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'][index % 5]} />
+                        <Cell key={`cell-${index}`} fill={['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'][index % 5]} />
                       ))}
                     </Pie>
                     <Tooltip />
