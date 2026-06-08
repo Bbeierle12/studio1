@@ -118,7 +118,7 @@ const COOKING_METHOD_KEYWORDS: Record<CookingMethod, string[]> = {
   [CookingMethods.FROZEN_CHILLED]: ['freeze', 'chill', 'refrigerate'],
 };
 
-const REGION_KEYWORDS: Record<CulinaryRegion, string[]> = {
+const REGION_KEYWORDS: Partial<Record<CulinaryRegion, string[]>> = {
   [CulinaryRegions.FRENCH]: ['french', 'provence', 'normandy', 'lyon'],
   [CulinaryRegions.ITALIAN]: ['italian', 'tuscan', 'sicilian', 'roman'],
   [CulinaryRegions.SPANISH]: ['spanish', 'catalan', 'andalusian', 'basque'],
@@ -128,7 +128,7 @@ const REGION_KEYWORDS: Record<CulinaryRegion, string[]> = {
   [CulinaryRegions.THAI]: ['thai', 'pad thai', 'tom yum', 'green curry'],
   [CulinaryRegions.INDIAN]: ['indian', 'tikka', 'masala', 'biryani', 'tandoori'],
   [CulinaryRegions.MIDDLE_EASTERN]: ['middle eastern', 'lebanese', 'turkish', 'persian'],
-  [CulinaryRegions.GREEK]: ['greek', 'mediterranean', 'moussaka', 'souvlaki'],
+  [('greek' as CulinaryRegion)]: ['greek', 'mediterranean', 'moussaka', 'souvlaki'],
   // Add more as needed...
 };
 
@@ -176,7 +176,7 @@ export class CulinaryClassifier {
     classification.contextualTags = this.inferContextualTags(recipe);
 
     // Infer ingredient domain
-    classification.ingredientDomain = this.inferIngredientDomain(recipe);
+    classification.ingredientDomain = this.inferIngredientDomain(recipe) as any;
 
     return classification;
   }
@@ -270,7 +270,7 @@ export class CulinaryClassifier {
 
     // Mediterranean indicators
     if (/olive oil|feta|oregano|lemon/i.test(ingredientsText)) {
-      if (/feta|tzatziki|phyllo/i.test(ingredientsText)) regions.add(CulinaryRegions.GREEK);
+      if (/feta|tzatziki|phyllo/i.test(ingredientsText)) regions.add('greek' as CulinaryRegion);
     }
 
     // Latin indicators

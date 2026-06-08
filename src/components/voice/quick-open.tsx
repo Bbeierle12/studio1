@@ -295,7 +295,7 @@ function QuickVoiceOverlay({ mode, context, onClose }: QuickOpenOptions & { onCl
                     <button
                       key={action.id}
                       onClick={action.action}
-                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
+                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
                     >
                       <action.icon className="h-5 w-5 text-muted-foreground" />
                       <span>{action.label}</span>
@@ -325,12 +325,12 @@ function QuickVoiceOverlay({ mode, context, onClose }: QuickOpenOptions & { onCl
                 <div className="relative h-24 flex items-center justify-center">
                   {isListening && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-16 w-16 bg-red-500 rounded-full animate-pulse opacity-50" />
+                      <div className="h-16 w-16 bg-danger rounded-full animate-pulse opacity-50" />
                     </div>
                   )}
                   <div className={cn(
                     "h-12 w-12 rounded-full flex items-center justify-center",
-                    isListening ? "bg-red-500" : "bg-gray-200 dark:bg-gray-700"
+                    isListening ? "bg-danger" : "bg-muted"
                   )}>
                     {isListening ? (
                       <MicOff className="h-6 w-6 text-white" />
@@ -348,7 +348,7 @@ function QuickVoiceOverlay({ mode, context, onClose }: QuickOpenOptions & { onCl
                 )}
 
                 {transcript && (
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="p-3 bg-muted rounded-lg">
                     <p className="text-sm">{transcript}</p>
                   </div>
                 )}

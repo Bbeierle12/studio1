@@ -224,9 +224,9 @@ export default function DatabaseToolsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   {stats.health.status === 'healthy' ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <CheckCircle2 className="h-5 w-5 text-success" />
                   ) : (
-                    <AlertCircle className="h-5 w-5 text-yellow-500" />
+                    <AlertCircle className="h-5 w-5 text-warning" />
                   )}
                   Database Health
                 </CardTitle>
@@ -238,9 +238,9 @@ export default function DatabaseToolsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3 p-4 border rounded-lg">
                     <div className={`p-2 rounded-full ${
-                      stats.health.status === 'healthy' 
-                        ? 'bg-green-100 text-green-600' 
-                        : 'bg-yellow-100 text-yellow-600'
+                      stats.health.status === 'healthy'
+                        ? 'bg-success-muted text-success'
+                        : 'bg-warning-muted text-warning'
                     }`}>
                       <Server className="h-5 w-5" />
                     </div>
@@ -251,7 +251,7 @@ export default function DatabaseToolsPage() {
                   </div>
 
                   <div className="flex items-center gap-3 p-4 border rounded-lg">
-                    <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                    <div className="p-2 rounded-full bg-info-muted text-info">
                       <Clock className="h-5 w-5" />
                     </div>
                     <div>
@@ -261,7 +261,7 @@ export default function DatabaseToolsPage() {
                   </div>
 
                   <div className="flex items-center gap-3 p-4 border rounded-lg">
-                    <div className="p-2 rounded-full bg-purple-100 text-purple-600">
+                    <div className="p-2 rounded-full bg-info-muted text-info">
                       <HardDrive className="h-5 w-5" />
                     </div>
                     <div>
@@ -298,7 +298,7 @@ export default function DatabaseToolsPage() {
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                        <div className="p-2 rounded-full bg-info-muted text-info">
                           <Table className="h-4 w-4" />
                         </div>
                         <div>
@@ -558,18 +558,18 @@ export default function DatabaseToolsPage() {
             </Card>
 
             {/* CLI Reference Card */}
-            <Card className="border-blue-200 bg-blue-50/50">
+            <Card className="border-info/30 bg-info-muted">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-blue-900">
+                <CardTitle className="flex items-center gap-2 text-info">
                   <AlertCircle className="h-5 w-5" />
                   Prisma CLI Commands
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-blue-800">
+              <CardContent className="text-sm text-info">
                 <p className="mb-2">
                   For database migrations and schema changes, use these Prisma CLI commands:
                 </p>
-                <div className="bg-blue-100 p-3 rounded-lg font-mono text-xs space-y-1">
+                <div className="bg-info/10 p-3 rounded-lg font-mono text-xs space-y-1">
                   <p># Run pending migrations</p>
                   <p>npx prisma migrate dev</p>
                   <p className="mt-2"># Generate Prisma Client</p>

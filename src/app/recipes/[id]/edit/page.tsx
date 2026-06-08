@@ -10,9 +10,9 @@ import {
 import { RecipeEditForm } from '@/components/recipe-edit-form';
 
 type EditRecipePageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default async function EditRecipePage({ params }: EditRecipePageProps) {

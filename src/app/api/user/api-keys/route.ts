@@ -10,49 +10,73 @@ const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 const SALT_LENGTH = 32;
 
-// Get encryption key from environment
-function getEncryptionKey(): Buffer {
-  const key = process.env.API_KEY_ENCRYPTION_SECRET;
-  if (!key) {
+// Marks records encrypted with the per-record-salt scheme.
+const V2_PREFIX = 'v2:';
+
+// Derive a 32-byte key from the master secret using the given salt.
+function deriveKey(salt: Buffer): Buffer {
+  const secret = process.env.API_KEY_ENCRYPTION_SECRET;
+  if (!secret) {
     throw new Error('API_KEY_ENCRYPTION_SECRET is not set');
   }
-  // Derive a 32-byte key from the secret
-  return crypto.pbkdf2Sync(key, 'salt', 100000, 32, 'sha256');
+  return crypto.pbkdf2Sync(secret, salt, 100000, 32, 'sha256');
 }
 
-// Encrypt API key
+// Encrypt API key. Each record gets its own random KDF salt, stored alongside
+// the ciphertext, so a leaked master secret no longer trivially decrypts all
+// records with a single derived key.
 function encryptApiKey(text: string): string {
-  const key = getEncryptionKey();
+  const salt = crypto.randomBytes(SALT_LENGTH);
+  const key = deriveKey(salt);
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
-  
+
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
-  
+
   const authTag = cipher.getAuthTag();
-  
-  // Combine iv + authTag + encrypted data
-  return iv.toString('hex') + authTag.toString('hex') + encrypted;
+
+  // v2 layout: "v2:" + salt + iv + authTag + ciphertext (all hex)
+  return V2_PREFIX + salt.toString('hex') + iv.toString('hex') + authTag.toString('hex') + encrypted;
 }
 
-// Decrypt API key
+// Decrypt API key. Handles both the v2 per-record-salt format and the legacy
+// static-salt format so previously stored keys remain readable until rotated.
 function decryptApiKey(encryptedText: string): string {
-  const key = getEncryptionKey();
-  
+  let key: Buffer;
+  let body: string;
+
+  if (encryptedText.startsWith(V2_PREFIX)) {
+    body = encryptedText.slice(V2_PREFIX.length);
+    const salt = Buffer.from(body.slice(0, SALT_LENGTH * 2), 'hex');
+    body = body.slice(SALT_LENGTH * 2);
+    key = deriveKey(salt);
+  } else {
+    // Legacy records derived the key from the literal static salt 'salt'.
+    body = encryptedText;
+    key = crypto.pbkdf2Sync(
+      process.env.API_KEY_ENCRYPTION_SECRET || '',
+      'salt',
+      100000,
+      32,
+      'sha256'
+    );
+  }
+
   // Extract iv, authTag, and encrypted data
-  const iv = Buffer.from(encryptedText.slice(0, IV_LENGTH * 2), 'hex');
+  const iv = Buffer.from(body.slice(0, IV_LENGTH * 2), 'hex');
   const authTag = Buffer.from(
-    encryptedText.slice(IV_LENGTH * 2, (IV_LENGTH + AUTH_TAG_LENGTH) * 2),
+    body.slice(IV_LENGTH * 2, (IV_LENGTH + AUTH_TAG_LENGTH) * 2),
     'hex'
   );
-  const encrypted = encryptedText.slice((IV_LENGTH + AUTH_TAG_LENGTH) * 2);
-  
+  const encrypted = body.slice((IV_LENGTH + AUTH_TAG_LENGTH) * 2);
+
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
-  
+
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
-  
+
   return decrypted;
 }
 

@@ -46,9 +46,10 @@ export function Sidebar() {
     { href: '/', label: 'Foyer', icon: Home },
     { href: '/recipes', label: 'Recipe Hub', icon: CookingPot, badge: counts.recipes },
     { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays, badge: counts.mealPlan },
-    { href: '/household', label: 'Family', icon: Users, badge: counts.family },
     { href: '/saved', label: 'Saved', icon: Bookmark, badge: counts.saved },
+    { href: '/household', label: 'Family', icon: Users, badge: counts.family },
     { href: '/recipe-chat', label: 'AI Recipe Chat', icon: MessageSquare },
+    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
@@ -155,7 +156,7 @@ export function Sidebar() {
                     isActive
                       ? 'bg-primary/10 text-primary font-medium'
                       : 'text-muted-foreground hover:text-foreground',
-                    item.adminOnly && 'text-orange-500 hover:text-orange-600',
+                    item.adminOnly && 'text-warning hover:text-warning/80',
                     isCollapsed && !isMobile && 'justify-center px-0'
                   )}
                 >

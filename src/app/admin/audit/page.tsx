@@ -175,15 +175,15 @@ export default function AuditLogsPage() {
 
   const getActionBadgeColor = (action: string) => {
     if (action.includes('DELETE') || action.includes('BAN')) {
-      return 'bg-red-100 text-red-800';
+      return 'bg-danger-muted text-danger';
     }
     if (action.includes('CREATE')) {
-      return 'bg-green-100 text-green-800';
+      return 'bg-success-muted text-success';
     }
     if (action.includes('UPDATE') || action.includes('EDIT')) {
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-info-muted text-info';
     }
-    return 'bg-gray-100 text-gray-800';
+    return 'bg-muted text-muted-foreground';
   };
 
   const isSecurityEvent = (log: AuditLog) => {
@@ -302,7 +302,7 @@ export default function AuditLogsPage() {
                         <TableRow
                           key={log.id}
                           className={
-                            isSecurityEvent(log) ? 'bg-yellow-50' : undefined
+                            isSecurityEvent(log) ? 'bg-warning-muted' : undefined
                           }
                         >
                           <TableCell>
@@ -336,7 +336,7 @@ export default function AuditLogsPage() {
                           <TableCell>
                             <div className='flex items-center gap-2'>
                               {isSecurityEvent(log) && (
-                                <AlertTriangle className='h-4 w-4 text-yellow-600' />
+                                <AlertTriangle className='h-4 w-4 text-warning' />
                               )}
                               <Badge className={getActionBadgeColor(log.action)}>
                                 {log.action}

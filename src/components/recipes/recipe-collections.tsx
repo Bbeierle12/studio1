@@ -8,6 +8,7 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { Library } from 'lucide-react';
+import { RecipeImageFallback } from '@/components/recipe-image-fallback';
 
 interface Collection {
   name: string;
@@ -79,14 +80,19 @@ export function RecipeCollections() {
           >
             <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:border-primary/50">
               <div className="relative aspect-video overflow-hidden">
-                <Image
-                  src="https://placehold.co/600x400/FFFFFF/FFFFFF"
-                  alt={collection.name}
-                  width={600}
-                  height={400}
-                  data-ai-hint={collection.imageHint}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
+                {collection.coverImage &&
+                !collection.coverImage.includes('placehold.co') ? (
+                  <Image
+                    src={collection.coverImage}
+                    alt={collection.name}
+                    width={600}
+                    height={400}
+                    data-ai-hint={collection.imageHint}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <RecipeImageFallback className="h-full w-full transition-transform duration-300 group-hover:scale-105" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4">
                   <h2 className="text-2xl font-headline font-bold text-white capitalize">

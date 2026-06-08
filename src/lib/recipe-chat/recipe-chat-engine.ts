@@ -6,7 +6,7 @@ export class RecipeChatEngine {
 
   constructor() {
     this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY || 'dummy_key_for_build',
     });
   }
 
@@ -79,7 +79,7 @@ export class RecipeChatEngine {
 
     const toolCall = completion.choices[0].message.tool_calls?.[0];
     if (toolCall) {
-      return JSON.parse(toolCall.function.arguments);
+      return JSON.parse((toolCall as any).function.arguments);
   }
     
     return { mode: 'general', confidence: 0.5 };

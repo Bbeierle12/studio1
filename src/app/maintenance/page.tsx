@@ -26,11 +26,11 @@ export default function MaintenancePage() {
   }, []);
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4'>
+    <div className='min-h-screen flex items-center justify-center bg-background p-4'>
       <Card className='max-w-2xl w-full shadow-xl'>
         <CardHeader className='text-center pb-4'>
-          <div className='mx-auto mb-4 w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center'>
-            <Wrench className='h-10 w-10 text-orange-600' />
+          <div className='mx-auto mb-4 w-20 h-20 rounded-full bg-warning-muted flex items-center justify-center'>
+            <Wrench className='h-10 w-10 text-warning' />
           </div>
           <CardTitle className='text-3xl font-bold mb-2'>
             Site Under Maintenance

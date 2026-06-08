@@ -37,11 +37,11 @@ interface DayViewProps {
 
 const MEAL_TYPES: MealType[] = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
 
-const mealTypeColors = {
-  BREAKFAST: 'border-[#D4A574]',
-  LUNCH: 'border-[#C9A96E]',
-  DINNER: 'border-[#D4A574]',
-  SNACK: 'border-[#D2691E]'
+const mealTypeColors: Record<MealType, string> = {
+  BREAKFAST: 'border-meal-breakfast',
+  LUNCH: 'border-meal-lunch',
+  DINNER: 'border-meal-dinner',
+  SNACK: 'border-meal-snack',
 };
 
 export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }: DayViewProps) {
@@ -87,12 +87,12 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
   
   return (
     <>
-      <div className="p-6 space-y-6 bg-[#3D2B1F]">
+      <div className="p-6 space-y-6 bg-background">
         {/* Weather Card */}
         {weather && (
-          <Card className="bg-[#4A3426] border-[#2D1F14]">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-[#F5E6D3]">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Cloud className="h-5 w-5" />
                 Weather Forecast
               </CardTitle>
@@ -100,37 +100,37 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="flex items-center gap-2">
-                  <Thermometer className="h-4 w-4 text-[#D4A574]" />
+                  <Thermometer className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-sm text-[#D4A574]">Temperature</div>
-                    <div className="text-lg font-semibold text-[#F5E6D3]">
+                    <div className="text-sm text-muted-foreground">Temperature</div>
+                    <div className="text-lg font-semibold text-foreground">
                       {weather.temperature.high}° / {weather.temperature.low}°
                     </div>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <Cloud className="h-4 w-4 text-[#D4A574]" />
+                  <Cloud className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-sm text-[#D4A574]">Condition</div>
-                    <div className="text-lg font-semibold text-[#F5E6D3]">{weather.condition}</div>
+                    <div className="text-sm text-muted-foreground">Condition</div>
+                    <div className="text-lg font-semibold text-foreground">{weather.condition}</div>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <Droplets className="h-4 w-4 text-[#D4A574]" />
+                  <Droplets className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-sm text-[#D4A574]">Precipitation</div>
-                    <div className="text-lg font-semibold text-[#F5E6D3]">{weather.precipitation}%</div>
+                    <div className="text-sm text-muted-foreground">Precipitation</div>
+                    <div className="text-lg font-semibold text-foreground">{weather.precipitation}%</div>
                   </div>
                 </div>
                 
                 {weather.windSpeed && (
                   <div className="flex items-center gap-2">
-                    <Wind className="h-4 w-4 text-[#D4A574]" />
+                    <Wind className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <div className="text-sm text-[#D4A574]">Wind</div>
-                      <div className="text-lg font-semibold text-[#F5E6D3]">{weather.windSpeed} mph</div>
+                      <div className="text-sm text-muted-foreground">Wind</div>
+                      <div className="text-lg font-semibold text-foreground">{weather.windSpeed} mph</div>
                     </div>
                   </div>
                 )}
@@ -141,16 +141,16 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
 
         {/* Weather-Based Suggestions */}
         {weather && recipes.length > 0 && (
-          <Card className="bg-[#4A3426] border-[#2D1F14]">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-[#F5E6D3]">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Sparkles className="h-5 w-5" />
                 Suggested for Today
               </CardTitle>
             </CardHeader>
             <CardContent>
               <WeatherSuggestions
-                recipes={recipes}
+                recipes={recipes as any}
                 weather={{
                   temperature: weather.temperature.current || weather.temperature.high,
                   condition: weather.condition,
@@ -175,9 +175,9 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
             const meals = getMealsForType(mealType);
             
             return (
-              <Card key={mealType} className={cn('border-l-4 bg-[#4A3426] border-[#2D1F14]', mealTypeColors[mealType])}>
+              <Card key={mealType} className={cn('border-l-4 bg-card border-border', mealTypeColors[mealType])}>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between text-[#F5E6D3]">
+                  <CardTitle className="flex items-center justify-between text-foreground">
                     <span>{mealType}</span>
                     <Button
                       variant="outline"
@@ -193,7 +193,7 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
                   {meals.length > 0 ? (
                     <div className="space-y-4">
                       {meals.map(meal => (
-                        <div key={meal.id} className="border border-[#2D1F14] rounded-lg p-4 bg-[#3D2B1F] hover:bg-[#5C4033] transition-colors">
+                        <div key={meal.id} className="border border-border rounded-lg p-4 bg-card hover:bg-accent transition-colors">
                           <div className="flex items-start gap-4">
                             {/* Recipe Image */}
                             {meal.recipe?.imageUrl && (
@@ -207,7 +207,7 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
                             {/* Meal Info */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
-                                <h4 className="font-semibold text-lg text-[#F5E6D3]">
+                                <h4 className="font-semibold text-lg text-foreground">
                                   {meal.recipe?.title || meal.customMealName}
                                 </h4>
                                 
@@ -234,7 +234,7 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
                               
                               {meal.recipe && (
                                 <div className="space-y-2 text-sm mt-2">
-                                  <div className="flex items-center gap-4 text-[#D4A574]">
+                                  <div className="flex items-center gap-4 text-muted-foreground">
                                     {meal.recipe.prepTime && (
                                       <span>⏱️ {meal.recipe.prepTime} min</span>
                                     )}
@@ -242,19 +242,19 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
                                   </div>
                                   
                                   {meal.recipe.summary && (
-                                    <p className="text-[#D4A574] line-clamp-2">{meal.recipe.summary}</p>
+                                    <p className="text-muted-foreground line-clamp-2">{meal.recipe.summary}</p>
                                   )}
                                 </div>
                               )}
                               
                               {!meal.recipe && (
-                                <div className="text-sm text-[#D4A574] mt-1">
+                                <div className="text-sm text-muted-foreground mt-1">
                                   🍽️ {meal.servings} servings
                                 </div>
                               )}
                               
                               {meal.notes && (
-                                <div className="mt-2 text-sm text-[#D4A574] bg-[#2D1F14]/50 p-2 rounded">
+                                <div className="mt-2 text-sm text-muted-foreground bg-muted/50 p-2 rounded">
                                   📝 {meal.notes}
                                 </div>
                               )}
@@ -264,7 +264,7 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-[#D4A574]">
+                    <div className="text-center py-8 text-muted-foreground">
                       <p>No meal planned for {mealType.toLowerCase()}</p>
                       <Button
                         variant="ghost"
@@ -291,7 +291,7 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
         weather={weather}
         defaultMealType={selectedMealType}
         existingMeal={editingMeal || undefined}
-        recipes={recipes}
+        recipes={recipes as any}
       />
       
       {/* Quick Delete Confirmation */}

@@ -7,7 +7,7 @@ import { UserRole } from '@prisma/client';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -26,7 +26,7 @@ export async function GET(
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       select: {
         id: true,
         email: true,
@@ -76,7 +76,7 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -99,7 +99,7 @@ export async function PATCH(
 
     // Get the target user
     const targetUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       select: { role: true },
     });
 
@@ -108,7 +108,7 @@ export async function PATCH(
     }
 
     // Prevent self-demotion
-    if (params.id === adminUser.id && role && role !== adminUser.role) {
+    if ((await params).id === adminUser.id && role && role !== adminUser.role) {
       return NextResponse.json(
         { error: 'Cannot change your own role' },
         { status: 400 }
@@ -132,7 +132,7 @@ export async function PATCH(
 
     // Update user
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: updateData,
       select: {
         id: true,
@@ -150,7 +150,7 @@ export async function PATCH(
         userId: adminUser.id,
         action: 'UPDATE',
         entityType: 'User',
-        entityId: params.id,
+        entityId: (await params).id,
         changes: {
           before: targetUser,
           after: updateData,
@@ -172,7 +172,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -191,7 +191,7 @@ export async function DELETE(
     }
 
     // Prevent self-deletion
-    if (params.id === adminUser.id) {
+    if ((await params).id === adminUser.id) {
       return NextResponse.json(
         { error: 'Cannot delete your own account' },
         { status: 400 }
@@ -200,7 +200,7 @@ export async function DELETE(
 
     // Get user before deletion for audit log
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       select: { email: true, name: true, role: true },
     });
 
@@ -214,7 +214,7 @@ export async function DELETE(
         userId: adminUser.id,
         action: 'DELETE',
         entityType: 'User',
-        entityId: params.id,
+        entityId: (await params).id,
         changes: { deletedUser: user },
         ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
         userAgent: req.headers.get('user-agent') || 'unknown',
@@ -223,7 +223,7 @@ export async function DELETE(
 
     // Delete user (cascade will handle related records)
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ success: true });

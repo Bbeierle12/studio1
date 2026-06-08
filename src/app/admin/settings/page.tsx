@@ -268,10 +268,10 @@ export default function AdminSettingsPage() {
 
       {/* Save Status Alert */}
       {saveStatus === 'success' && (
-        <Alert className="mb-6 border-green-500 bg-green-50">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-600">Settings Saved</AlertTitle>
-          <AlertDescription className="text-green-600">
+        <Alert className="mb-6 border-success bg-success-muted">
+          <CheckCircle2 className="h-4 w-4 text-success" />
+          <AlertTitle className="text-success">Settings Saved</AlertTitle>
+          <AlertDescription className="text-success">
             Settings have been updated successfully.
           </AlertDescription>
         </Alert>
@@ -673,7 +673,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/50">
                   {process.env.NEXT_PUBLIC_OPENAI_API_KEY ? (
                     <>
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <CheckCircle2 className="h-5 w-5 text-success" />
                       <div>
                         <p className="font-medium text-sm">Configured</p>
                         <p className="text-xs text-muted-foreground">

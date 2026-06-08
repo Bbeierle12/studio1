@@ -30,11 +30,11 @@ export default function WeatherBarometer({
   
   // Get AQI status and color
   const getAQIStatus = (aqi: number): { status: string; color: string } => {
-    if (aqi <= 50) return { status: 'Good', color: 'text-green-600' };
-    if (aqi <= 100) return { status: 'Moderate', color: 'text-yellow-600' };
-    if (aqi <= 150) return { status: 'Unhealthy (Sensitive)', color: 'text-orange-600' };
-    if (aqi <= 200) return { status: 'Unhealthy', color: 'text-red-600' };
-    return { status: 'Very Unhealthy', color: 'text-purple-600' };
+    if (aqi <= 50) return { status: 'Good', color: 'text-success' };
+    if (aqi <= 100) return { status: 'Moderate', color: 'text-warning' };
+    if (aqi <= 150) return { status: 'Unhealthy (Sensitive)', color: 'text-warning' };
+    if (aqi <= 200) return { status: 'Unhealthy', color: 'text-danger' };
+    return { status: 'Very Unhealthy', color: 'text-danger' };
   };
   
   // Get wind status
@@ -49,55 +49,55 @@ export default function WeatherBarometer({
   
   return (
     <div className={`
-      inline-flex items-center gap-3 px-4 py-2 
-      bg-white/80 backdrop-blur-sm border border-gray-200 
+      inline-flex items-center gap-3 px-4 py-2
+      bg-card/80 backdrop-blur-sm border border-border
       rounded-full shadow-sm text-sm font-medium
       ${className}
     `}>
       {/* Feels Like Temperature */}
-      <div className="flex items-center gap-1.5 text-gray-700">
-        <Thermometer className="w-4 h-4 text-orange-500" />
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <Thermometer className="w-4 h-4 text-primary" />
         <span>Feels {weather.feelsLike}°F</span>
       </div>
       
       {/* Separator */}
-      <div className="w-px h-4 bg-gray-300" />
-      
+      <div className="w-px h-4 bg-border" />
+
       {/* Rain Chance */}
-      <div className="flex items-center gap-1.5 text-gray-700">
-        <Droplets className="w-4 h-4 text-blue-500" />
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <Droplets className="w-4 h-4 text-info" />
         <span>{weather.precipitation}% rain</span>
       </div>
-      
+
       {/* Separator */}
-      <div className="w-px h-4 bg-gray-300" />
-      
+      <div className="w-px h-4 bg-border" />
+
       {/* Wind */}
-      <div className="flex items-center gap-1.5 text-gray-700">
-        <Wind className="w-4 h-4 text-gray-500" />
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <Wind className="w-4 h-4 text-muted-foreground" />
         <span>{getWindStatus(weather.windSpeed)} ({weather.windSpeed} mph)</span>
       </div>
-      
+
       {/* Separator */}
-      <div className="w-px h-4 bg-gray-300" />
+      <div className="w-px h-4 bg-border" />
       
       {/* AQI */}
       <div className="flex items-center gap-1.5">
-        <Eye className="w-4 h-4 text-gray-500" />
+        <Eye className="w-4 h-4 text-muted-foreground" />
         <span className={aqiInfo.color}>
           AQI {weather.aqi} ({aqiInfo.status})
         </span>
       </div>
-      
+
       {/* Separator */}
-      <div className="w-px h-4 bg-gray-300" />
-      
+      <div className="w-px h-4 bg-border" />
+
       {/* Sunset */}
-      <div className="flex items-center gap-1.5 text-gray-700">
+      <div className="flex items-center gap-1.5 text-muted-foreground">
         {sun.isDaytime ? (
-          <Sun className="w-4 h-4 text-yellow-500" />
+          <Sun className="w-4 h-4 text-warning" />
         ) : (
-          <Cloud className="w-4 h-4 text-gray-400" />
+          <Cloud className="w-4 h-4 text-muted-foreground" />
         )}
         <span>
           {sun.isDaytime ? (
@@ -130,9 +130,9 @@ export function WeatherBarometerCompact({
   
   return (
     <div className={`
-      inline-flex items-center gap-2 px-3 py-1.5 
-      bg-white/80 backdrop-blur-sm border border-gray-200 
-      rounded-full shadow-sm text-xs font-medium text-gray-600
+      inline-flex items-center gap-2 px-3 py-1.5
+      bg-card/80 backdrop-blur-sm border border-border
+      rounded-full shadow-sm text-xs font-medium text-muted-foreground
       ${className}
     `}>
       <span>{weather.feelsLike}°F</span>
@@ -159,20 +159,20 @@ export function WeatherBarometerCompact({
 export function WeatherBarometerSkeleton({ className = '' }: { className?: string }) {
   return (
     <div className={`
-      inline-flex items-center gap-3 px-4 py-2 
-      bg-gray-100 border border-gray-200 
+      inline-flex items-center gap-3 px-4 py-2
+      bg-muted border border-border
       rounded-full shadow-sm animate-pulse
       ${className}
     `}>
-      <div className="h-4 w-16 bg-gray-300 rounded" />
-      <div className="w-px h-4 bg-gray-300" />
-      <div className="h-4 w-12 bg-gray-300 rounded" />
-      <div className="w-px h-4 bg-gray-300" />
-      <div className="h-4 w-14 bg-gray-300 rounded" />
-      <div className="w-px h-4 bg-gray-300" />
-      <div className="h-4 w-16 bg-gray-300 rounded" />
-      <div className="w-px h-4 bg-gray-300" />
-      <div className="h-4 w-20 bg-gray-300 rounded" />
+      <div className="h-4 w-16 bg-muted rounded" />
+      <div className="w-px h-4 bg-muted" />
+      <div className="h-4 w-12 bg-muted rounded" />
+      <div className="w-px h-4 bg-muted" />
+      <div className="h-4 w-14 bg-muted rounded" />
+      <div className="w-px h-4 bg-muted" />
+      <div className="h-4 w-16 bg-muted rounded" />
+      <div className="w-px h-4 bg-muted" />
+      <div className="h-4 w-20 bg-muted rounded" />
     </div>
   );
 }

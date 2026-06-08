@@ -82,7 +82,7 @@ async function main() {
     const otherUsers = await prisma.user.findMany({
       where: {
         id: { not: ownerUser.id },
-        householdRole: null
+        householdRole: undefined
       }
     });
     

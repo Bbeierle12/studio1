@@ -21,11 +21,12 @@ import { PrintRecipeButton } from '@/components/print-recipe-button';
 import { IngredientList } from '@/components/ingredient-list';
 import type { Recipe } from '@/lib/types';
 import { SaveRecipeButton } from '@/components/save-recipe-button';
+import { RecipeImageFallback } from '@/components/recipe-image-fallback';
 
 type RecipePageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default async function RecipePage({ params }: RecipePageProps) {
@@ -110,15 +111,19 @@ export default async function RecipePage({ params }: RecipePageProps) {
       </div>
 
       <div className='my-8 overflow-hidden rounded-lg shadow-lg print:shadow-none print:border print:rounded-none print:my-4'>
-        <Image
-          src='https://placehold.co/1200x675/FFFFFF/FFFFFF'
-          alt={recipe.title}
-          width={1200}
-          height={675}
-          className='h-full w-full object-cover'
-          data-ai-hint={recipe.imageHint}
-          priority
-        />
+        {recipe.imageUrl ? (
+          <Image
+            src={recipe.imageUrl}
+            alt={recipe.title}
+            width={1200}
+            height={675}
+            className='h-full w-full object-cover'
+            data-ai-hint={recipe.imageHint}
+            priority
+          />
+        ) : (
+          <RecipeImageFallback className='aspect-video w-full' glyph='chef' />
+        )}
       </div>
 
       <div className='mx-auto max-w-2xl'>

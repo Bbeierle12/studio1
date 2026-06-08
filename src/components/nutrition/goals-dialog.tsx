@@ -187,7 +187,7 @@ export function GoalsDialog({
           {/* Calories */}
           <div className="space-y-2">
             <Label htmlFor="targetCalories">
-              Daily Calories Target <span className="text-red-500">*</span>
+              Daily Calories Target <span className="text-danger">*</span>
             </Label>
             <Input
               id="targetCalories"
@@ -199,7 +199,7 @@ export function GoalsDialog({
               })}
             />
             {errors.targetCalories && (
-              <p className="text-sm text-red-500">{errors.targetCalories.message}</p>
+              <p className="text-sm text-danger">{errors.targetCalories.message}</p>
             )}
           </div>
 
@@ -250,7 +250,7 @@ export function GoalsDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>
-                Start Date <span className="text-red-500">*</span>
+                Start Date <span className="text-danger">*</span>
               </Label>
               <Popover>
                 <PopoverTrigger asChild>

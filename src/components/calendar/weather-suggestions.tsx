@@ -51,22 +51,22 @@ export function WeatherSuggestions({
     const condition = weather.condition.toLowerCase();
     
     if (condition.includes('rain') || condition.includes('shower')) {
-      return <CloudRain className="h-5 w-5 text-blue-500" />;
+      return <CloudRain className="h-5 w-5 text-info" />;
     }
     if (condition.includes('snow')) {
-      return <Snowflake className="h-5 w-5 text-blue-300" />;
+      return <Snowflake className="h-5 w-5 text-info" />;
     }
     if (condition.includes('sun') || condition.includes('clear')) {
-      return <Sun className="h-5 w-5 text-yellow-500" />;
+      return <Sun className="h-5 w-5 text-warning" />;
     }
     if (condition.includes('cloud')) {
-      return <Cloud className="h-5 w-5 text-gray-400" />;
+      return <Cloud className="h-5 w-5 text-muted-foreground" />;
     }
     if (condition.includes('wind')) {
-      return <Wind className="h-5 w-5 text-gray-500" />;
+      return <Wind className="h-5 w-5 text-muted-foreground" />;
     }
-    
-    return <Cloud className="h-5 w-5 text-gray-400" />;
+
+    return <Cloud className="h-5 w-5 text-muted-foreground" />;
   };
 
   if (suggestions.length === 0) {

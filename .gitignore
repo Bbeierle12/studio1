@@ -43,6 +43,12 @@ next-env.d.ts
 # database
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
+
+# IDE
+.vs/
+.idea/
 
 # firebase
 firebase-debug.log
@@ -52,3 +58,7 @@ firestore-debug.log
 # Windows reserved names
 nul
 
+
+# Audit outputs
+.claude/audits/
+.env*.local

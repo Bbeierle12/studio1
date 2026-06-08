@@ -14,7 +14,7 @@ type RouteContext = {
  * POST /api/meal-plans/[id]/meals
  * Add a meal to a meal plan
  */
-export async function POST(request: NextRequest, { params }: RouteContext) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     }
 
     const userId = (session.user as any).id;
-    const { id: mealPlanId } = params;
+    const { id: mealPlanId } = await params;
     const body = await request.json();
 
     // Verify meal plan ownership
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
  * PATCH /api/meal-plans/[id]/meals
  * Update a meal in a meal plan
  */
-export async function PATCH(request: NextRequest, { params }: RouteContext) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -91,7 +91,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     }
 
     const userId = (session.user as any).id;
-    const { id: mealPlanId } = params;
+    const { id: mealPlanId } = await params;
     const body = await request.json();
 
     const { mealId, ...updates } = body;
@@ -143,7 +143,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
  * DELETE /api/meal-plans/[id]/meals
  * Delete a meal from a meal plan
  */
-export async function DELETE(request: NextRequest, { params }: RouteContext) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     

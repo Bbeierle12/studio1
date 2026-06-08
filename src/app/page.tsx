@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -110,72 +109,72 @@ export default function Home() {
   }
 
   // Authenticated user - show family foyer
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
   return (
     <div className='flex-grow'>
-      <div className='absolute inset-0 top-[65px] opacity-10'>
-        <Image
-          src='https://placehold.co/1920x1080/FFFFFF/FFFFFF'
-          alt='Cozy family kitchen background'
-          fill
-          className='object-cover'
-          data-ai-hint='warm family kitchen'
-        />
-      </div>
-      <main className='relative flex h-full grow flex-col items-center justify-center p-8'>
+      <main className='relative flex grow flex-col items-center p-4 md:p-8'>
         {/* Family Foyer - Simple Hub */}
         <div className='w-full max-w-6xl space-y-8'>
-          <div className='text-center mb-8'>
-            <h1 className='text-3xl md:text-4xl font-bold text-white mb-3'>
-              Welcome home, {user?.name || 'Friend'}
-            </h1>
-            <p className='text-lg text-secondary'>
-              Your family&apos;s recipe living room
-            </p>
-          </div>
-          
+          {/* Welcome hero — tokened warm gradient (white text sits on the brand
+              gradient, not a white box) */}
+          <section className='relative overflow-hidden rounded-[20px] p-8 shadow-md3-2 bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(24_46%_22%)_100%)]'>
+            <div className='absolute inset-0 bg-[radial-gradient(110%_90%_at_85%_0%,hsl(var(--meal-breakfast)/0.28)_0%,transparent_55%)]' />
+            <div className='relative text-center'>
+              <h1 className='font-headline text-3xl md:text-4xl font-bold text-white mb-2'>
+                {greeting}, {user?.name || 'Friend'}
+              </h1>
+              <p className='text-lg text-white/80'>
+                Your family&apos;s recipe living room
+              </p>
+            </div>
+          </section>
+
           {/* Simple Hub - The Living Room */}
           <div className='space-y-6'>
             {/* Week Calendar View */}
             <FoyerWeekCalendar />
-            
+
             {/* Quick Action Cards */}
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-              <Link href='/recipes'>
-                <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 border-transparent hover:border-primary/50'>
-                  <h3 className='text-lg font-semibold mb-2'>🍳 New Recipes</h3>
+              <Link href='/recipes' className='block h-full'>
+                <div className='h-full bg-card border border-border rounded-lg p-6 shadow-md3-1 hover:shadow-md3-3 transition-all hover:border-primary/50 cursor-pointer'>
+                  <h3 className='font-headline text-lg font-semibold mb-2'>New Recipes</h3>
                   <p className='text-sm text-muted-foreground'>Discover what to cook</p>
                 </div>
               </Link>
-              
-              <Link href='/recipes'>
-                <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 border-transparent hover:border-primary/50'>
-                  <h3 className='text-lg font-semibold mb-2'>📝 Family Notes</h3>
+
+              <Link href='/recipes' className='block h-full'>
+                <div className='h-full bg-card border border-border rounded-lg p-6 shadow-md3-1 hover:shadow-md3-3 transition-all hover:border-primary/50 cursor-pointer'>
+                  <h3 className='font-headline text-lg font-semibold mb-2'>Family Notes</h3>
                   <p className='text-sm text-muted-foreground'>Collections & memories</p>
                 </div>
               </Link>
-              
-              <div className='bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 opacity-60'>
-                <h3 className='text-lg font-semibold mb-2'>📖 Cookbook Format</h3>
-                <p className='text-sm text-muted-foreground'>Coming soon...</p>
+
+              <div className='h-full bg-card border border-dashed border-border rounded-lg p-6 opacity-70'>
+                <h3 className='font-headline text-lg font-semibold mb-2'>Cookbook Format</h3>
+                <p className='text-sm text-muted-foreground'>Coming soon…</p>
               </div>
             </div>
           </div>
-          
+
           {/* Quick Access */}
-          <div className='text-center mt-8'>
-            <p className='text-sm text-secondary mb-3'>Quick access</p>
+          <div className='text-center'>
+            <p className='text-sm text-muted-foreground mb-3'>Quick access</p>
             <div className='flex gap-3 justify-center flex-wrap'>
               <Button asChild variant='outline' size='sm'>
-                <Link href='/saved'>❤️ Favorites</Link>
+                <Link href='/saved'>Favorites</Link>
               </Button>
               <Button asChild variant='outline' size='sm'>
-                <Link href='/recipes?tag=seasonal'>🍂 Seasonal</Link>
+                <Link href='/recipes?tag=seasonal'>Seasonal</Link>
               </Button>
             </div>
           </div>
         </div>
       </main>
-      <footer className='absolute bottom-6 w-full text-center text-xs text-secondary/80'>
+      <footer className='w-full text-center text-xs text-muted-foreground py-6'>
         <p>Our Family Table • Where memories are made</p>
       </footer>
     </div>

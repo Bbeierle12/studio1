@@ -1,16 +1,24 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { compare, hash } from 'bcryptjs';
+import GoogleProvider from 'next-auth/providers/google';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import { compare } from 'bcryptjs';
 import { prisma } from '@/lib/data';
 import { 
   checkLoginAnomaly, 
   logLoginAttempt, 
   shouldLockAccount 
 } from '@/lib/login-anomaly';
-import { logLoginAnomaly, logAccountLocked } from '@/lib/security-webhooks';
+import { logLoginAnomaly, logAccountLocked, createSecurityEvent } from '@/lib/security-webhooks';
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true, // Automatically link Google account to existing user by email
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -30,8 +38,6 @@ export const authOptions: NextAuthOptions = {
 
         try {
           if (action === 'signup') {
-            // Registration is now handled by the /api/register endpoint
-            // This branch should not be used anymore
             throw new Error('Please use the registration form');
           } else {
             // Login existing user
@@ -40,7 +46,6 @@ export const authOptions: NextAuthOptions = {
             });
 
             if (!user) {
-              // Log failed attempt
               await logLoginAttempt({
                 email: email.toLowerCase().trim(),
                 ipAddress: ipAddress || 'unknown',
@@ -51,7 +56,6 @@ export const authOptions: NextAuthOptions = {
               return null;
             }
 
-            // Check if account should be locked
             const isLocked = await shouldLockAccount(email.toLowerCase().trim());
             if (isLocked) {
               await logAccountLocked(
@@ -62,9 +66,22 @@ export const authOptions: NextAuthOptions = {
               throw new Error('Account temporarily locked due to too many failed login attempts');
             }
 
+            // We must verify the password exists before comparing.
+            // OAuth-only users might not have a password.
+            if (!user.password) {
+               await logLoginAttempt({
+                email: email.toLowerCase().trim(),
+                ipAddress: ipAddress || 'unknown',
+                userAgent: userAgent || 'unknown',
+                successful: false,
+                userId: user.id,
+                failureReason: 'invalid_password_oauth_user',
+              });
+              throw new Error('Please sign in with Google or reset your password.');
+            }
+
             const isPasswordValid = await compare(password, user.password);
             if (!isPasswordValid) {
-              // Log failed attempt
               await logLoginAttempt({
                 email: email.toLowerCase().trim(),
                 ipAddress: ipAddress || 'unknown',
@@ -76,7 +93,6 @@ export const authOptions: NextAuthOptions = {
               return null;
             }
 
-            // Check if user is active
             if (!user.isActive) {
               await logLoginAttempt({
                 email: email.toLowerCase().trim(),
@@ -89,7 +105,6 @@ export const authOptions: NextAuthOptions = {
               throw new Error('Account is suspended');
             }
 
-            // Check for login anomalies
             const anomalyCheck = await checkLoginAnomaly(
               email.toLowerCase().trim(),
               ipAddress || 'unknown',
@@ -97,7 +112,6 @@ export const authOptions: NextAuthOptions = {
             );
 
             if (anomalyCheck.isAnomalous) {
-              // Log anomaly event
               await logLoginAnomaly(
                 user.id,
                 anomalyCheck.reasons,
@@ -106,7 +120,6 @@ export const authOptions: NextAuthOptions = {
                 userAgent
               );
 
-              // Block if high risk
               if (anomalyCheck.shouldBlock) {
                 await logLoginAttempt({
                   email: email.toLowerCase().trim(),
@@ -120,13 +133,11 @@ export const authOptions: NextAuthOptions = {
               }
             }
 
-            // Update last login
             await prisma.user.update({
               where: { id: user.id },
               data: { lastLogin: new Date() },
             });
 
-            // Log successful login
             await logLoginAttempt({
               email: email.toLowerCase().trim(),
               ipAddress: ipAddress || 'unknown',
@@ -158,6 +169,35 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
   },
   callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      if (account?.provider === 'google') {
+        const userEmail = user.email?.toLowerCase().trim();
+        if (!userEmail) return false;
+
+        // Perform anomaly detection for Google Sign In. 
+        // We do not have direct ipAddress/userAgent here from the standard callback easily.
+        // We pass "google-oauth" to satisfy the DB logging requirements.
+        const anomalyCheck = await checkLoginAnomaly(
+          userEmail,
+          'google-oauth',
+          'google-oauth'
+        );
+
+        if (anomalyCheck.isAnomalous && anomalyCheck.shouldBlock) {
+          await logLoginAttempt({
+            email: userEmail,
+            ipAddress: 'google-oauth',
+            userAgent: 'google-oauth',
+            successful: false,
+            failureReason: 'high_risk_anomaly',
+          });
+          return false; // Block sign-in
+        }
+
+        return true;
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -180,8 +220,41 @@ export const authOptions: NextAuthOptions = {
     },
   },
   events: {
+    async linkAccount({ user, account, profile }) {
+      if (account.provider === 'google') {
+         await createSecurityEvent({
+            userId: user.id,
+            eventType: 'suspicious_activity', // Or 'login_success', mapped to available enums
+            severity: 'low',
+            description: `Google account linked to profile successfully`,
+            metadata: { provider: account.provider },
+            ipAddress: 'google-oauth',
+            userAgent: 'google-oauth'
+         });
+      }
+    },
     async signIn({ user, account, profile, isNewUser }) {
-      console.log('User signed in:', { userId: user.id, email: user.email });
+      // Log the user id only
+      console.log('User signed in:', { userId: user.id, provider: account?.provider });
+      
+      // Update lastLogin for OAuth users here
+      if (account?.provider === 'google') {
+         try {
+           await prisma.user.update({
+             where: { id: user.id },
+             data: { lastLogin: new Date() }
+           });
+           await logLoginAttempt({
+             email: user.email || 'unknown',
+             ipAddress: 'google-oauth',
+             userAgent: 'google-oauth',
+             successful: true,
+             userId: user.id,
+           });
+         } catch(e) {
+           console.error("Failed to update OAuth user last login", e);
+         }
+      }
     },
     async signOut({ token }) {
       console.log('User signed out:', { userId: token?.id });

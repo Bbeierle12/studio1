@@ -181,11 +181,11 @@ export function GroceryDeliveryExport({ items, trigger }: GroceryDeliveryExportP
                             </div>
                           </div>
                           {service.available ? (
-                            <Badge variant="outline" className="text-green-600">
+                            <Badge variant="outline" className="text-success">
                               Available
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-gray-400">
+                            <Badge variant="outline" className="text-muted-foreground">
                               Coming Soon
                             </Badge>
                           )}

@@ -97,7 +97,7 @@ export default function AdminDashboard() {
         <h1 className='text-3xl font-bold mb-2'>Admin Dashboard</h1>
         <p className='text-muted-foreground'>
           Welcome back, {user.name}. You are logged in as{' '}
-          <span className='font-semibold'>{user.role.replace('_', ' ')}</span>
+          <span className='font-semibold'>{(user.role || 'USER').replace('_', ' ')}</span>
         </p>
       </div>
 

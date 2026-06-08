@@ -1,9 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { randomUUID } from 'crypto';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+// Map allowed MIME types to a fixed, safe extension. The destination filename is
+// derived entirely from these values — the client-supplied file.name is never used.
+const ALLOWED_TYPES: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+};
 
 export async function POST(request: NextRequest) {
   try {
+    // Require an authenticated session — middleware does not cover /api routes.
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -12,42 +31,32 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ 
-        error: 'Invalid file type. Only images are allowed.' 
+    const ext = ALLOWED_TYPES[file.type];
+    if (!ext) {
+      return NextResponse.json({
+        error: 'Invalid file type. Only images are allowed.'
       }, { status: 400 });
     }
 
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      return NextResponse.json({ 
-        error: 'File too large. Maximum size is 10MB.' 
+      return NextResponse.json({
+        error: 'File too large. Maximum size is 10MB.'
       }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create a unique filename
-    const timestamp = Date.now();
-    const filename = `${timestamp}-${file.name}`;
+    // Build the filename from server-controlled values only. The client's
+    // file.name is discarded entirely, eliminating path-traversal risk.
+    const filename = `${Date.now()}-${randomUUID()}.${ext}`;
     const uploadDir = join(process.cwd(), 'public', 'uploads');
-    
-    // Ensure upload directory exists
-    try {
-      await writeFile(join(uploadDir, filename), buffer);
-    } catch (error) {
-      // If directory doesn't exist, create it and try again
-      const fs = require('fs');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-        await writeFile(join(uploadDir, filename), buffer);
-      } else {
-        throw error;
-      }
-    }
+
+    // Ensure upload directory exists, then write.
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(join(uploadDir, filename), buffer);
 
     const fileUrl = `/uploads/${filename}`;
 
@@ -62,7 +71,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Failed to upload file' }, 
+      { error: 'Failed to upload file' },
       { status: 500 }
     );
   }
