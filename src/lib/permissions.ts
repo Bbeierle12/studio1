@@ -215,17 +215,20 @@ export function getRoleDescription(role: HouseholdRole): string {
 }
 
 /**
- * Get role badge color
+ * Get role badge color — token-based, pairs with `<Badge className={...}>`.
+ * Gold = owner (mirrors the Crown indicator), blue = curator, green = contributor,
+ * neutral = kid (view-only). Dark mode is handled by the tokens. See design
+ * handoff MIGRATION.md §5 (status pairs → status tokens).
  */
 export function getRoleBadgeColor(role: HouseholdRole): string {
   const colors: Record<HouseholdRole, string> = {
-    OWNER: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-    CURATOR: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    CONTRIBUTOR: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    KID: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    OWNER: 'bg-warning-muted text-warning',
+    CURATOR: 'bg-info-muted text-info',
+    CONTRIBUTOR: 'bg-success-muted text-success',
+    KID: 'bg-muted text-muted-foreground'
   };
-  
-  return colors[role] || 'bg-gray-100 text-gray-800';
+
+  return colors[role] || 'bg-muted text-muted-foreground';
 }
 
 /**
