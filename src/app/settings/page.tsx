@@ -27,11 +27,12 @@ import {
   EyeOff,
   Camera,
   Key,
-  BarChart3
+  BarChart3,
+  Loader2
 } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user, updateProfile } = useAuth();
+  const { user, loading, updateProfile } = useAuth();
   const { unit, toggleUnit } = useUnit();
   const router = useRouter();
   const { toast } = useToast();
@@ -68,6 +69,9 @@ export default function SettingsPage() {
   const [isApiKeySaving, setIsApiKeySaving] = useState(false);
 
   useEffect(() => {
+    // Wait for the session to resolve before deciding to redirect — otherwise
+    // the initial auth-loading flash bounces /settings -> /login -> /.
+    if (loading) return;
     if (!user) {
       router.push('/login');
       return;
@@ -95,7 +99,7 @@ export default function SettingsPage() {
 
     // Load API Keys
     loadApiKeys();
-  }, [user, router, unit]);
+  }, [user, loading, router, unit]);
 
   const loadApiKeys = async () => {
     try {
@@ -285,6 +289,14 @@ export default function SettingsPage() {
       setIsApiKeySaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!user) {
     return null;
