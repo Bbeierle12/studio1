@@ -6,6 +6,20 @@ import { useAuth } from '@/context/auth-context';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FoyerWeekCalendar } from '@/components/foyer/foyer-week-calendar';
+import {
+  ChefHat,
+  CalendarDays,
+  Sparkles,
+  CloudSun,
+  BookOpen,
+} from 'lucide-react';
+
+const QUICK_ACTIONS = [
+  { title: 'Browse recipes', desc: 'Find your next meal', href: '/recipes', Icon: BookOpen, hue: 'chart-1' },
+  { title: 'AI recipe chat', desc: 'Cook with what you have', href: '/recipe-chat', Icon: Sparkles, hue: 'chart-2' },
+  { title: 'Plan meals', desc: 'Fill out your week', href: '/meal-plan', Icon: CalendarDays, hue: 'chart-3' },
+  { title: 'Cook mode', desc: 'Hands-free, step by step', href: '/cook', Icon: ChefHat, hue: 'chart-4' },
+] as const;
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -112,23 +126,57 @@ export default function Home() {
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
   return (
     <div className='flex-grow'>
       <main className='relative flex grow flex-col items-center p-4 md:p-8'>
         {/* Family Foyer - Simple Hub */}
         <div className='w-full max-w-6xl space-y-8'>
-          {/* Welcome hero — tokened warm gradient (white text sits on the brand
-              gradient, not a white box) */}
-          <section className='relative overflow-hidden rounded-[20px] p-8 shadow-md3-2 bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(24_46%_22%)_100%)]'>
-            <div className='absolute inset-0 bg-[radial-gradient(110%_90%_at_85%_0%,hsl(var(--meal-breakfast)/0.28)_0%,transparent_55%)]' />
-            <div className='relative text-center'>
+          {/* Welcome hero — tokened warm gradient; left-aligned with weather,
+              greeting, and CTAs (white text sits on the brand gradient). */}
+          <section className='relative overflow-hidden rounded-[20px] p-8 md:p-9 shadow-md3-2 bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(24_46%_22%)_100%)]'>
+            <div className='pointer-events-none absolute inset-0 bg-[radial-gradient(110%_90%_at_85%_0%,hsl(var(--meal-breakfast)/0.28)_0%,transparent_55%)]' />
+            <ChefHat
+              className='pointer-events-none absolute -bottom-8 -right-4 h-40 w-40 text-white/10'
+              strokeWidth={1}
+              aria-hidden
+            />
+            <div className='relative max-w-2xl'>
+              {weather && (
+                <div className='mb-2 flex items-center gap-2 text-sm font-medium text-white/85'>
+                  <CloudSun className='h-4 w-4' />
+                  {weekday} · {weather.temperature}° {weather.condition}
+                </div>
+              )}
               <h1 className='font-headline text-3xl md:text-4xl font-bold text-white mb-2'>
-                {greeting}, {user?.name || 'Friend'}
+                {greeting}, {user?.name || 'Friend'}.
               </h1>
-              <p className='text-lg text-white/80'>
-                Your family&apos;s recipe living room
+              <p className='mb-5 max-w-xl text-base md:text-lg text-white/85'>
+                Your family&apos;s table for the week — plan meals, cook together,
+                and keep the recipes that matter.
               </p>
+              <div className='flex flex-wrap gap-3'>
+                <Button
+                  asChild
+                  className='bg-white text-primary hover:bg-white/90'
+                >
+                  <Link href='/meal-plan'>
+                    <CalendarDays className='mr-2 h-4 w-4' />
+                    Plan this week
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant='outline'
+                  className='border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white'
+                >
+                  <Link href='/recipe-chat'>
+                    <Sparkles className='mr-2 h-4 w-4' />
+                    Ask the AI chef
+                  </Link>
+                </Button>
+              </div>
             </div>
           </section>
 
@@ -138,38 +186,37 @@ export default function Home() {
             <FoyerWeekCalendar />
 
             {/* Quick Action Cards */}
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-              <Link href='/recipes' className='block h-full'>
-                <div className='h-full bg-card border border-border rounded-lg p-6 shadow-md3-1 hover:shadow-md3-3 transition-all hover:border-primary/50 cursor-pointer'>
-                  <h3 className='font-headline text-lg font-semibold mb-2'>New Recipes</h3>
-                  <p className='text-sm text-muted-foreground'>Discover what to cook</p>
-                </div>
-              </Link>
-
-              <Link href='/recipes' className='block h-full'>
-                <div className='h-full bg-card border border-border rounded-lg p-6 shadow-md3-1 hover:shadow-md3-3 transition-all hover:border-primary/50 cursor-pointer'>
-                  <h3 className='font-headline text-lg font-semibold mb-2'>Family Notes</h3>
-                  <p className='text-sm text-muted-foreground'>Collections & memories</p>
-                </div>
-              </Link>
-
-              <div className='h-full bg-card border border-dashed border-border rounded-lg p-6 opacity-70'>
-                <h3 className='font-headline text-lg font-semibold mb-2'>Cookbook Format</h3>
-                <p className='text-sm text-muted-foreground'>Coming soon…</p>
+            <div>
+              <p className='mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+                Jump back in
+              </p>
+              <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+                {QUICK_ACTIONS.map(({ title, desc, href, Icon, hue }) => (
+                  <Link
+                    key={title}
+                    href={href}
+                    className='flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-4 shadow-md3-1 transition-all hover:border-primary/40 hover:shadow-md3-3'
+                  >
+                    <span
+                      className='grid h-11 w-11 place-items-center rounded-xl'
+                      style={{
+                        background: `hsl(var(--${hue}) / 0.16)`,
+                        color: `hsl(var(--${hue}))`,
+                      }}
+                    >
+                      <Icon className='h-5 w-5' />
+                    </span>
+                    <span>
+                      <span className='block text-sm font-semibold text-foreground'>
+                        {title}
+                      </span>
+                      <span className='mt-0.5 block text-xs text-muted-foreground'>
+                        {desc}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
               </div>
-            </div>
-          </div>
-
-          {/* Quick Access */}
-          <div className='text-center'>
-            <p className='text-sm text-muted-foreground mb-3'>Quick access</p>
-            <div className='flex gap-3 justify-center flex-wrap'>
-              <Button asChild variant='outline' size='sm'>
-                <Link href='/saved'>Favorites</Link>
-              </Button>
-              <Button asChild variant='outline' size='sm'>
-                <Link href='/recipes?tag=seasonal'>Seasonal</Link>
-              </Button>
             </div>
           </div>
         </div>

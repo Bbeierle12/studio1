@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { Header } from '@/components/header';
-import { DynamicBreadcrumbs } from '@/components/dynamic-breadcrumbs';
-import { Sidebar } from '@/components/sidebar';
+import { AppShell } from '@/components/app-shell';
 import { AuthProvider } from '@/context/auth-context';
 import { NavigationCountsProvider } from '@/context/navigation-counts-context';
 import { ShoppingListProvider } from '@/context/shopping-list-context';
@@ -19,7 +17,6 @@ import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { PWAUpdatePrompt } from '@/components/pwa-update-prompt';
 import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 import { MaintenanceModeChecker } from '@/components/maintenance-mode-checker';
-import { BottomNav } from '@/components/ui/bottom-nav';
 import { Hotkeys } from '@/app/providers/Hotkeys';
 import { Playfair_Display, Roboto } from 'next/font/google';
 
@@ -113,18 +110,7 @@ export default function RootLayout({
                         <SavedRecipesProvider>
                           <UnitProvider>
                             <PrintProvider>
-                              <div className='relative flex min-h-screen w-full'>
-                                {/* Sidebar - fixed position, handled internally */}
-                                <Sidebar />
-
-                                {/* Main content area with sidebar offset */}
-                                <div className='flex flex-col flex-1 md:pl-64 transition-all duration-300 pb-20 md:pb-0'>
-                                  <Header />
-                                  <DynamicBreadcrumbs />
-                                  <main className='flex-1'>{children}</main>
-                                  <BottomNav />
-                                </div>
-                              </div>
+                              <AppShell>{children}</AppShell>
                               <Toaster />
                               <PrintDialog />
                               <PWAInstallPrompt />
