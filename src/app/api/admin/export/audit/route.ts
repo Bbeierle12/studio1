@@ -18,7 +18,9 @@ export async function GET(req: NextRequest) {
       select: { role: true },
     });
 
-    if (!adminUser || !hasPermission(adminUser.role, 'VIEW_AUDIT_LOGS')) {
+    // Bulk export is more sensitive than viewing; require the export-level
+    // permission (SUPER_ADMIN) rather than the view permission (CONTENT_ADMIN+).
+    if (!adminUser || !hasPermission(adminUser.role, 'EXPORT_AUDIT_LOGS')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

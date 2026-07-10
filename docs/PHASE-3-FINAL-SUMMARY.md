@@ -203,7 +203,7 @@ Phase 3 transformed the meal planning calendar from a basic scheduling tool into
 
 ### Guest Account:
 - **Email:** guest@ourfamilytable.com
-- **Password:** Guest123!
+- **Password:** <set via GUEST_PASSWORD env or shown once when create-guest.ts runs>
 - **Sample Recipes:** 4 pre-loaded
   - Chicken Stir-Fry
   - Breakfast Burrito
@@ -357,7 +357,7 @@ Phase 3 transformed the meal planning calendar from a basic scheduling tool into
 
 ### Test Account:
 - **Email:** guest@ourfamilytable.com
-- **Password:** Guest123!
+- **Password:** <set via GUEST_PASSWORD env or shown once when create-guest.ts runs>
 
 ### Commands:
 ```bash

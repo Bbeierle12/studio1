@@ -82,6 +82,35 @@ export async function PATCH(
 
     const body = await req.json();
 
+    // Allowlist the fields an admin may edit. Spreading the raw body into
+    // prisma.recipe.update() was a mass-assignment hole: it let a content admin
+    // set columns that must not be editable here — e.g. reassign ownership via
+    // `userId`, forge `slug`, rewrite `createdAt`, or flip `isFeatured`
+    // (which has its own dedicated, separately-permissioned route).
+    const EDITABLE_FIELDS = [
+      'title', 'contributor', 'prepTime', 'servings', 'course', 'cuisine',
+      'difficulty', 'ingredients', 'instructions', 'tags', 'summary', 'story',
+      'originStory', 'photoUrl', 'voiceNoteUrl', 'voiceNoteDuration',
+      'allergyTags', 'substitutions', 'dietaryFlags', 'imageUrl', 'imageHint',
+      'audioUrl', 'originName', 'originLat', 'originLng', 'servingSize',
+      'calories', 'protein', 'carbs', 'fat', 'fiber', 'sugar', 'sodium',
+      'stepTimers', 'voiceEnabled', 'prefetchPriority', 'printFriendly',
+    ] as const;
+
+    const data: Record<string, unknown> = {};
+    for (const field of EDITABLE_FIELDS) {
+      if (Object.prototype.hasOwnProperty.call(body, field)) {
+        data[field] = body[field];
+      }
+    }
+
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json(
+        { error: 'No editable fields provided' },
+        { status: 400 }
+      );
+    }
+
     // Get the recipe before update for audit log
     const existingRecipe = await prisma.recipe.findUnique({
       where: { id: (await params).id },
@@ -100,7 +129,7 @@ export async function PATCH(
     // Update recipe
     const updatedRecipe = await prisma.recipe.update({
       where: { id: (await params).id },
-      data: body,
+      data,
       select: {
         id: true,
         title: true,
@@ -121,8 +150,8 @@ export async function PATCH(
         entityId: (await params).id,
         changes: {
           before: existingRecipe,
-          after: body,
-        },
+          after: data as Record<string, any>,
+        } as any,
         ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
         userAgent: req.headers.get('user-agent') || 'unknown',
       },

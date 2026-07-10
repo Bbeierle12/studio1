@@ -2,12 +2,45 @@ import { NextRequest } from 'next/server';
 import { RecipeChatEngine } from '@/lib/recipe-chat/recipe-chat-engine';
 import { getOrCreateContext, updateRecipeInDB, saveChatInteraction } from '@/lib/recipe-chat/helpers';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import {
+  checkRateLimit,
+  getRateLimitIdentifier,
+  formatRateLimitError,
+  RATE_LIMITS,
+} from '@/lib/rate-limit';
 
 const engine = new RecipeChatEngine();
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession();
+    // Require an authenticated session. Without passing authOptions the session
+    // is never resolved, which left this route effectively unauthenticated and
+    // able to stream (billable) OpenAI completions for anonymous callers.
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string } | undefined)?.id;
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Rate limit expensive AI streaming per user to contain cost-based abuse.
+    const identifier = getRateLimitIdentifier(
+      userId,
+      req.headers.get('x-forwarded-for') || undefined
+    );
+    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.AI_ASSISTANT);
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: formatRateLimitError(rateLimit.resetIn, RATE_LIMITS.AI_ASSISTANT.message),
+        }),
+        { status: 429, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { messages, context, mode } = await req.json();
 
   // Check if API key is configured
@@ -20,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get or create recipe context
-    const recipeContext = await getOrCreateContext(session?.user?.id, context);
+    const recipeContext = await getOrCreateContext(userId, context);
 
     // Process through recipe chat engine
     const stream = await engine.processMessage(
@@ -82,7 +115,6 @@ export async function POST(req: NextRequest) {
     return new Response(
       JSON.stringify({
         error: 'Failed to process recipe chat',
-    details: error instanceof Error ? error.message : 'Unknown error',
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );

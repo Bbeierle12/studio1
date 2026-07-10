@@ -18,7 +18,10 @@ export async function GET(req: NextRequest) {
       select: { role: true },
     });
 
-    if (!adminUser || !hasPermission(adminUser.role, 'VIEW_ANALYTICS')) {
+    // Exporting data (including user emails) requires the export permission
+    // (CONTENT_ADMIN+), not merely the analytics view permission which also
+    // includes SUPPORT_ADMIN.
+    if (!adminUser || !hasPermission(adminUser.role, 'EXPORT_DATA')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
@@ -8,16 +9,25 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const prisma = new PrismaClient();
 
+// Generate a strong random guest password meeting the app's complexity policy.
+function generateGuestPassword(): string {
+  // base64url gives mixed case + digits; append fixed symbol/upper/lower/digit
+  // to guarantee every required character class is present.
+  return crypto.randomBytes(18).toString('base64url') + 'Aa1!';
+}
+
 async function main() {
   console.log('🎭 Creating Guest Account...\n');
 
-  // Guest account details
-  const guestEmail = 'guest@ourfamilytable.com';
-  const guestPassword = 'Guest123!';
+  // Guest account details. The password is NEVER hardcoded: it comes from the
+  // GUEST_PASSWORD env var, or a strong random one is generated per run and
+  // printed once below. A shared, committed password would let anyone who reads
+  // the repo log into every deployment.
+  const guestEmail = process.env.GUEST_EMAIL || 'guest@ourfamilytable.com';
+  const guestPassword = process.env.GUEST_PASSWORD || generateGuestPassword();
   const guestName = 'Guest User';
 
   console.log(`Email: ${guestEmail}`);
-  console.log(`Password: ${guestPassword}`);
   console.log(`Name: ${guestName}\n`);
 
   // Hash password

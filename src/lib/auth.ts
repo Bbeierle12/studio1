@@ -17,7 +17,11 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      allowDangerousEmailAccountLinking: true, // Automatically link Google account to existing user by email
+      // Do NOT auto-link Google logins to an existing password account by email.
+      // Auto-linking means anyone able to present a Google identity for an
+      // address inherits the pre-existing local account and its role. Linking
+      // should be an explicit, already-authenticated action.
+      allowDangerousEmailAccountLinking: false,
     }),
     CredentialsProvider({
       name: 'credentials',
@@ -205,6 +209,25 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.role = (user as any).role || 'USER';
         token.isActive = (user as any).isActive !== false;
+        return token;
+      }
+
+      // On subsequent requests (no `user`), re-read role and active status from
+      // the database so privilege/suspension changes take effect immediately
+      // rather than being cached in the JWT for the 30-day session lifetime.
+      if (token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true, isActive: true },
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.isActive = dbUser.isActive;
+          }
+        } catch (error) {
+          console.error('Failed to refresh token from database:', error);
+        }
       }
       return token;
     },

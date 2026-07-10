@@ -4,6 +4,23 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/data';
 import { createUserOpenAI, getModelName, withRetry } from '@/lib/openai-utils';
+import {
+  checkRateLimit,
+  getRateLimitIdentifier,
+  formatRateLimitError,
+  RATE_LIMITS,
+} from '@/lib/rate-limit';
+
+// Only accept image types the vision model can use. file.type is
+// attacker-controlled, so this is a coarse gate, not a guarantee.
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+]);
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,12 +45,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Each request makes two GPT-4-Turbo vision calls, so throttle per user to
+    // contain cost-based abuse (this route previously had no rate limiting).
+    const identifier = getRateLimitIdentifier(
+      user.id,
+      request.headers.get('x-forwarded-for') || undefined
+    );
+    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.AI_RECIPE_GENERATION);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: formatRateLimitError(rateLimit.resetIn, RATE_LIMITS.AI_RECIPE_GENERATION.message) },
+        { status: 429 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const isHandwritten = formData.get('isHandwritten') === 'true';
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    // Validate type and size before embedding the image into (billable) model
+    // calls. Rejects non-images and oversized uploads.
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      return NextResponse.json(
+        { error: 'Invalid file type. Only JPEG, PNG, GIF, or WebP images are allowed.' },
+        { status: 400 }
+      );
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      return NextResponse.json(
+        { error: 'File too large. Maximum size is 10MB.' },
+        { status: 400 }
+      );
     }
 
     // Convert file to base64

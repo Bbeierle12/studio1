@@ -54,6 +54,12 @@ export async function GET(req: NextRequest) {
     const exportFormat = searchParams.get('export');
     const includeStats = searchParams.get('stats') === 'true';
 
+    // Exporting the full audit trail (up to 10,000 rows) is more sensitive than
+    // paginated viewing; require the export-level permission (SUPER_ADMIN).
+    if (exportFormat && !hasPermission(adminUser.role, 'EXPORT_AUDIT_LOGS')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const result = await searchAuditLogs({
       userId,
       action: action as any,
