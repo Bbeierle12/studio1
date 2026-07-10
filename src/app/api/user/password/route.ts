@@ -91,8 +91,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // Hash new password. Use cost 12 to match registration/seed — hashing at a
+    // lower factor here would silently weaken the stored hash on every change.
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     // Update password
     await prisma.user.update({

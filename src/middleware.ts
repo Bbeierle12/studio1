@@ -61,18 +61,25 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
-        
+
         // Allow access to public routes (login, register, and maintenance pages)
         if (PUBLIC_ROUTES.includes(pathname)) {
           return true;
         }
-        
+
+        // Deny suspended accounts everywhere else. The jwt callback refreshes
+        // `isActive` from the database, so a just-suspended user is locked out
+        // on their next request rather than after their 30-day token expires.
+        if (token && (token as any).isActive === false) {
+          return false;
+        }
+
         // Check if route is admin
         if (pathname.startsWith('/admin')) {
           const role = token?.role as string;
           return ['SUPPORT_ADMIN', 'CONTENT_ADMIN', 'SUPER_ADMIN'].includes(role || '');
         }
-        
+
         // All other routes require authentication
         return !!token;
       },

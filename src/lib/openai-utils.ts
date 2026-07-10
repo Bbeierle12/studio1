@@ -7,42 +7,62 @@ import { createOpenAI } from '@ai-sdk/openai';
 import * as crypto from 'crypto';
 import { prisma } from '@/lib/data';
 
-// Encryption configuration (matches api-keys route)
+// Encryption configuration (must match the api-keys route that stores the keys)
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
+const SALT_LENGTH = 32;
+const V2_PREFIX = 'v2:';
 
-/**
- * Get encryption key from environment
- */
-function getEncryptionKey(): Buffer {
-  const key = process.env.API_KEY_ENCRYPTION_SECRET;
-  if (!key) {
+function requireSecret(): string {
+  const secret = process.env.API_KEY_ENCRYPTION_SECRET;
+  if (!secret) {
     throw new Error('API_KEY_ENCRYPTION_SECRET is not set');
   }
-  return crypto.pbkdf2Sync(key, 'salt', 100000, 32, 'sha256');
+  return secret;
 }
 
 /**
- * Decrypt API key
+ * Derive the AES key. v2 records carry a per-record random salt; legacy records
+ * used the static literal salt 'salt'.
+ */
+function deriveKey(salt: Buffer): Buffer {
+  return crypto.pbkdf2Sync(requireSecret(), salt, 100000, 32, 'sha256');
+}
+
+/**
+ * Decrypt API key. Handles both the v2 per-record-salt format written by the
+ * api-keys route and the legacy static-salt format, so keys set through the
+ * settings UI (v2) decrypt correctly here — previously this only understood the
+ * legacy layout and silently failed on v2 keys, falling back to the system key.
  */
 export function decryptApiKey(encryptedText: string): string {
-  const key = getEncryptionKey();
-  
-  // Extract iv, authTag, and encrypted data
-  const iv = Buffer.from(encryptedText.slice(0, IV_LENGTH * 2), 'hex');
+  let key: Buffer;
+  let body: string;
+
+  if (encryptedText.startsWith(V2_PREFIX)) {
+    body = encryptedText.slice(V2_PREFIX.length);
+    const salt = Buffer.from(body.slice(0, SALT_LENGTH * 2), 'hex');
+    body = body.slice(SALT_LENGTH * 2);
+    key = deriveKey(salt);
+  } else {
+    body = encryptedText;
+    key = crypto.pbkdf2Sync(requireSecret(), 'salt', 100000, 32, 'sha256');
+  }
+
+  const iv = Buffer.from(body.slice(0, IV_LENGTH * 2), 'hex');
   const authTag = Buffer.from(
-    encryptedText.slice(IV_LENGTH * 2, (IV_LENGTH + AUTH_TAG_LENGTH) * 2),
+    body.slice(IV_LENGTH * 2, (IV_LENGTH + AUTH_TAG_LENGTH) * 2),
     'hex'
   );
-  const encrypted = encryptedText.slice((IV_LENGTH + AUTH_TAG_LENGTH) * 2);
-  
+  const encrypted = body.slice((IV_LENGTH + AUTH_TAG_LENGTH) * 2);
+
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
-  
+
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
-  
+
   return decrypted;
 }
 

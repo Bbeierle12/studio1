@@ -183,7 +183,7 @@ npx prisma generate
 
 ## Next Steps
 1. **Restart TypeScript Server** to load Prisma Client types
-2. **Test with Guest Account**: guest@ourfamilytable.com / Guest123!
+2. **Test with Guest Account**: guest@ourfamilytable.com / <set via GUEST_PASSWORD env or shown once when create-guest.ts runs>
 3. **Optional**: Implement drag & drop if needed
 4. **Phase 4**: Weather-based meal suggestions, nutritional tracking, or mobile PWA
 

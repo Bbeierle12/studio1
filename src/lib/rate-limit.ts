@@ -57,6 +57,14 @@ export const RATE_LIMITS = {
     maxRequests: 100,     // 100 requests
     windowMs: 60000,      // per minute
     message: 'Too many requests. Please slow down.'
+  },
+
+  // Authentication endpoints (registration / login) - throttle per IP to slow
+  // brute-force, password spraying, and account-creation spam.
+  AUTH: {
+    maxRequests: 10,      // 10 attempts
+    windowMs: 900000,     // per 15 minutes
+    message: 'Too many attempts. Please wait a few minutes and try again.'
   }
 };
 

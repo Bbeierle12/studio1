@@ -6,7 +6,7 @@
 
 ```
 Email:    guest@ourfamilytable.com
-Password: Guest123!
+Password: <set via GUEST_PASSWORD env or shown once when create-guest.ts runs>
 ```
 
 ---
@@ -165,7 +165,7 @@ npx prisma studio
 
 ### Can't Log In?
 1. Verify dev server is running: http://localhost:9002
-2. Check credentials are exactly: `guest@ourfamilytable.com` / `Guest123!`
+2. Check credentials are exactly: `guest@ourfamilytable.com` / `<set via GUEST_PASSWORD env or shown once when create-guest.ts runs>`
 3. Try resetting the guest account: `npx tsx scripts/create-guest.ts`
 
 ### No Recipes Showing?

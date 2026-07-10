@@ -6,7 +6,7 @@
 
 ```
 Email:    guest@ourfamilytable.com
-Password: Guest123!
+Password: <set via GUEST_PASSWORD env or shown once when create-guest.ts runs>
 ```
 
 ## What You Get
