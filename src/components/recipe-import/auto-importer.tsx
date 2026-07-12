@@ -35,15 +35,47 @@ export function AutoImporter() {
     if (targetUrl) {
       setIsActive(true);
       processImport(targetUrl);
+    } else if (shareText && shareText.trim().length > 10) {
+      setIsActive(true);
+      processAiImport(shareText);
     }
   }, [searchParams]);
+
+  async function processAiImport(text: string) {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    try {
+      setStatus(`Using AI to extract recipe from shared text...`);
+      
+      const response = await fetch('/api/recipe-import/ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text })
+      });
+      
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Failed to extract recipe with AI');
+      }
+      
+      const recipe = await response.json();
+      setStatus('Cataloging and saving...');
+      await saveRecipe(recipe, 'Imported via AI Share');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'An error occurred during AI import.');
+    }
+  }
 
   async function processImport(url: string) {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
 
     try {
-      setStatus(`Fetching recipe from social media...`);
+      setStatus(`Fetching recipe from social media URL...`);
       
       const response = await fetch('/api/recipes/import', {
         method: 'POST',
@@ -59,10 +91,16 @@ export function AutoImporter() {
       }
       
       const data = await response.json();
-      const recipe = data.recipe;
-      
       setStatus('Cataloging and saving...');
-      
+      await saveRecipe(data.recipe, `Imported from ${url}`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'An error occurred during import.');
+    }
+  }
+
+  async function saveRecipe(recipe: any, story: string) {
+    try {
       // Auto-save using the action
       const formData = new FormData();
       formData.append('title', recipe.title || 'Imported Recipe');
@@ -84,7 +122,7 @@ export function AutoImporter() {
       formData.append('instructions', formattedInstructions);
       
       formData.append('tags', 'imported');
-      formData.append('story', `Imported from ${url}`);
+      formData.append('story', story);
       
       const result = await addRecipeAction({ message: '' }, formData);
       
