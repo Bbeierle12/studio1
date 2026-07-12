@@ -109,5 +109,14 @@
         }
       ]
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/recipes/import",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

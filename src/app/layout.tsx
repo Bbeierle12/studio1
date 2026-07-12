@@ -38,34 +38,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Our Family Table',
-    template: '%s · Our Family Table',
-  },
+  title: 'Our Family Table',
   description: 'A warm home for your family’s recipes and weekly meal planning.',
-  applicationName: 'Our Family Table',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Our Family Table',
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  openGraph: {
-    type: 'website',
-    siteName: 'Our Family Table',
-    title: 'Our Family Table',
-    description:
-      'A warm home for your family’s recipes and weekly meal planning.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Our Family Table',
-    description:
-      'A warm home for your family’s recipes and weekly meal planning.',
-  },
 };
 
 export const viewport: Viewport = {
