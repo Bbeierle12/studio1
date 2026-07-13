@@ -1,0 +1,20 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#734d2e"/>
+  <circle cx="256" cy="256" r="140" fill="none" stroke="#f7f3ef" stroke-width="16" opacity="0.35"/>
+  <circle cx="256" cy="256" r="96" fill="#f7f3ef" opacity="0.12"/>
+
+  <!-- fork -->
+  <g fill="#f7f3ef">
+    <rect x="168" y="150" width="12" height="70" rx="6"/>
+    <rect x="192" y="150" width="12" height="70" rx="6"/>
+    <rect x="216" y="150" width="12" height="70" rx="6"/>
+    <path d="M162 214 h72 a10 10 0 0 1 10 10 v14 a46 46 0 0 1 -34 44 v76 a12 12 0 0 1 -24 0 v-76 a46 46 0 0 1 -34 -44 v-14 a10 10 0 0 1 10 -10 z"/>
+  </g>
+
+  <!-- spoon -->
+  <g fill="#f7f3ef">
+    <ellipse cx="326" cy="196" rx="38" ry="50"/>
+    <path d="M314 244 h24 v114 a12 12 0 0 1 -24 0 z"/>
+  </g>
+</svg>

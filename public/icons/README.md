@@ -1,32 +1,23 @@
-# PWA Icons Placeholder
+# PWA Icons
 
-This directory should contain PWA app icons in the following sizes:
+Generated — do not hand-edit. Run `npx tsx scripts/generate-pwa-icons.ts` to
+rebuild all eight sizes from the inline SVG source in that script (it also
+writes `public/icon-source.svg` for reference).
 
-- icon-72x72.png
-- icon-96x96.png
-- icon-128x128.png
-- icon-144x144.png
-- icon-152x152.png
-- icon-192x192.png
-- icon-384x384.png
-- icon-512x512.png
+Sizes: 72, 96, 128, 144, 152, 192, 384, 512.
 
-## How to Generate Icons
+## Why these matter
 
-### Option 1: Online Tools (Recommended)
-1. Visit https://realfavicongenerator.net/ or https://www.pwabuilder.com/
-2. Upload your logo/icon (512x512px recommended)
-3. Download the generated icon set
-4. Place icons in this directory
+Android will not treat the app as installable without valid 192px and 512px
+icons, and a PWA that is not installable never registers its `share_target` —
+so the "share a recipe from Instagram/TikTok into the app" flow depends on
+these files existing. They are not cosmetic.
 
-### Option 2: Image Editor
-1. Create a square logo in your preferred image editor
-2. Export in multiple sizes (see list above)
-3. Save to this directory
+Icons are declared `maskable any`, so Android may crop them to a circle. Keep
+any new artwork inside the centre 80% safe zone over a full-bleed background.
 
-### Option 3: Use Sharp (Node.js)
-See `scripts/generate-pwa-icons.ts` for automated generation script.
+## Rebranding
 
-## Temporary Placeholder
-Until you add custom icons, the app will use the favicon or default browser icons.
-The PWA functionality will still work without custom icons.
+Edit the `SOURCE_SVG` constant in `scripts/generate-pwa-icons.ts` (or swap in
+your own square source image) and re-run the script. Colors currently come from
+the app palette in `globals.css`: espresso `#734d2e`, warm cream `#f7f3ef`.

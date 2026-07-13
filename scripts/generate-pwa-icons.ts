@@ -1,90 +1,72 @@
 /**
- * PWA Icon Generator Script
- * 
- * This script helps generate PWA icons from a source image.
- * 
- * MANUAL STEPS REQUIRED:
- * 
- * 1. Create or obtain a square logo image (recommended: 512x512px or larger)
- *    - Save it as 'public/icon-source.png' or similar
- * 
- * 2. Use an online tool or image editor to generate the required sizes:
- *    Required sizes: 72, 96, 128, 144, 152, 192, 384, 512
- * 
- * 3. Recommended online tools:
- *    - https://realfavicongenerator.net/ (comprehensive)
- *    - https://www.pwabuilder.com/ (PWA focused)
- *    - https://favicon.io/ (simple)
- * 
- * 4. Save generated icons to 'public/icons/' folder:
- *    - icon-72x72.png
- *    - icon-96x96.png
- *    - icon-128x128.png
- *    - icon-144x144.png
- *    - icon-152x152.png
- *    - icon-192x192.png
- *    - icon-384x384.png
- *    - icon-512x512.png
- * 
- * 5. Optional: Create screenshots for app stores:
- *    - Mobile screenshot: 540x720px (save as 'public/screenshots/mobile-calendar.png')
- *    - Desktop screenshot: 1280x720px (save as 'public/screenshots/desktop-calendar.png')
- * 
- * ALTERNATIVE: Use sharp library (requires installation)
- * 
- * Install sharp: npm install --save-dev sharp
- * 
- * Then uncomment and run the script below:
+ * PWA Icon Generator
+ *
+ * Renders public/icons/icon-{size}.png for every size the manifest declares,
+ * from an inline SVG source. Android will not treat the app as installable
+ * without 192px and 512px icons — and a non-installable PWA never registers
+ * its share_target, so the "share a recipe to the app" flow depends on these.
+ *
+ * Icons are declared "maskable any": Android may crop them to a circle, so the
+ * glyph stays inside the safe zone (centre 80%) over a full-bleed background.
+ *
+ * Colors come from the app palette in globals.css:
+ *   espresso #734d2e (--primary), warm cream #f7f3ef (--background).
+ *
+ * Run: npx tsx scripts/generate-pwa-icons.ts
  */
+import sharp from 'sharp';
+import { mkdir, writeFile } from 'fs/promises';
+import path from 'path';
 
-/*
-const sharp = require('sharp');
-const fs = require('fs');
-const path = require('path');
+const SIZES = [72, 96, 128, 144, 152, 192, 384, 512];
+const OUTPUT_DIR = path.join(process.cwd(), 'public', 'icons');
 
-const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
-const sourceIcon = path.join(__dirname, '../public/icon-source.png');
-const outputDir = path.join(__dirname, '../public/icons');
+const ESPRESSO = '#734d2e';
+const CREAM = '#f7f3ef';
 
-// Create icons directory if it doesn't exist
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
-}
+/**
+ * A fork and spoon flanking a plate — legible at 72px, safe under circular
+ * masking. Drawn on a 512 grid and scaled per size.
+ */
+const SOURCE_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="${ESPRESSO}"/>
+  <circle cx="256" cy="256" r="140" fill="none" stroke="${CREAM}" stroke-width="16" opacity="0.35"/>
+  <circle cx="256" cy="256" r="96" fill="${CREAM}" opacity="0.12"/>
 
-// Generate icons
-async function generateIcons() {
-  for (const size of sizes) {
-    await sharp(sourceIcon)
-      .resize(size, size, {
-        fit: 'contain',
-        background: { r: 255, g: 255, b: 255, alpha: 0 }
-      })
-      .png()
-      .toFile(path.join(outputDir, `icon-${size}x${size}.png`));
-    
+  <!-- fork -->
+  <g fill="${CREAM}">
+    <rect x="168" y="150" width="12" height="70" rx="6"/>
+    <rect x="192" y="150" width="12" height="70" rx="6"/>
+    <rect x="216" y="150" width="12" height="70" rx="6"/>
+    <path d="M162 214 h72 a10 10 0 0 1 10 10 v14 a46 46 0 0 1 -34 44 v76 a12 12 0 0 1 -24 0 v-76 a46 46 0 0 1 -34 -44 v-14 a10 10 0 0 1 10 -10 z"/>
+  </g>
+
+  <!-- spoon -->
+  <g fill="${CREAM}">
+    <ellipse cx="326" cy="196" rx="38" ry="50"/>
+    <path d="M314 244 h24 v114 a12 12 0 0 1 -24 0 z"/>
+  </g>
+</svg>
+`;
+
+async function main() {
+  await mkdir(OUTPUT_DIR, { recursive: true });
+
+  const source = Buffer.from(SOURCE_SVG);
+  await writeFile(path.join(process.cwd(), 'public', 'icon-source.svg'), source);
+
+  for (const size of SIZES) {
+    const file = path.join(OUTPUT_DIR, `icon-${size}x${size}.png`);
+    await sharp(source).resize(size, size).png().toFile(file);
     console.log(`Generated icon-${size}x${size}.png`);
   }
-  
-  console.log('All icons generated successfully!');
+
+  console.log(`\nDone — ${SIZES.length} icons written to public/icons/`);
+  console.log('Replace public/icon-source.svg and re-run to rebrand.');
 }
 
-generateIcons().catch(console.error);
-*/
-
-// For now, create placeholder info
-console.log(`
-PWA Icon Generation Instructions
-=================================
-
-Current Status: Placeholder icons needed
-
-To complete PWA setup:
-1. Create or obtain a square logo (512x512px recommended)
-2. Use an online tool to generate icons (see script comments)
-3. Save icons to public/icons/ folder
-4. Icons will be automatically picked up by manifest.json
-
-The app will work without custom icons, but they improve user experience.
-`);
-
-export {};
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
