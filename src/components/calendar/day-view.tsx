@@ -91,7 +91,7 @@ export function DayView({ currentDate, mealPlan, mealPlans, weatherForecast, rec
   };
   
   const handleDeleteMeal = () => {
-    if (mealToDelete) {
+    if (mealToDelete && mealPlan) {
       deleteMeal({
         mealPlanId: mealPlan.id,
         mealId: mealToDelete.id
@@ -184,8 +184,8 @@ export function DayView({ currentDate, mealPlan, mealPlans, weatherForecast, rec
           </div>
         )}
 
-        {/* Weather-Based Suggestions */}
-        {weather && recipes.length > 0 && (
+        {/* Weather-Based Suggestions (quick-add requires an active plan) */}
+        {weather && recipes.length > 0 && mealPlan && (
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
@@ -224,14 +224,16 @@ export function DayView({ currentDate, mealPlan, mealPlans, weatherForecast, rec
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between text-foreground">
                     <span>{mealType}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAddMeal(mealType)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Meal
-                    </Button>
+                    {mealPlan && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddMeal(mealType)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Meal
+                      </Button>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -311,14 +313,16 @@ export function DayView({ currentDate, mealPlan, mealPlans, weatherForecast, rec
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <p>No meal planned for {mealType.toLowerCase()}</p>
-                      <Button
-                        variant="ghost"
-                        className="mt-2"
-                        onClick={() => handleAddMeal(mealType)}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add a meal
-                      </Button>
+                      {mealPlan && (
+                        <Button
+                          variant="ghost"
+                          className="mt-2"
+                          onClick={() => handleAddMeal(mealType)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add a meal
+                        </Button>
+                      )}
                     </div>
                   )}
                 </CardContent>
@@ -328,16 +332,18 @@ export function DayView({ currentDate, mealPlan, mealPlans, weatherForecast, rec
         </div>
       </div>
       
-      <AddMealDialog
-        open={showAddMeal}
-        onOpenChange={setShowAddMeal}
-        date={currentDate}
-        mealPlan={mealPlan}
-        weather={weather}
-        defaultMealType={selectedMealType}
-        existingMeal={editingMeal || undefined}
-        recipes={recipes as any}
-      />
+      {mealPlan && (
+        <AddMealDialog
+          open={showAddMeal}
+          onOpenChange={setShowAddMeal}
+          date={currentDate}
+          mealPlan={mealPlan}
+          weather={weather}
+          defaultMealType={selectedMealType}
+          existingMeal={editingMeal || undefined}
+          recipes={recipes as any}
+        />
+      )}
       
       {/* Quick Delete Confirmation */}
       <AlertDialog open={!!mealToDelete} onOpenChange={(open) => !open && setMealToDelete(null)}>

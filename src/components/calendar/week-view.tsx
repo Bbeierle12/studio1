@@ -153,8 +153,11 @@ export function WeekView({ currentDate, mealPlan, mealPlans, weatherForecast, re
                   return (
                     <div
                       key={mealType}
-                      className="h-24 border border-border rounded-lg p-2 mb-2 bg-card hover:bg-accent transition-colors cursor-pointer"
-                      onClick={() => handleAddMeal(date)}
+                      className={cn(
+                        'h-24 border border-border rounded-lg p-2 mb-2 bg-card',
+                        mealPlan && 'hover:bg-accent transition-colors cursor-pointer'
+                      )}
+                      onClick={mealPlan ? () => handleAddMeal(date) : undefined}
                     >
                       {meals.length > 0 ? (
                         <div className="space-y-1">
@@ -167,7 +170,7 @@ export function WeekView({ currentDate, mealPlan, mealPlans, weatherForecast, re
                             </div>
                           ))}
                         </div>
-                      ) : (
+                      ) : mealPlan ? (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -179,7 +182,7 @@ export function WeekView({ currentDate, mealPlan, mealPlans, weatherForecast, re
                         >
                           <Plus className="h-4 w-4 text-muted-foreground" />
                         </Button>
-                      )}
+                      ) : null}
                     </div>
                   );
                 })}
@@ -189,7 +192,7 @@ export function WeekView({ currentDate, mealPlan, mealPlans, weatherForecast, re
         </div>
       </div>
       
-      {selectedDate && (
+      {selectedDate && mealPlan && (
         <AddMealDialog
           open={showAddMeal}
           onOpenChange={setShowAddMeal}
