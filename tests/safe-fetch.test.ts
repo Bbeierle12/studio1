@@ -126,4 +126,18 @@ describe('fetchHtmlSafely', () => {
 
     await expect(fetchHtmlSafely('https://public.example.com/missing')).rejects.toThrow();
   });
+
+  it('explains bot-blocking (403) instead of implying a broken link', async () => {
+    (global.fetch as any).mockResolvedValue({
+      ok: false,
+      status: 403,
+      statusText: 'Forbidden',
+      headers: new Headers(),
+      text: () => Promise.resolve(''),
+    });
+
+    await expect(fetchHtmlSafely('https://public.example.com/blocked')).rejects.toThrow(
+      'blocks automated access'
+    );
+  });
 });

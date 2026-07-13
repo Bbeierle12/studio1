@@ -2,6 +2,7 @@ import { google } from '@ai-sdk/google';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import { GEMINI_MODEL_ID } from '@/lib/ai-config';
+import { fetchHtmlSafely } from '@/lib/safe-fetch';
 
 const ImportedRecipeSchema = z.object({
   title: z.string().describe('The title of the recipe.'),
@@ -19,33 +20,61 @@ const ImportedRecipeSchema = z.object({
 
 export type ImportedRecipe = z.infer<typeof ImportedRecipeSchema>;
 
+/** Cap on HTML handed to the model, to bound prompt cost. */
+const MAX_CONTENT_CHARS = 15000;
+
+/**
+ * Reduces a raw HTML page to the text most likely to contain the recipe.
+ * A blind substring of raw HTML is mostly <head> boilerplate — scripts,
+ * inlined CSS, and meta tags — which is how a real recipe page can yield an
+ * empty extraction. Prefer the JSON-LD Recipe block sites publish for search
+ * engines; fall back to tag-stripped body text.
+ */
+export function extractRecipeContent(html: string): string {
+  const jsonLdBlocks = html.matchAll(
+    /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  );
+  for (const block of jsonLdBlocks) {
+    const raw = block[1]?.trim();
+    // Matches both "@type":"Recipe" and "@type":["Recipe","NewsArticle"].
+    if (raw && /"@type"\s*:\s*(\[[^\]]*?)?["']Recipe["']/i.test(raw)) {
+      return raw.substring(0, MAX_CONTENT_CHARS);
+    }
+  }
+
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return text.substring(0, MAX_CONTENT_CHARS);
+}
+
 export async function importRecipeFromUrl(url: string): Promise<ImportedRecipe> {
-  // Validate URL format
-  let parsedUrl: URL;
+  // Fetch the page with SSRF protection (scheme allowlist, private-range
+  // blocking, redirect re-validation) — the URL is user-supplied.
+  let html: string;
   try {
-    parsedUrl = new URL(url);
+    ({ html } = await fetchHtmlSafely(url));
   } catch (e) {
-    throw new Error('Invalid URL');
-  }
-
-  // Fetch the page content
-  let response: Response;
-  try {
-    response = await fetch(parsedUrl.toString());
-  } catch (e) {
+    if (e instanceof Error && (e.message === 'Invalid URL' || e.message.includes('http(s)'))) {
+      throw new Error('Invalid URL');
+    }
+    if (e instanceof Error && (e.message.includes('disallowed') || e.message.includes('resolve'))) {
+      throw new Error('Invalid URL');
+    }
+    // Preserve the actionable "site blocks bots" message for the user.
+    if (e instanceof Error && e.message.includes('blocks automated access')) {
+      throw e;
+    }
     throw new Error('Failed to fetch the URL');
   }
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch the URL');
-  }
-
-  const htmlText = await response.text();
-  
-  // Basic stripping of excessive HTML to save tokens (could use a robust library like cheerio, 
-  // but for a lightweight pass, we can just send the first chunk or text content)
-  // To avoid huge prompts, we'll limit the text length.
-  const contentToAnalyze = htmlText.substring(0, 15000); 
+  const contentToAnalyze = extractRecipeContent(html);
 
   // Parse with Google Gemini
   try {
@@ -55,7 +84,7 @@ export async function importRecipeFromUrl(url: string): Promise<ImportedRecipe> 
       messages: [
         {
           role: 'user',
-          content: `You are an expert recipe parser. Extract the recipe details from the following webpage content. 
+          content: `You are an expert recipe parser. Extract the recipe details from the following webpage content.
 If there are no recipe details, do your best to summarize or return empty arrays.
 
 Content:
@@ -63,7 +92,7 @@ ${contentToAnalyze}`
         }
       ]
     });
-    
+
     return object;
   } catch (error) {
     console.error('Error parsing recipe from AI:', error);

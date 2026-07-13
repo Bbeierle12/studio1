@@ -120,6 +120,15 @@ export async function fetchHtmlSafely(rawUrl: string): Promise<{ html: string; f
   }
 
   if (!response || !response.ok) {
+    // Several large recipe publishers (Dotdash Meredith et al.) serve 403 to
+    // any datacenter IP regardless of headers. Say so, rather than implying
+    // the link is broken — sharing the caption text instead still works.
+    if (response?.status === 403 || response?.status === 401) {
+      throw new SafeFetchError(
+        'This site blocks automated access. Try sharing the recipe text instead of the link.',
+        response.status
+      )
+    }
     throw new SafeFetchError(
       `Failed to fetch URL: ${response?.statusText || 'unknown error'}`,
       response?.status || 502
