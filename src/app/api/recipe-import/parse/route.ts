@@ -7,6 +7,12 @@ import { prisma } from '@/lib/prisma'
 import { parseRecipeToInput, validateRecipeInput } from '@/lib/recipe-utils'
 import { generateUniqueSlug } from '@/lib/data'
 import { z } from 'zod'
+import {
+  checkRateLimit,
+  getRateLimitIdentifier,
+  formatRateLimitError,
+  RATE_LIMITS,
+} from '@/lib/rate-limit'
 
 const ImportRequestSchema = z.object({
   url: z.string().url().optional(),
@@ -19,6 +25,19 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limit per user: this route performs outbound fetches and DB writes.
+    const identifier = getRateLimitIdentifier(
+      session.user.id,
+      req.headers.get('x-forwarded-for') || undefined
+    )
+    const rateLimit = checkRateLimit(identifier, RATE_LIMITS.AI_ASSISTANT)
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: formatRateLimitError(rateLimit.resetIn, RATE_LIMITS.AI_ASSISTANT.message) },
+        { status: 429 }
+      )
     }
 
     const body = await req.json()
