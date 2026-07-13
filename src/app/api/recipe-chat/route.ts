@@ -71,11 +71,17 @@ export async function POST(req: NextRequest) {
             if (part.type === 'text-delta') {
               controller.enqueue(new TextEncoder().encode(part.text));
             } else if (part.type === 'tool-call' && part.toolName === 'update_recipe') {
+              const input = part.input as { updates?: unknown; nextQuestion?: string };
               try {
-                const input = part.input as { updates?: unknown };
                 await updateRecipeInDB(recipeContext.currentRecipe?.id, input.updates as any);
               } catch (e) {
                 console.error('Error updating recipe:', e);
+              }
+              // Gemini often answers with a tool call and no prose. Without this
+              // the user would watch an empty reply while the recipe silently
+              // updated, so surface the model's follow-up question as the text.
+              if (input.nextQuestion) {
+                controller.enqueue(new TextEncoder().encode(input.nextQuestion));
               }
             } else if (part.type === 'error') {
               console.error('Recipe chat stream error:', part.error);
