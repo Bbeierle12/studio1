@@ -1,28 +1,50 @@
-# Social Media Recipe Import Integration
+# Social Media Recipe Import
 
-## Overview
-This feature allows users to seamlessly import recipes from social media (like Instagram or TikTok) or websites directly into the Studio1 app using the native OS Share functionality (via the Web Share Target API). 
+Share a recipe from Instagram, TikTok, or any website into the app via the
+native OS share sheet, and it is parsed and saved automatically.
 
-## Implementation Details
+## How it works
 
-1. **Web Share Target Integration (`manifest.json`)**:
-   - The app's PWA manifest already contained a `share_target` pointing to `/recipes/import`. This allows the native mobile OS to pass the `url`, `title`, and `text` directly to the app when the user taps "Share" on their phone.
+1. **Share target (`public/manifest.json`)** — declares `share_target` pointing at
+   `/recipes/import` (GET, with `title`/`text`/`url` params). Android reads this
+   from the installed PWA to list the app in the system share sheet.
+2. **`AutoImporter` (`src/components/recipe-import/auto-importer.tsx`)** — reads the
+   share params and picks a path via `extractShareTarget` (`src/lib/share-import.ts`),
+   which handles a bare `url`, a URL inside `text` (Android), a URL embedded in a
+   caption, or caption-only text.
+3. **Two backends:**
+   - **URL** → `POST /api/recipes/import` → `importRecipeFromUrl`
+     (`src/lib/recipe-importer.ts`): SSRF-guarded fetch, extracts the page's
+     **JSON-LD Recipe block** when present (else tag-stripped text), then Gemini
+     structured output.
+   - **Caption text** → `POST /api/recipe-import/ai` → `parseRecipeFromText`
+     (`src/lib/ai-import.ts`): Gemini structured output directly.
+4. **Save** — `addRecipeAction` persists the recipe; the user lands on `/recipes`.
 
-2. **Backend API (`/api/recipes/import`)**:
-   - Created a new POST route at `/src/app/api/recipes/import/route.ts`.
-   - Uses a new utility `importRecipeFromUrl` (`src/lib/recipe-importer.ts`) that accepts a URL, fetches the raw HTML content, and uses `@ai-sdk/openai` to extract unstructured data into a structured recipe object.
+## Configuration
 
-3. **Frontend Auto-Importer (`src/components/recipe-import/auto-importer.tsx`)**:
-   - Integrated a Client Component that intercepts the `searchParams` loaded via the Share Target.
-   - Immediately detects the presence of a `url` or `text` (if Android puts the URL in the text field).
-   - Shows a full-screen loading overlay while hitting the backend API.
-   - Uses the existing `addRecipeAction` to automatically persist the extracted recipe into the database and catalog.
-   - Redirects to `/recipes` upon successful save.
+- `GOOGLE_GENERATIVE_AI_API_KEY` — required. Set in `.env.local` and all three
+  Vercel environments.
+- `GEMINI_MODEL` — optional override (default `gemini-3.5-flash`).
+
+## Known limitations
+
+- **Some publishers block server-side fetches.** AllRecipes, Serious Eats, and
+  Simply Recipes (Dotdash Meredith) return **403 to any datacenter IP**,
+  regardless of request headers. The importer detects this and tells the user to
+  share the recipe *text* instead of the link, which works. This is not a bug to
+  fix with header spoofing.
+- The share target only appears once the PWA is **installed** — Android needs a
+  valid 192px/512px icon and a publicly-fetchable manifest for that (see
+  `public/icons/README.md`).
 
 ## Testing
-- Automated unit tests were added in `tests/recipe-importer.test.ts` to ensure the importer correctly handles valid URLs, invalid URLs, and fetching errors.
-- Tests pass (`vitest`) and codebase strictly conforms to type checks (`tsc --noEmit`).
 
-## Next Steps
-- Enable any further visual polish for the auto-import loading state.
-- Test directly on a mobile device (iOS/Android) via the native share sheet.
+- `tests/share-import.test.ts` — share-param triage and the two backends'
+  differing recipe shapes (the client↔API contract).
+- `tests/recipe-importer.test.ts` — JSON-LD extraction, SSRF rejection, fetch failures.
+- `tests/ai-import.test.ts` — caption → structured recipe, defaults, error wrapping.
+- `tests/safe-fetch.test.ts` — private-range matrix, redirect re-validation.
+
+Verified live against real recipe URLs and a real social-style caption.
+Remaining acceptance gate: on-device share from the phone's share sheet.

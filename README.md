@@ -6,7 +6,7 @@ A Next.js application for managing and sharing family recipes with AI-powered fe
 
 - 🍳 Recipe management with rich metadata (prep time, servings, difficulty, cuisine)
 - 🧑‍🍳 User authentication with NextAuth.js
-- 🤖 AI-powered recipe summarization and generation (OpenAI)
+- 🤖 AI-powered recipe summarization, generation, and social-media import (Google Gemini)
 - 📅 **Meal Planning Calendar**: Plan meals with weather-based suggestions
 - 📱 Responsive design with Tailwind CSS and Radix UI
 - 🗃️ Database with Prisma and PostgreSQL
@@ -45,9 +45,10 @@ Plan your meals ahead with our integrated calendar system:
    cp .env.example .env.local
    ```
    Fill in your environment variables:
-   - `DATABASE_URL`: SQLite database path (default: `file:./dev.db`)
+   - `DATABASE_URL`: PostgreSQL connection string
    - `NEXTAUTH_SECRET`: Random string for NextAuth.js session encryption
-   - `OPENAI_API_KEY`: OpenAI API key for AI features (optional)
+   - `GOOGLE_GENERATIVE_AI_API_KEY`: Gemini API key, required for all AI features
+   - `GEMINI_MODEL`: optional model override (default: `gemini-3.5-flash`)
    - `NEXT_PUBLIC_OPENWEATHER_API_KEY`: OpenWeatherMap API key for weather features (optional)
    
    **Getting an OpenWeatherMap API Key:**
@@ -113,9 +114,9 @@ The project enforces code quality through:
 ## Architecture
 
 - **Framework**: Next.js 15 with App Router
-- **Database**: SQLite with Prisma ORM
+- **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: NextAuth.js with credentials provider
-- **AI**: Vercel AI SDK with OpenAI
+- **AI**: Vercel AI SDK with Google Gemini (Gemini-only — no OpenAI)
 - **UI**: Tailwind CSS + Radix UI components
 - **Deployment**: Vercel (recommended)
 

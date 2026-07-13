@@ -32,6 +32,32 @@ Deployment successful at: https://studio1-one-eosin.vercel.app
 - [x] Create `AutoImporter` frontend to automatically fetch, format, and save shared recipes
 - [x] Verify types with `tsc --noEmit` and tests with `vitest`
 
+## Phase 7: Social Import Finalization + Gemini-Only Migration (2026-07-13)
+
+Social import (was non-functional end to end):
+- [x] No AI key existed in any environment; wired `GOOGLE_GENERATIVE_AI_API_KEY`
+      into `.env.local` and all three Vercel environments
+- [x] `gemini-1.5-flash` was retired (live 404) → `gemini-3.5-flash`, with a
+      `GEMINI_MODEL` override; fixed `@ai-sdk/google` v4/ai-v5 incompatibility
+- [x] Fixed the text-share path: response envelope was never unwrapped, and the
+      two backends' ingredient shapes disagreed (saved empty/"undefined" recipes)
+- [x] Fixed server-side URL import (`parseFromUrl` used a relative fetch → always
+      threw in Node); content extraction now prefers the JSON-LD Recipe block
+- [x] Auth + rate limits + SSRF guards on both import routes
+- [x] PWA share target could never have registered: middleware auth-gated
+      `manifest.json`/`sw.js`/icons, and no icons existed. Fixed; icons generated.
+- [ ] **Acceptance gate: on-device share test from the phone**
+
+Gemini-only migration:
+- [x] All 6 AI flows, recipe-chat engine, cooking assistant, and vision OCR
+      migrated to `@ai-sdk/google`
+- [x] Per-user OpenAI key feature removed (route, Settings tab, `openai-utils`);
+      Prisma migration drops `User.openaiApiKey` — created, applied at deploy
+- [x] `@ai-sdk/openai`, `openai`, `@google/generative-ai` removed; CSP no longer
+      allowlists api.openai.com
+- [x] `tests/gemini-only.test.ts` guards against OpenAI creeping back
+- [x] 272 tests green, tsc clean, production build passes
+
 ## Phase 6: Full-Time Calendar View
 
 - [x] Refactored `MealPlanningCalendar` to display calendar views independently of active meal plan
