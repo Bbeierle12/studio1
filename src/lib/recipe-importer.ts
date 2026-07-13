@@ -1,4 +1,4 @@
-import { openai } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
@@ -46,10 +46,10 @@ export async function importRecipeFromUrl(url: string): Promise<ImportedRecipe> 
   // To avoid huge prompts, we'll limit the text length.
   const contentToAnalyze = htmlText.substring(0, 15000); 
 
-  // Parse with OpenAI
+  // Parse with Google Gemini
   try {
     const { object } = await generateObject({
-      model: openai('gpt-4o'), // Or 'gpt-4-turbo'
+      model: google('gemini-1.5-flash'),
       schema: ImportedRecipeSchema,
       messages: [
         {
