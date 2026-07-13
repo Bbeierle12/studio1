@@ -5,6 +5,11 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { addRecipeAction } from '@/app/actions';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  extractShareTarget,
+  normalizeIngredients,
+  normalizeInstructions,
+} from '@/lib/share-import';
 
 export function AutoImporter() {
   const searchParams = useSearchParams();
@@ -18,26 +23,20 @@ export function AutoImporter() {
 
   useEffect(() => {
     if (!searchParams) return;
-    
-    // Web Share API might put the URL in 'url' or 'text'
-    const shareUrl = searchParams.get('url');
-    const shareText = searchParams.get('text');
-    let targetUrl = shareUrl;
-    
-    if (!targetUrl && shareText && shareText.startsWith('http')) {
-      targetUrl = shareText;
-    } else if (!targetUrl && shareText) {
-      // Try to extract URL from text
-      const urlMatch = shareText.match(/https?:\/\/[^\s]+/);
-      if (urlMatch) targetUrl = urlMatch[0];
-    }
-    
-    if (targetUrl) {
-      setIsActive(true);
-      processImport(targetUrl);
-    } else if (shareText && shareText.trim().length > 10) {
-      setIsActive(true);
-      processAiImport(shareText);
+
+    const target = extractShareTarget({
+      url: searchParams.get('url'),
+      text: searchParams.get('text'),
+      title: searchParams.get('title'),
+    });
+
+    if (!target) return;
+
+    setIsActive(true);
+    if (target.kind === 'url') {
+      processImport(target.url);
+    } else {
+      processAiImport(target.text);
     }
   }, [searchParams]);
 
@@ -61,9 +60,9 @@ export function AutoImporter() {
         throw new Error(errData.error || 'Failed to extract recipe with AI');
       }
       
-      const recipe = await response.json();
+      const data = await response.json();
       setStatus('Cataloging and saving...');
-      await saveRecipe(recipe, 'Imported via AI Share');
+      await saveRecipe(data.recipe, 'Imported via AI Share');
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'An error occurred during AI import.');
@@ -101,25 +100,23 @@ export function AutoImporter() {
 
   async function saveRecipe(recipe: any, story: string) {
     try {
+      if (!recipe) {
+        throw new Error('The importer returned no recipe data.');
+      }
+
       // Auto-save using the action
       const formData = new FormData();
       formData.append('title', recipe.title || 'Imported Recipe');
       formData.append('contributor', 'Imported via Share');
-      formData.append('prepTime', recipe.prepTime?.toString() || '0');
+      // URL importer reports prepTime; the AI text importer reports totalTime.
+      formData.append('prepTime', (recipe.prepTime ?? recipe.totalTime)?.toString() || '0');
       formData.append('cookTime', recipe.cookTime?.toString() || '0');
       formData.append('servings', recipe.servings?.toString() || '1');
       
-      // Format ingredients
-      const formattedIngredients = recipe.ingredients
-        ? recipe.ingredients.map((i: any) => `${i.amount || ''} ${i.unit || ''} ${i.item}`.trim()).join('\n')
-        : '';
-      formData.append('ingredients', formattedIngredients);
-      
-      // Format instructions
-      const formattedInstructions = recipe.instructions
-        ? recipe.instructions.join('\n')
-        : '';
-      formData.append('instructions', formattedInstructions);
+      // Both backends land here: the URL importer returns {item, amount, unit}
+      // objects, the AI text importer returns plain strings.
+      formData.append('ingredients', normalizeIngredients(recipe?.ingredients).join('\n'));
+      formData.append('instructions', normalizeInstructions(recipe?.instructions).join('\n'));
       
       formData.append('tags', 'imported');
       formData.append('story', story);
