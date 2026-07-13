@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, Download, Wand2, ShoppingCart, BookTemplate } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Plus, Download, Wand2, ShoppingCart, BookTemplate, CloudOff } from 'lucide-react';
 import { MonthView } from './calendar/month-view';
 import { WeekView } from './calendar/week-view';
 import { DayView } from './calendar/day-view';
 import { MealPlan, PlannedMeal, WeatherForecast } from '@/lib/types';
 import { useMealPlan } from '@/hooks/use-meal-plan';
-import { useWeather } from '@/hooks/use-weather';
+import { useWeather, weatherUnavailableMessage } from '@/hooks/use-weather';
 import { CreateMealPlanDialog } from './calendar/create-meal-plan-dialog';
 import { GenerateMealPlanDialog } from './calendar/generate-meal-plan-dialog';
 import { ShoppingListDialog } from './calendar/shopping-list-dialog';
@@ -67,10 +67,11 @@ export function MealPlanningCalendar() {
 
   const { start: weatherStart, end: weatherEnd } = getBoundsForView();
 
-  const { weatherForecast, isLoading: weatherLoading } = useWeather(
-    weatherStart,
-    weatherEnd
-  );
+  const {
+    weatherForecast,
+    isLoading: weatherLoading,
+    unavailableReason: weatherUnavailable,
+  } = useWeather(weatherStart, weatherEnd);
   
   // Fetch user's recipes
   const { data: recipes = [], isLoading: recipesLoading } = useQuery<Recipe[]>({
@@ -276,6 +277,14 @@ export function MealPlanningCalendar() {
               {activeMealPlan.meals?.length || 0} meals planned
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Say why there is no weather, rather than leaving the cells silently blank. */}
+      {weatherUnavailable && !weatherLoading && (
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+          <CloudOff className="h-4 w-4 shrink-0" />
+          <span>{weatherUnavailableMessage(weatherUnavailable)}</span>
         </div>
       )}
 

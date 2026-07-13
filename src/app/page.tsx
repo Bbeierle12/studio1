@@ -6,6 +6,7 @@ import { useAuth } from '@/context/auth-context';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FoyerWeekCalendar } from '@/components/foyer/foyer-week-calendar';
+import { useWeather, getWeatherForDate } from '@/hooks/use-weather';
 import {
   ChefHat,
   CalendarDays,
@@ -24,12 +25,13 @@ const QUICK_ACTIONS = [
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [weather, setWeather] = useState<{
-    temperature: number;
-    condition: string;
-    humidity?: number;
-  } | null>(null);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Today's real forecast, at the user's actual coordinates. Null when we don't know —
+  // the greeting simply omits the weather rather than asserting a number.
+  const today = new Date();
+  const { weatherForecast } = useWeather(user ? today : undefined, user ? today : undefined);
+  const weather = getWeatherForDate(weatherForecast, today);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -51,46 +53,6 @@ export default function Home() {
     return () => clearTimeout(timeout);
   }, [loading, router]);
 
-  // Fetch weather on component mount
-  useEffect(() => {
-    async function fetchWeather() {
-      try {
-        // Get user's location
-        if ('geolocation' in navigator) {
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              const { latitude, longitude } = position.coords;
-              
-              // Mock weather data for now (replace with real API call)
-              // You can integrate with OpenWeatherMap, WeatherAPI, etc.
-              const mockWeather = {
-                temperature: 72,
-                condition: 'Sunny',
-                humidity: 45
-              };
-              
-              setWeather(mockWeather);
-            },
-            (error) => {
-              console.error('Error getting location:', error);
-              // Set default weather if location fails
-              setWeather({
-                temperature: 70,
-                condition: 'Clear',
-                humidity: 50
-              });
-            }
-          );
-        }
-      } catch (error) {
-        console.error('Failed to fetch weather:', error);
-      }
-    }
-    
-    if (user) {
-      fetchWeather();
-    }
-  }, [user]);
 
   // Show loading state
   if (loading && !loadingTimeout) {
@@ -146,7 +108,7 @@ export default function Home() {
               {weather && (
                 <div className='mb-2 flex items-center gap-2 text-sm font-medium text-white/85'>
                   <CloudSun className='h-4 w-4' />
-                  {weekday} · {weather.temperature}° {weather.condition}
+                  {weekday} · {Math.round(weather.temperature.current)}° {weather.condition}
                 </div>
               )}
               <h1 className='font-headline text-3xl md:text-4xl font-bold text-white mb-2'>

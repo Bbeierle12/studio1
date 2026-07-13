@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { PlannedMeal, MealPlan as MealPlanType, MealType, WeatherForecast } from '@/lib/types';
+import { PlannedMeal, MealPlan as MealPlanType, MealType } from '@/lib/types';
 import {
   getWeekBoundaries,
   getPastDays,
@@ -15,6 +15,7 @@ import {
   getMealsForDay,
   countMealsInRange
 } from '@/lib/calendar-utils';
+import { useWeather, getWeatherForDate } from '@/hooks/use-weather';
 import { CompactDayCard } from './compact-day-card';
 import { FeaturedTodayCard } from './featured-today-card';
 import { AddMealDialog } from '@/components/calendar/add-meal-dialog';
@@ -46,7 +47,6 @@ export function FoyerWeekCalendar() {
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [recipes, setRecipes] = useState<any[]>([]);
-  const [weather, setWeather] = useState<WeatherForecast | null>(null);
 
   // Dialog state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -62,6 +62,11 @@ export function FoyerWeekCalendar() {
   const pastDays = isCurrentWeek ? getPastDays(today, weekStart) : [];
   const futureDays = isCurrentWeek ? getFutureDays(today, weekEnd) : getFutureDays(currentDate, weekEnd);
 
+  // Real forecast for the visible week, at the user's actual coordinates. Null whenever
+  // we genuinely don't know — the cards hide the weather line rather than invent one.
+  const { weatherForecast } = useWeather(weekStart, weekEnd);
+  const weather = getWeatherForDate(weatherForecast, displayDate);
+
   // Get meals
   const allMeals = mealPlan?.meals || [];
   const todayMeals = getMealsForDay(displayDate, allMeals);
@@ -75,7 +80,6 @@ export function FoyerWeekCalendar() {
   useEffect(() => {
     fetchMealPlan();
     fetchRecipes();
-    fetchWeather();
   }, [currentDate]);
 
   const fetchRecipes = async () => {
@@ -109,49 +113,6 @@ export function FoyerWeekCalendar() {
       console.error('Error fetching meal plan:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchWeather = async () => {
-    try {
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          async () => {
-            // Mock weather for now (matches WeatherForecast type)
-            const mockWeather: WeatherForecast = {
-              date: new Date(),
-              temperature: {
-                high: 75,
-                low: 68,
-                current: 72
-              },
-              condition: 'Sunny',
-              precipitation: 0,
-              humidity: 45,
-              windSpeed: 5,
-              icon: '01d'
-            };
-            setWeather(mockWeather);
-          },
-          () => {
-            setWeather({
-              date: new Date(),
-              temperature: {
-                high: 73,
-                low: 65,
-                current: 70
-              },
-              condition: 'Clear',
-              precipitation: 0,
-              humidity: 50,
-              windSpeed: 3,
-              icon: '01d'
-            });
-          }
-        );
-      }
-    } catch (error) {
-      console.error('Failed to fetch weather:', error);
     }
   };
 

@@ -246,7 +246,14 @@ export type MealTemplate = {
 };
 
 export type WeatherForecast = {
-  date: Date;
+  /**
+   * "YYYY-MM-DD" in the forecast location's local calendar.
+   *
+   * Deliberately a string, not a Date. The server runs in UTC and the client does not,
+   * so a Date round-trips through JSON as an instant and lands on the previous day for
+   * half the world. The whole point of a daily forecast is which day it is.
+   */
+  dateKey: string;
   temperature: {
     high: number;
     low: number;

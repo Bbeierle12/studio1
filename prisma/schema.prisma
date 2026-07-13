@@ -238,19 +238,23 @@ model MealTemplate {
 
 model WeatherCache {
   id          String   @id @default(cuid())
-  date        DateTime @unique
-  latitude    Float
-  longitude   Float
+  dateKey     String   // "YYYY-MM-DD" in the forecast location's local calendar
+  latitude    Float    // rounded to 2dp (~1.1km)
+  longitude   Float    // rounded to 2dp (~1.1km)
   temperature Json     // { high: number, low: number, current: number }
-  condition   String   // sunny, cloudy, rainy, etc.
+  condition   String   // Clear, Clouds, Rain, etc.
   description String?  // Detailed description
-  precipitation Float  @default(0) // Percentage
+  precipitation Float  @default(0) // Max chance of rain across the day, 0-100
   humidity    Int?
   windSpeed   Float?
-  icon        String?  // Weather icon code
+  icon        String?  // Weather icon code (day variant)
   fetchedAt   DateTime @default(now())
-  
-  @@index([date])
+
+  // A forecast is only meaningful for a place. Keyed on date alone, this table was a
+  // single global cache: the first user to open the calendar served their own city's
+  // weather to every other user.
+  @@unique([dateKey, latitude, longitude])
+  @@index([dateKey])
   @@index([fetchedAt])
 }
 
