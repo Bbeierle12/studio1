@@ -16,7 +16,6 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "backfill:slugs": "tsx scripts/backfill-slugs.ts",
-    "test:openai": "tsx scripts/test-openai-config.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage"

@@ -68,7 +68,7 @@ console.log('----------------------');
 const requiredFiles = [
   { path: 'src/lib/rate-limit.ts', name: 'Rate Limiter' },
   { path: 'src/app/api/user/data-export/route.ts', name: 'Data Export Endpoint' },
-  { path: 'OPENAI-SECURITY-GUIDE.md', name: 'Security Guide' },
+  { path: 'GEMINI-SECURITY-GUIDE.md', name: 'Security Guide' },
   { path: 'PRIVACY-COMPLIANCE-GUIDE.md', name: 'Privacy Guide' },
   { path: 'SECURITY-COMMIT-CHECKLIST.md', name: 'Commit Checklist' },
   { path: 'SECURITY-UPDATE-SUMMARY.md', name: 'Update Summary' },
@@ -89,17 +89,17 @@ console.log('\nTest 5: Environment Variables');
 console.log('-----------------------------');
 require('dotenv').config({ path: '.env.local' });
 
-const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
-const keyLength = process.env.OPENAI_API_KEY?.length || 0;
-const isPlaceholder = process.env.OPENAI_API_KEY === 'your_openai_api_key_here';
+const hasGeminiKey = !!process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+const keyLength = process.env.GOOGLE_GENERATIVE_AI_API_KEY?.length || 0;
+const isPlaceholder = process.env.GOOGLE_GENERATIVE_AI_API_KEY === 'your_gemini_api_key_here';
 
 const hasEncryptionSecret = !!process.env.API_KEY_ENCRYPTION_SECRET;
 const secretLength = process.env.API_KEY_ENCRYPTION_SECRET?.length || 0;
 
-if (hasOpenAIKey && !isPlaceholder) {
-  console.log(`✅ OPENAI_API_KEY: SET (${keyLength} chars)`);
+if (hasGeminiKey && !isPlaceholder) {
+  console.log(`✅ GOOGLE_GENERATIVE_AI_API_KEY: SET (${keyLength} chars)`);
 } else {
-  console.log(`⚠️  OPENAI_API_KEY: ${isPlaceholder ? 'PLACEHOLDER' : 'NOT SET'}`);
+  console.log(`⚠️  GOOGLE_GENERATIVE_AI_API_KEY: ${isPlaceholder ? 'PLACEHOLDER' : 'NOT SET'}`);
 }
 
 if (hasEncryptionSecret && secretLength >= 32) {

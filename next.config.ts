@@ -72,7 +72,8 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://api.openai.com https://api.openweathermap.org",
+              // Gemini is called server-side only, so it needs no connect-src entry.
+              "connect-src 'self' https://api.openweathermap.org",
               "media-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",

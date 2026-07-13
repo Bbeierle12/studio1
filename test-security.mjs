@@ -45,18 +45,18 @@ console.log('\n✅ All rate limits properly configured');
 // Test 3: Environment Variables
 console.log('\n\nTest 3: Environment Variables');
 console.log('-----------------------------');
-const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
-const keyLength = process.env.OPENAI_API_KEY?.length || 0;
+const hasGeminiKey = !!process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+const keyLength = process.env.GOOGLE_GENERATIVE_AI_API_KEY?.length || 0;
 const hasEncryptionSecret = !!process.env.API_KEY_ENCRYPTION_SECRET;
 const secretLength = process.env.API_KEY_ENCRYPTION_SECRET?.length || 0;
 
-console.log(`OPENAI_API_KEY: ${hasOpenAIKey ? '✅ SET' : '❌ NOT SET'} (${keyLength} chars)`);
+console.log(`GOOGLE_GENERATIVE_AI_API_KEY: ${hasGeminiKey ? '✅ SET' : '❌ NOT SET'} (${keyLength} chars)`);
 console.log(`API_KEY_ENCRYPTION_SECRET: ${hasEncryptionSecret ? '✅ SET' : '❌ NOT SET'} (${secretLength} chars)`);
 
-if (hasOpenAIKey && keyLength > 40) {
-  console.log('\n✅ OpenAI API key looks valid (length > 40 chars)');
+if (hasGeminiKey && keyLength > 20) {
+  console.log('\n✅ Gemini API key looks valid');
 } else {
-  console.log('\n⚠️  OpenAI API key may be placeholder');
+  console.log('\n⚠️  Gemini API key may be a placeholder');
 }
 
 if (hasEncryptionSecret && secretLength >= 32) {
@@ -84,7 +84,7 @@ const dataExportExists = fs.existsSync('src/app/api/user/data-export/route.ts');
 console.log(`data-export endpoint exists: ${dataExportExists ? '✅ YES' : '❌ NO'}`);
 
 // Check documentation
-const securityGuideExists = fs.existsSync('OPENAI-SECURITY-GUIDE.md');
+const securityGuideExists = fs.existsSync('GEMINI-SECURITY-GUIDE.md');
 const privacyGuideExists = fs.existsSync('PRIVACY-COMPLIANCE-GUIDE.md');
 console.log(`Security documentation: ${securityGuideExists ? '✅ YES' : '❌ NO'}`);
 console.log(`Privacy documentation: ${privacyGuideExists ? '✅ YES' : '❌ NO'}`);
@@ -92,7 +92,7 @@ console.log(`Privacy documentation: ${privacyGuideExists ? '✅ YES' : '❌ NO'}
 console.log('\n\n=== TEST SUMMARY ===\n');
 console.log('✅ Rate limiting: WORKING');
 console.log('✅ Rate limit configuration: CORRECT');
-console.log(`${hasOpenAIKey ? '✅' : '⚠️'} OpenAI API key: ${hasOpenAIKey ? 'SET' : 'PLACEHOLDER'}`);
+console.log(`${hasGeminiKey ? '✅' : '⚠️'} Gemini API key: ${hasGeminiKey ? 'SET' : 'PLACEHOLDER'}`);
 console.log(`${hasEncryptionSecret ? '✅' : '❌'} Encryption secret: ${hasEncryptionSecret ? 'SET' : 'MISSING'}`);
 console.log(`${hasEnvIgnore ? '✅' : '❌'} .gitignore protection: ${hasEnvIgnore ? 'ACTIVE' : 'MISSING'}`);
 console.log(`${rateLimitExists ? '✅' : '❌'} Rate limiter: ${rateLimitExists ? 'EXISTS' : 'MISSING'}`);
