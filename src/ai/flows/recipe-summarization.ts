@@ -4,7 +4,7 @@
  * @fileOverview A recipe summarization AI agent using Vercel AI SDK.
  */
 
-import { openai } from '@ai-sdk/openai';
+import { geminiModel } from '@/lib/ai-config';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
@@ -25,7 +25,7 @@ export async function summarizeRecipe(
 ): Promise<SummarizeRecipeOutput> {
   try {
     const { object } = await generateObject({
-      model: openai('gpt-3.5-turbo'),
+      model: geminiModel(),
       schema: SummarizeRecipeOutputSchema,
       prompt: `You are an expert recipe summarizer. Please provide a concise summary of the recipe, highlighting its key aspects.
 

@@ -380,7 +380,7 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
         
         // Check if we're getting a fallback response (not using AI)
         if (data.fallback) {
-          console.warn('⚠️ Voice Assistant: Received fallback response - OpenAI API may not be configured correctly');
+          console.warn('⚠️ Voice Assistant: Received fallback response - Gemini API may not be configured correctly');
         }
         
         return data.answer;
@@ -398,7 +398,7 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
 
   // Cooking questions handler
   const handleCookingQuestionCommand = async (command: string): Promise<string> => {
-    // This would integrate with OpenAI API for intelligent responses
+    // This would integrate with the Gemini API for intelligent responses
     try {
       const payload = { 
         question: command,
@@ -421,7 +421,7 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
         
         // Check if we're getting a fallback response (not using AI)
         if (data.fallback) {
-          console.warn('⚠️ Voice Assistant: Received fallback response - OpenAI API may not be configured correctly');
+          console.warn('⚠️ Voice Assistant: Received fallback response - Gemini API may not be configured correctly');
           console.warn('Check: 1) OPENAI_API_KEY in .env.local, 2) API key validity, 3) Server logs for errors');
         }
         
@@ -472,7 +472,7 @@ export function VoiceAssistant({ currentRecipe, onTimerRequest, className = '', 
         
         // Check if we're getting a fallback response (not using AI)
         if (data.fallback) {
-          console.warn('⚠️ Voice Assistant: Received fallback response - OpenAI API may not be configured correctly');
+          console.warn('⚠️ Voice Assistant: Received fallback response - Gemini API may not be configured correctly');
           console.warn('Check: 1) OPENAI_API_KEY in .env.local, 2) API key validity, 3) Server logs for errors');
         }
         

@@ -1,258 +1,130 @@
-import OpenAI from 'openai';
-import { RecipeContext, ChatMode, RecipeChatRecipe } from './types';
+import { streamText, generateObject, tool, type StreamTextResult, type ToolSet } from 'ai';
+import { z } from 'zod';
+import { geminiModel } from '@/lib/ai-config';
+import { RecipeContext, ChatMode } from './types';
+
+const IntentSchema = z.object({
+  mode: z.enum([
+    'recipe_creation',
+    'recipe_modification',
+    'recipe_search',
+    'cooking_guidance',
+    'ingredient_substitution',
+    'nutrition_analysis',
+    'general',
+  ]),
+  confidence: z.number().describe('Confidence score 0-1'),
+  extractedInfo: z
+    .record(z.string(), z.unknown())
+    .optional()
+    .describe('Any specific information extracted from the message'),
+});
+
+const RecipeUpdatesSchema = z.object({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  ingredients: z
+    .array(
+      z.object({
+        name: z.string(),
+        amount: z.number().optional(),
+        unit: z.string().optional(),
+        preparation: z.string().optional(),
+      })
+    )
+    .optional(),
+  instructions: z
+    .array(
+      z.object({
+        step: z.number(),
+        instruction: z.string(),
+        duration: z.number().optional(),
+        temperature: z.string().optional(),
+      })
+    )
+    .optional(),
+  cookingTime: z.number().optional(),
+  prepTime: z.number().optional(),
+  servings: z.number().optional(),
+  difficulty: z.string().optional(),
+  cuisine: z.string().optional(),
+  mealType: z.array(z.string()).optional(),
+  dietaryInfo: z.array(z.string()).optional(),
+});
+
+export type RecipeUpdates = z.infer<typeof RecipeUpdatesSchema>;
+
+/**
+ * Emitted as a tool call rather than executed here: the API route intercepts it
+ * so the DB write stays at the request boundary, where the user's session is.
+ */
+const updateRecipeTool = tool({
+  description: 'Update the recipe being created',
+  inputSchema: z.object({
+    updates: RecipeUpdatesSchema,
+    nextQuestion: z.string().optional().describe('Next clarifying question to ask the user'),
+    isComplete: z.boolean().optional().describe('Whether the recipe is complete'),
+  }),
+});
+
+export type RecipeChatStream = StreamTextResult<ToolSet, never>;
+
+/** System prompt per intent. Only recipe_creation gets the update_recipe tool. */
+function systemPromptFor(mode: ChatMode | string, context: RecipeContext): string {
+  switch (mode) {
+    case 'recipe_creation':
+      return `You are an expert chef and recipe creator.
+Guide the user through creating a recipe step by step.
+Ask clarifying questions when needed.
+Current recipe state: ${JSON.stringify(context.currentRecipe || {})}`;
+    case 'recipe_modification':
+      return `You are helping modify an existing recipe.
+Current recipe: ${JSON.stringify(context.currentRecipe)}
+Help the user make changes while maintaining recipe integrity.`;
+    case 'recipe_search':
+      return `You are helping discover recipes based on user preferences.
+User preferences: ${JSON.stringify(context.userPreferences)}`;
+    case 'cooking_guidance':
+      return 'You are a cooking instructor providing step-by-step guidance.';
+    case 'ingredient_substitution':
+      return 'You are an expert at suggesting ingredient substitutions.';
+    case 'nutrition_analysis':
+      return 'You are a nutritionist analyzing recipe nutrition.';
+    default:
+      return 'You are a friendly cooking assistant.';
+  }
+}
 
 export class RecipeChatEngine {
-  private openai: OpenAI;
+  async processMessage(message: string, context: RecipeContext): Promise<RecipeChatStream> {
+    const intent = await this.analyzeIntent(message, context);
 
-  constructor() {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || 'dummy_key_for_build',
+    return streamText({
+      model: geminiModel(),
+      system: systemPromptFor(intent.mode, context),
+      prompt: message,
+      // The recipe-building flow is the only one that mutates a recipe.
+      tools: intent.mode === 'recipe_creation' ? { update_recipe: updateRecipeTool } : {},
     });
   }
 
-  async processMessage(message: string, context: RecipeContext) {
-    // First, determine the user's intent
-  const intent = await this.analyzeIntent(message, context);
-    
-    switch (intent.mode) {
-      case 'recipe_creation':
- return this.handleRecipeCreation(message, context);
-      case 'recipe_modification':
-        return this.handleRecipeModification(message, context);
- case 'recipe_search':
-        return this.handleRecipeDiscovery(message, context);
-      case 'cooking_guidance':
-        return this.handleCookingGuidance(message, context);
-      case 'ingredient_substitution':
- return this.handleIngredientSubstitution(message, context);
- case 'nutrition_analysis':
-        return this.handleNutritionAnalysis(message, context);
-   default:
-  return this.handleGeneralChat(message, context);
+  private async analyzeIntent(
+    message: string,
+    context: RecipeContext
+  ): Promise<z.infer<typeof IntentSchema>> {
+    try {
+      const { object } = await generateObject({
+        model: geminiModel(),
+        schema: IntentSchema,
+        system: `Analyze the user's message in the context of recipe creation and cooking.
+Current context: ${JSON.stringify(context)}`,
+        prompt: message,
+      });
+
+      return object;
+    } catch (error) {
+      console.error('Intent analysis failed, defaulting to general chat:', error);
+      return { mode: 'general', confidence: 0.5 };
     }
-  }
-
-  private async analyzeIntent(message: string, context: RecipeContext) {
-    const completion = await this.openai.chat.completions.create({
-    model: 'gpt-4-turbo-preview',
-      messages: [
-        {
-          role: 'system',
-          content: `Analyze the user's message in the context of recipe creation and cooking.
- Current context: ${JSON.stringify(context)}`
-        },
-      {
-          role: 'user',
-    content: message
-        }
-      ],
-      tools: [
-        {
-          type: 'function',
-   function: {
-       name: 'determine_intent',
-            description: 'Determine user intent for recipe-related tasks',
-            parameters: {
-      type: 'object',
-   properties: {
-             mode: {
-            type: 'string',
-        enum: ['recipe_creation', 'recipe_modification', 'recipe_search', 
-          'cooking_guidance', 'ingredient_substitution', 'nutrition_analysis', 'general'],
-        },
-     confidence: {
-            type: 'number',
-     description: 'Confidence score 0-1'
-            },
-             extractedInfo: {
-       type: 'object',
-          description: 'Any specific information extracted from the message'
-   }
-       },
-      required: ['mode', 'confidence']
-   }
-          }
-        }
-      ],
-   tool_choice: 'auto'
-    });
-
-    const toolCall = completion.choices[0].message.tool_calls?.[0];
-    if (toolCall) {
-      return JSON.parse((toolCall as any).function.arguments);
-  }
-    
-    return { mode: 'general', confidence: 0.5 };
-  }
-
-  private async handleRecipeCreation(message: string, context: RecipeContext) {
-    const systemPrompt = `You are an expert chef and recipe creator. 
-    Guide the user through creating a recipe step by step.
-    Ask clarifying questions when needed.
-    Current recipe state: ${JSON.stringify(context.currentRecipe || {})}`
-
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-    tools: [
-        {
-      type: 'function',
-          function: {
-          name: 'update_recipe',
-       description: 'Update the recipe being created',
-  parameters: {
-          type: 'object',
-        properties: {
-      updates: {
-        type: 'object',
-      properties: {
-        name: { type: 'string' },
- description: { type: 'string' },
-       ingredients: {
-              type: 'array',
-               items: {
-        type: 'object',
-           properties: {
-      name: { type: 'string' },
-         amount: { type: 'number' },
-         unit: { type: 'string' },
-       preparation: { type: 'string' }
-      }
-                 }
-           },
-instructions: {
-        type: 'array',
-     items: {
-          type: 'object',
-    properties: {
-          step: { type: 'number' },
-        instruction: { type: 'string' },
-            duration: { type: 'number' },
-  temperature: { type: 'string' }
-       }
-            }
-             },
-         cookingTime: { type: 'number' },
-prepTime: { type: 'number' },
-            servings: { type: 'number' },
- difficulty: { type: 'string' },
-               cuisine: { type: 'string' },
-    mealType: { type: 'array', items: { type: 'string' } },
-     dietaryInfo: { type: 'array', items: { type: 'string' } }
-            }
-            },
-    nextQuestion: {
-      type: 'string',
-      description: 'Next clarifying question to ask the user'
- },
-              isComplete: {
-     type: 'boolean',
-        description: 'Whether the recipe is complete'
-     }
-   }
- }
-          }
-        }
-      ],
-      stream: true
-    });
-
-    return completion;
-  }
-
-  private async handleRecipeModification(message: string, context: RecipeContext) {
-    const systemPrompt = `You are helping modify an existing recipe.
-    Current recipe: ${JSON.stringify(context.currentRecipe)}
-    Help the user make changes while maintaining recipe integrity.`;
-
-    const completion = await this.openai.chat.completions.create({
-   model: 'gpt-4-turbo-preview',
-      messages: [
-{ role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-      stream: true
-    });
-
-    return completion;
-  }
-
-  private async handleRecipeDiscovery(message: string, context: RecipeContext) {
-    const systemPrompt = `You are helping discover recipes based on user preferences.
-    User preferences: ${JSON.stringify(context.userPreferences)}`;
-
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-      stream: true
-  });
-
-    return completion;
-  }
-
-  private async handleCookingGuidance(message: string, context: RecipeContext) {
-    const systemPrompt = `You are a cooking instructor providing step-by-step guidance.`;
-
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-   stream: true
-    });
-
-    return completion;
-  }
-
-  private async handleIngredientSubstitution(message: string, context: RecipeContext) {
- const systemPrompt = `You are an expert at suggesting ingredient substitutions.`;
-
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [
-        { role: 'system', content: systemPrompt },
-     { role: 'user', content: message }
-      ],
-      stream: true
-    });
-
-    return completion;
-  }
-
-  private async handleNutritionAnalysis(message: string, context: RecipeContext) {
-    const systemPrompt = `You are a nutritionist analyzing recipe nutrition.`;
-
-    const completion = await this.openai.chat.completions.create({
-  model: 'gpt-4-turbo-preview',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-      stream: true
-    });
-
-    return completion;
-  }
-
-  private async handleGeneralChat(message: string, context: RecipeContext) {
-    const systemPrompt = `You are a friendly cooking assistant.`;
-
-    const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-      stream: true
-    });
-
-    return completion;
   }
 }

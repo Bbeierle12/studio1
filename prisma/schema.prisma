@@ -39,7 +39,6 @@ model User {
   household           Household?      @relation(fields: [householdId], references: [id])
   isActive            Boolean         @default(true)
   lastLogin           DateTime?
-  openaiApiKey        String?         // Encrypted API key for OpenAI services
   twoFactorSecret     String?         // Encrypted TOTP secret for 2FA
   twoFactorEnabled    Boolean         @default(false)
   twoFactorVerifiedAt DateTime?       // Last 2FA verification timestamp

@@ -1,7 +1,6 @@
-import { openai } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import { z } from 'zod';
-import { createUserOpenAI } from '@/lib/openai-utils';
+import { geminiModel } from '@/lib/ai-config';
 
 /**
  * Natural Language Meal Planning Flow
@@ -59,9 +58,7 @@ export async function parseNaturalLanguageCommand(
 ): Promise<NLPMealPlanOutput> {
   try {
     // Use user-specific OpenAI key if available
-    const model = userId 
-      ? (await createUserOpenAI(userId)) as any
-      : openai('gpt-4-turbo');
+    const model = geminiModel();
 
     const { object } = await generateObject({
       model,
@@ -164,9 +161,7 @@ export async function generateMealPlan(
   userId?: string
 ): Promise<GeneratePlanOutput> {
   try {
-    const model = userId 
-      ? (await createUserOpenAI(userId)) as any
-      : openai('gpt-4-turbo');
+    const model = geminiModel();
 
     const prompt = buildPlanPrompt(input);
 

@@ -75,7 +75,7 @@ async function handleDataExport(request: NextRequest) {
   }
 
   // Remove sensitive fields
-  const { password, openaiApiKey, ...userData } = user;
+  const { password, ...userData } = user;
 
   // Create comprehensive data export
   const dataExport = {
@@ -108,7 +108,6 @@ async function handleDataExport(request: NextRequest) {
         ) + ' days',
       },
       privacySettings: {
-        hasApiKey: !!openaiApiKey,
         accountStatus: userData.isActive ? 'Active' : 'Inactive',
       }
     },

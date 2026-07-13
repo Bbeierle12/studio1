@@ -9,6 +9,7 @@ import {
   formatRateLimitError,
   RATE_LIMITS,
 } from '@/lib/rate-limit';
+import { isGeminiConfigured, GEMINI_NOT_CONFIGURED_ERROR } from '@/lib/ai-config';
 
 const engine = new RecipeChatEngine();
 
@@ -43,51 +44,41 @@ export async function POST(req: NextRequest) {
 
     const { messages, context, mode } = await req.json();
 
-  // Check if API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY is not configured');
-    return new Response(
-     JSON.stringify({ error: 'OpenAI API key is not configured' }),
+    if (!isGeminiConfigured()) {
+      console.error(GEMINI_NOT_CONFIGURED_ERROR);
+      return new Response(
+        JSON.stringify({ error: GEMINI_NOT_CONFIGURED_ERROR }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
-   );
+      );
     }
 
     // Get or create recipe context
     const recipeContext = await getOrCreateContext(userId, context);
 
     // Process through recipe chat engine
-    const stream = await engine.processMessage(
+    const result = await engine.processMessage(
       messages[messages.length - 1].content,
       recipeContext
     );
 
-    // Convert OpenAI stream to Response
-    // Create a ReadableStream from the OpenAI stream
+    // Stream Gemini text deltas to the client, applying any update_recipe tool
+    // call to the DB as it arrives. The AI SDK yields fully-parsed tool inputs,
+    // so no JSON.parse of partial argument fragments is needed.
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of stream) {
-            const text = chunk.choices[0]?.delta?.content || '';
-            if (text) {
-              controller.enqueue(new TextEncoder().encode(text));
-            }
-
-            // Handle tool calls
-            const toolCalls = chunk.choices[0]?.delta?.tool_calls;
-            if (toolCalls) {
-              for (const toolCall of toolCalls) {
-                if (toolCall.function?.name === 'update_recipe' && toolCall.function?.arguments) {
-                  try {
-                    const updates = JSON.parse(toolCall.function.arguments);
-                    await updateRecipeInDB(
-                      recipeContext.currentRecipe?.id,
-                      updates.updates
-                    );
-                  } catch (e) {
-                    console.error('Error updating recipe:', e);
-                  }
-                }
+          for await (const part of result.fullStream) {
+            if (part.type === 'text-delta') {
+              controller.enqueue(new TextEncoder().encode(part.text));
+            } else if (part.type === 'tool-call' && part.toolName === 'update_recipe') {
+              try {
+                const input = part.input as { updates?: unknown };
+                await updateRecipeInDB(recipeContext.currentRecipe?.id, input.updates as any);
+              } catch (e) {
+                console.error('Error updating recipe:', e);
               }
+            } else if (part.type === 'error') {
+              console.error('Recipe chat stream error:', part.error);
             }
           }
           controller.close();

@@ -63,10 +63,6 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [measurementUnit, setMeasurementUnit] = useState<'imperial' | 'metric'>('imperial');
 
-  // API Keys state
-  const [openaiApiKey, setOpenaiApiKey] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [isApiKeySaving, setIsApiKeySaving] = useState(false);
 
   useEffect(() => {
     // Wait for the session to resolve before deciding to redirect — otherwise
@@ -96,25 +92,7 @@ export default function SettingsPage() {
       setCollectionShares(prefs.collections ?? true);
       setWeeklyDigest(prefs.digest ?? false);
     }
-
-    // Load API Keys
-    loadApiKeys();
   }, [user, loading, router, unit]);
-
-  const loadApiKeys = async () => {
-    try {
-      const response = await fetch('/api/user/api-keys');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.openaiApiKey) {
-          // Show masked version
-          setOpenaiApiKey(data.openaiApiKey);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load API keys:', error);
-    }
-  };
 
   const handleProfileUpdate = async () => {
     setIsProfileSaving(true);
@@ -243,53 +221,6 @@ export default function SettingsPage() {
     });
   };
 
-  const handleApiKeyUpdate = async () => {
-    // Validate before sending
-    if (!openaiApiKey || openaiApiKey.trim() === '') {
-      toast({
-        title: 'Error',
-        description: 'Please enter an API key.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsApiKeySaving(true);
-    try {
-      const response = await fetch('/api/user/api-keys', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ openaiApiKey }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: 'API Keys Updated',
-          description: 'Your API keys have been securely saved.',
-        });
-        await loadApiKeys();
-      } else {
-        // Show specific error message from backend
-        toast({
-          title: 'Error',
-          description: data.error || 'Failed to update API keys. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('API key update error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update API keys. Please check your connection and try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsApiKeySaving(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -321,12 +252,6 @@ export default function SettingsPage() {
             <Lock className="h-4 w-4" />
             Security
           </TabsTrigger>
-          {user.role && user.role !== 'USER' && (
-            <TabsTrigger value="api-keys" className="flex items-center gap-2">
-              <Key className="h-4 w-4" />
-              API Keys
-            </TabsTrigger>
-          )}
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Analytics
@@ -539,86 +464,6 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* API Keys Tab - Admin Only */}
-        {user.role && user.role !== 'USER' && (
-          <TabsContent value="api-keys">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  API Key Configuration
-                  <Badge variant="warning-solid">Admin Only</Badge>
-                </CardTitle>
-                <CardDescription>
-                  Manage API keys for AI-powered features. Keys are encrypted and stored securely.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-              {/* OpenAI API Key */}
-              <div className="space-y-2">
-                <Label htmlFor="openaiApiKey">OpenAI API Key</Label>
-                <div className="relative">
-                  <Input
-                    id="openaiApiKey"
-                    type={showApiKey ? 'text' : 'password'}
-                    value={openaiApiKey}
-                    onChange={(e) => setOpenaiApiKey(e.target.value)}
-                    placeholder="sk-..."
-                    className="pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full"
-                    onClick={() => setShowApiKey(!showApiKey)}
-                  >
-                    {showApiKey ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Used for AI recipe generation and voice features. Get your key from{' '}
-                  <a
-                    href="https://platform.openai.com/api-keys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-info hover:underline"
-                  >
-                    OpenAI Platform
-                  </a>
-                </p>
-              </div>
-
-              {/* Info Box */}
-              <div className="p-4 border border-info/30 rounded-lg bg-info-muted">
-                <h3 className="font-semibold text-info mb-2 flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Security Notice
-                </h3>
-                <ul className="text-sm text-info space-y-1 list-disc list-inside">
-                  <li>API keys are encrypted before storage</li>
-                  <li>Keys are only accessible to your account</li>
-                  <li>Never share your API keys with others</li>
-                  <li>Revoke compromised keys immediately from the provider</li>
-                </ul>
-              </div>
-
-              <Button
-                onClick={handleApiKeyUpdate}
-                disabled={isApiKeySaving}
-                className="w-full"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {isApiKeySaving ? 'Saving...' : 'Save API Keys'}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        )}
 
         {/* Analytics Tab */}
         <TabsContent value="analytics">

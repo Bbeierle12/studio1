@@ -4,7 +4,7 @@
  * @fileOverview An AI agent that converts a list of ingredients to a specified unit system using Vercel AI SDK.
  */
 
-import { openai } from '@ai-sdk/openai';
+import { geminiModel } from '@/lib/ai-config';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
@@ -34,7 +34,7 @@ export async function convertIngredients(
 ): Promise<ConvertIngredientsOutput> {
   try {
     const { object } = await generateObject({
-      model: openai('gpt-3.5-turbo'),
+      model: geminiModel(),
       schema: ConvertIngredientsOutputSchema,
       prompt: `You are an expert recipe unit converter. Your task is to convert the given list of ingredients to the specified target unit system.
 

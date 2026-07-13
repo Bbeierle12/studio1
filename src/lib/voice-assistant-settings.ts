@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/data';
+import { GEMINI_MODEL_ID } from '@/lib/ai-config';
 
 export interface VoiceAssistantSettings {
   model: string;
@@ -11,8 +12,20 @@ export interface VoiceAssistantSettings {
   responseMaxLength: number;
 }
 
+/**
+ * Rows written before the Gemini migration can still hold an OpenAI model id
+ * ('gpt-4-turbo'). Passing one to the Gemini provider fails at request time, so
+ * anything that is not a Gemini model falls back to the configured default.
+ */
+export function sanitizeModel(stored?: string | null): string {
+  if (!stored || !stored.startsWith('gemini-')) {
+    return GEMINI_MODEL_ID;
+  }
+  return stored;
+}
+
 const DEFAULT_SETTINGS: VoiceAssistantSettings = {
-  model: 'gpt-4-turbo',
+  model: GEMINI_MODEL_ID,
   temperature: 0.7,
   maxTokens: 500,
   topP: 1.0,
@@ -80,7 +93,7 @@ export async function getVoiceAssistantSettings(): Promise<VoiceAssistantSetting
 
     // Build settings object with defaults for missing values
     const voiceAssistantSettings: VoiceAssistantSettings = {
-      model: settingsMap[SETTING_KEYS.MODEL] || DEFAULT_SETTINGS.model,
+      model: sanitizeModel(settingsMap[SETTING_KEYS.MODEL]),
       temperature: settingsMap[SETTING_KEYS.TEMPERATURE] 
         ? parseFloat(settingsMap[SETTING_KEYS.TEMPERATURE]) 
         : DEFAULT_SETTINGS.temperature,

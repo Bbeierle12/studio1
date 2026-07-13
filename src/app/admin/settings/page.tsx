@@ -63,7 +63,7 @@ interface MaintenanceSettings {
 }
 
 const DEFAULT_SETTINGS: VoiceAssistantSettings = {
-  model: 'gpt-4-turbo',
+  model: 'gemini-3.5-flash',
   temperature: 0.7,
   maxTokens: 500,
   topP: 1.0,
@@ -427,7 +427,7 @@ export default function AdminSettingsPage() {
                 Voice Assistant Configuration
               </CardTitle>
               <CardDescription>
-            Adjust OpenAI API parameters for the cooking assistant
+            Adjust Gemini parameters for the cooking assistant
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
@@ -445,13 +445,13 @@ export default function AdminSettingsPage() {
                 <SelectValue placeholder="Select a model" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="gpt-4-turbo">GPT-4 Turbo (Recommended)</SelectItem>
-                <SelectItem value="gpt-4">GPT-4</SelectItem>
-                <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo (Faster)</SelectItem>
+                <SelectItem value="gemini-3.5-flash">Gemini 3.5 Flash (Recommended)</SelectItem>
+                <SelectItem value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite (Faster)</SelectItem>
+                <SelectItem value="gemini-flash-latest">Gemini Flash (Latest)</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              GPT-4 Turbo provides the best responses for cooking questions
+              Flash models answer cooking questions quickly; Flash Lite is cheapest.
             </p>
           </div>
 
@@ -669,29 +669,16 @@ export default function AdminSettingsPage() {
               </Alert>
 
               <div className="space-y-2">
-                <Label htmlFor="openaiKey">OpenAI API Key Status</Label>
+                <Label htmlFor="geminiKey">Gemini API Key</Label>
                 <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/50">
-                  {process.env.NEXT_PUBLIC_OPENAI_API_KEY ? (
-                    <>
-                      <CheckCircle2 className="h-5 w-5 text-success" />
-                      <div>
-                        <p className="font-medium text-sm">Configured</p>
-                        <p className="text-xs text-muted-foreground">
-                          Key ends with: •••{process.env.NEXT_PUBLIC_OPENAI_API_KEY?.slice(-4)}
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="h-5 w-5 text-destructive" />
-                      <div>
-                        <p className="font-medium text-sm">Not Configured</p>
-                        <p className="text-xs text-muted-foreground">
-                          Set OPENAI_API_KEY in your environment variables
-                        </p>
-                      </div>
-                    </>
-                  )}
+                  <Shield className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium text-sm">Server-side only</p>
+                    <p className="text-xs text-muted-foreground">
+                      GOOGLE_GENERATIVE_AI_API_KEY is read on the server and is never
+                      exposed to the browser. Manage it in your environment variables.
+                    </p>
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Required for AI recipe generation and voice assistant features

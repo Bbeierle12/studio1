@@ -4,7 +4,7 @@
  * @fileOverview An AI agent that generates a recipe from an image and a title using Vercel AI SDK.
  */
 
-import { openai } from '@ai-sdk/openai';
+import { geminiModel } from '@/lib/ai-config';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
@@ -38,7 +38,7 @@ export async function generateRecipe(
 ): Promise<GenerateRecipeOutput> {
   try {
     const { object } = await generateObject({
-      model: openai('gpt-4-vision-preview'),
+      model: geminiModel(),
       schema: GenerateRecipeOutputSchema,
       messages: [
         {

@@ -3,7 +3,8 @@ import { generateText } from 'ai';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/data';
-import { createUserOpenAI, getModelName, withRetry } from '@/lib/openai-utils';
+import { withRetry } from '@/lib/ai-utils';
+import { geminiModel } from '@/lib/ai-config';
 import {
   checkRateLimit,
   getRateLimitIdentifier,
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
     const base64 = Buffer.from(bytes).toString('base64');
     const mimeType = file.type;
 
-    // Use OpenAI Vision API for OCR and recipe understanding
+    // Use Gemini vision for OCR and recipe understanding
     const prompt = isHandwritten 
       ? `You are an expert at reading handwritten recipes. Please carefully examine this image and extract all the recipe information you can see. Pay special attention to:
 
@@ -108,12 +109,9 @@ Please provide a confidence score (1-10) for how clearly you could read the hand
 
 Format the output as a structured recipe with clear sections.`;
 
-    // Get user-specific OpenAI instance
-    const openaiClient = await createUserOpenAI(user.id);
-    const modelName = getModelName(undefined, 'gpt-4-turbo');
 
     const result = await withRetry(() => generateText({
-      model: openaiClient(modelName),
+      model: geminiModel(),
       messages: [
         {
           role: 'user',
@@ -136,7 +134,7 @@ Format the output as a structured recipe with clear sections.`;
     
     // Use another AI call to structure the data
     const structureResult = await withRetry(() => generateText({
-      model: openaiClient(modelName),
+      model: geminiModel(),
       prompt: `Please convert the following recipe text into a structured JSON format:
 
 ${extractedText}

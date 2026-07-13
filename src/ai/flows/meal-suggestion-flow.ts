@@ -1,7 +1,6 @@
-import { openai } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import { z } from 'zod';
-import { createUserOpenAI } from '@/lib/openai-utils';
+import { geminiModel } from '@/lib/ai-config';
 
 /**
  * Smart Meal Suggestions Flow
@@ -52,9 +51,7 @@ export async function generateMealSuggestions(
 ): Promise<MealSuggestionOutput> {
   try {
     // Use user-specific OpenAI key if available
-    const model = userId 
-      ? (await createUserOpenAI(userId)) as any
-      : openai('gpt-4-turbo');
+    const model = geminiModel();
 
     const prompt = buildSuggestionPrompt(input);
 

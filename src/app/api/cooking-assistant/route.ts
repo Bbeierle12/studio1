@@ -10,12 +10,8 @@ import {
   ApiError,
   validateRequestBody 
 } from '@/lib/api-utils';
-import { 
-  createUserOpenAI, 
-  getModelName, 
-  withRetry, 
-  OpenAIError 
-} from '@/lib/openai-utils';
+import { withRetry, AIError } from '@/lib/ai-utils';
+import { geminiModel } from '@/lib/ai-config';
 import { 
   checkRateLimit, 
   getRateLimitIdentifier, 
@@ -85,24 +81,16 @@ async function handleCookingAssistant(request: NextRequest) {
     const systemPrompt = settings.systemPrompt + 
       (context ? `\n\nContext: The user is currently working with: ${context}` : '');
 
-    // Get user-specific OpenAI instance
-    console.log('🔑 Creating OpenAI client for user:', user.id);
-    const openaiClient = await createUserOpenAI(user.id);
-    const modelName = getModelName(undefined, settings.model);
-    console.log('🤖 Using model:', modelName);
-    
+    // Honour the model an admin picked in Voice Assistant settings.
     const result = await withRetry(() => generateText({
-      model: openaiClient(modelName),
+      model: geminiModel(settings.model),
       system: systemPrompt,
       prompt: question,
       temperature: settings.temperature,
       topP: settings.topP,
       frequencyPenalty: settings.frequencyPenalty,
       presencePenalty: settings.presencePenalty,
-      // Note: maxTokens is set via the model configuration in openai-utils
     }));
-    
-    console.log('✅ OpenAI response received successfully');
 
     // Clean up the response for better voice synthesis
     let answer = result.text
@@ -130,26 +118,21 @@ async function handleCookingAssistant(request: NextRequest) {
     return createSuccessResponse(responseData);
 
   } catch (error) {
-    console.error('❌ OpenAI API error:', error);
-    console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('❌ Gemini API error:', error);
     if (error instanceof Error) {
       console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
     }
-    
-    // Handle specific OpenAI errors
-    if (error instanceof OpenAIError) {
-      console.error('OpenAI Error Code:', error.code);
-      
+
+    if (error instanceof AIError) {
       if (error.code === 'NO_KEY' || error.code === 'INVALID_KEY') {
         const responseData: CookingAssistantResponse = {
-          answer: "I need an OpenAI API key to help you. Please configure your API key in Settings.",
+          answer: "The cooking assistant isn't configured right now. Please check the Gemini API key.",
           context: undefined,
           fallback: true,
         };
         return createSuccessResponse(responseData);
       }
-      
+
       if (error.code === 'QUOTA_EXCEEDED') {
         const responseData: CookingAssistantResponse = {
           answer: "I'm experiencing high demand right now. Please try again in a moment.",
