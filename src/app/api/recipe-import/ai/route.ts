@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GEMINI_MODEL_ID } from '@/lib/ai-config';
 
 // Initialize the Google Generative AI
 const apiKey = process.env.GEMINI_API_KEY;
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODEL_ID });
 
     const prompt = `
 You are a culinary assistant helping format unstructured text (which might be a messy social media caption or a webpage excerpt) into a structured recipe.

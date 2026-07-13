@@ -1,6 +1,7 @@
 import { google } from '@ai-sdk/google';
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { GEMINI_MODEL_ID } from '@/lib/ai-config';
 
 const ImportedRecipeSchema = z.object({
   title: z.string().describe('The title of the recipe.'),
@@ -49,7 +50,7 @@ export async function importRecipeFromUrl(url: string): Promise<ImportedRecipe> 
   // Parse with Google Gemini
   try {
     const { object } = await generateObject({
-      model: google('gemini-1.5-flash'),
+      model: google(GEMINI_MODEL_ID),
       schema: ImportedRecipeSchema,
       messages: [
         {
