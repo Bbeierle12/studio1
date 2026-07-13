@@ -31,3 +31,12 @@ Deployment successful at: https://studio1-one-eosin.vercel.app
 - [x] Implement `/api/recipes/import` backend using OpenAI
 - [x] Create `AutoImporter` frontend to automatically fetch, format, and save shared recipes
 - [x] Verify types with `tsc --noEmit` and tests with `vitest`
+
+## Phase 6: Full-Time Calendar View
+
+- [x] Refactored `MealPlanningCalendar` to display calendar views independently of active meal plan
+- [x] Integrated all user meal plans as clickable markers spanning across the calendar grid
+- [x] Updated calendar views to fetch weather based on view date bounds instead of active plan bounds
+- [x] Display humidity percentages inside weather cards and day cells
+- [x] Auto-activate (Enter plan mode) when a meal plan marker is clicked
+- [x] Verify 213 unit tests pass and push to remote
