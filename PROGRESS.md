@@ -23,7 +23,11 @@
 - [x] Execute `vercel --prod` to deploy the application
 - [x] Verify the hosted application's URLs and verify authentication is functional
 
-Deployment successful at: https://studio1-one-eosin.vercel.app
+Deployment successful at: **https://www.craicnkuche.com** (the production alias).
+Note: the previously listed `studio1-one-eosin.vercel.app` no longer resolves,
+and bare `*-bbeierle12s-projects.vercel.app` deployment URLs sit behind Vercel
+Deployment Protection (SSO) — use the custom domain for anything public-facing,
+including PWA install and the share target.
 
 ## Phase 5: Social Media Integration (Web Share API)
 
