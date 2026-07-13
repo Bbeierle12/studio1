@@ -1,89 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { lookup } from 'dns/promises'
-import { isIP } from 'net'
-
-const MAX_REDIRECTS = 5
-
-const BROWSER_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-  'Accept-Language': 'en-US,en;q=0.5',
-  'Accept-Encoding': 'gzip, deflate, br',
-  'Connection': 'keep-alive',
-  'Upgrade-Insecure-Requests': '1',
-}
-
-/**
- * Returns true if the given IP literal falls inside a private, loopback,
- * link-local, or otherwise non-public range. Blocking these prevents SSRF
- * against internal services and cloud metadata endpoints (169.254.169.254).
- */
-function isPrivateIp(ip: string): boolean {
-  const kind = isIP(ip)
-  if (kind === 4) {
-    const p = ip.split('.').map(Number)
-    if (p.some((n) => Number.isNaN(n) || n < 0 || n > 255)) return true
-    const [a, b] = p
-    if (a === 10) return true
-    if (a === 127) return true
-    if (a === 0) return true
-    if (a === 169 && b === 254) return true // link-local / cloud metadata
-    if (a === 172 && b >= 16 && b <= 31) return true
-    if (a === 192 && b === 168) return true
-    if (a === 100 && b >= 64 && b <= 127) return true // CGNAT
-    if (a >= 224) return true // multicast / reserved
-    return false
-  }
-  if (kind === 6) {
-    let v = ip.toLowerCase()
-    // Unwrap IPv4-mapped IPv6 addresses (::ffff:a.b.c.d) and re-check.
-    const mapped = v.match(/::ffff:(\d+\.\d+\.\d+\.\d+)$/)
-    if (mapped) return isPrivateIp(mapped[1])
-    if (v === '::1' || v === '::') return true
-    if (v.startsWith('fc') || v.startsWith('fd')) return true // unique local
-    if (v.startsWith('fe8') || v.startsWith('fe9') || v.startsWith('fea') || v.startsWith('feb')) return true // link-local
-    return false
-  }
-  // Not an IP literal — treat as unsafe.
-  return true
-}
-
-/**
- * Validates a user-supplied URL: must be http(s), and every IP its hostname
- * resolves to must be public. Throws with a client-safe message on rejection.
- */
-async function assertSafeUrl(rawUrl: string): Promise<void> {
-  let parsed: URL
-  try {
-    parsed = new URL(rawUrl)
-  } catch {
-    throw new Error('Invalid URL')
-  }
-
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new Error('Only http(s) URLs are allowed')
-  }
-
-  const host = parsed.hostname
-  // If the host is already an IP literal, check it directly.
-  if (isIP(host)) {
-    if (isPrivateIp(host)) throw new Error('URL resolves to a disallowed address')
-    return
-  }
-
-  // Otherwise resolve the hostname and reject if any address is private.
-  let addresses
-  try {
-    addresses = await lookup(host, { all: true })
-  } catch {
-    throw new Error('Could not resolve URL host')
-  }
-  if (addresses.length === 0 || addresses.some((a) => isPrivateIp(a.address))) {
-    throw new Error('URL resolves to a disallowed address')
-  }
-}
+import { fetchHtmlSafely, SafeFetchError } from '@/lib/safe-fetch'
 
 export async function GET(req: NextRequest) {
   try {
@@ -99,49 +17,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 })
     }
 
-    // Follow redirects manually so each hop can be re-validated against the
-    // private-range block — a public URL must not be able to redirect inward.
-    let currentUrl = url
-    let response: Response | null = null
-    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-      try {
-        await assertSafeUrl(currentUrl)
-      } catch (e) {
-        return NextResponse.json(
-          { error: e instanceof Error ? e.message : 'Invalid URL' },
-          { status: 400 }
-        )
-      }
-
-      response = await fetch(currentUrl, {
-        headers: BROWSER_HEADERS,
-        redirect: 'manual',
-      })
-
-      if (response.status >= 300 && response.status < 400) {
-        const location = response.headers.get('location')
-        if (!location) break
-        currentUrl = new URL(location, currentUrl).toString()
-        if (hop === MAX_REDIRECTS) {
-          return NextResponse.json({ error: 'Too many redirects' }, { status: 400 })
-        }
-        continue
-      }
-      break
-    }
-
-    if (!response || !response.ok) {
-      return NextResponse.json(
-        { error: `Failed to fetch URL: ${response?.statusText || 'unknown error'}` },
-        { status: response?.status || 502 }
-      )
-    }
-
-    const html = await response.text()
-    const finalUrl = response.url || currentUrl
+    const { html, finalUrl } = await fetchHtmlSafely(url)
 
     return NextResponse.json({ html, finalUrl })
   } catch (error) {
+    if (error instanceof SafeFetchError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    if (error instanceof Error && error.message.includes('disallowed')) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+    if (error instanceof Error && (error.message === 'Invalid URL' || error.message.includes('http(s)') || error.message.includes('resolve'))) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     console.error('Failed to fetch URL:', error)
     return NextResponse.json(
       { error: 'Failed to fetch recipe content' },

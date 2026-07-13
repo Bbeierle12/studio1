@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { RecipeParser } from '@/lib/recipe-parser'
+import { fetchHtmlSafely } from '@/lib/safe-fetch'
 import { prisma } from '@/lib/prisma'
 import { parseRecipeToInput, validateRecipeInput } from '@/lib/recipe-utils'
 import { generateUniqueSlug } from '@/lib/data'
@@ -44,7 +45,10 @@ export async function POST(req: NextRequest) {
 
     try {
       if (url) {
-        parsedRecipe = await parser.parseFromUrl(url)
+        // parseFromUrl fetches via a relative URL and only works in the
+        // browser; on the server we fetch (SSRF-guarded) and parse the HTML.
+        const { html: fetchedHtml, finalUrl } = await fetchHtmlSafely(url)
+        parsedRecipe = parser.parseFromHtml(fetchedHtml, finalUrl || url)
       } else if (html) {
         parsedRecipe = parser.parseFromHtml(html)
       }
