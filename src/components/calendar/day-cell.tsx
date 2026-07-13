@@ -2,10 +2,11 @@
 
 import { PlannedMeal, WeatherForecast, MealPlan } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Plus, Cloud, Sun, CloudRain, Snowflake, CloudLightning, Thermometer } from 'lucide-react';
+import { Plus, Cloud, Sun, CloudRain, Snowflake, CloudLightning, Thermometer, Droplets } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { AddMealDialog } from './add-meal-dialog';
+import { useMealPlan } from '@/hooks/use-meal-plan';
 
 interface Recipe {
   id: string;
@@ -25,10 +26,11 @@ interface Recipe {
 interface DayCellProps {
   date: Date;
   meals: PlannedMeal[];
+  activePlansOnDate?: MealPlan[];
   weather: WeatherForecast | null;
   isCurrentMonth: boolean;
   isToday: boolean;
-  mealPlan: MealPlan;
+  mealPlan?: MealPlan;
   view: 'month' | 'week' | 'day';
   recipes?: Recipe[];
 }
@@ -52,6 +54,7 @@ const mealTypeColors = {
 export function DayCell({
   date,
   meals,
+  activePlansOnDate = [],
   weather,
   isCurrentMonth,
   isToday,
@@ -60,6 +63,7 @@ export function DayCell({
   recipes = []
 }: DayCellProps) {
   const [showAddMeal, setShowAddMeal] = useState(false);
+  const { updateMealPlan } = useMealPlan();
   
   const WeatherIcon = weather ? weatherIcons[weather.condition] || Cloud : Cloud;
   const dayNumber = date.getDate();
@@ -68,21 +72,28 @@ export function DayCell({
   const displayedMeals = view === 'month' ? meals.slice(0, 2) : meals;
   const hiddenMealsCount = meals.length - displayedMeals.length;
   
+  const handleActivatePlan = (e: React.MouseEvent, planId: string) => {
+    e.stopPropagation();
+    updateMealPlan({ id: planId, data: { isActive: true } });
+  };
+  
   return (
     <>
       <div
         className={cn(
-          'min-h-[120px] border border-border rounded-lg p-2 transition-colors bg-card hover:bg-accent cursor-pointer',
+          'min-h-[120px] border border-border rounded-lg p-2 transition-colors bg-card hover:bg-accent cursor-pointer flex flex-col',
           !isCurrentMonth && 'opacity-40',
           isToday && 'ring-2 ring-primary'
         )}
-        onClick={() => setShowAddMeal(true)}
+        onClick={() => {
+          if (mealPlan) setShowAddMeal(true);
+        }}
       >
         {/* Date header */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-start justify-between mb-2">
           <span
             className={cn(
-              'text-sm font-semibold text-foreground',
+              'text-sm font-semibold text-foreground shrink-0',
               isToday && 'bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center'
             )}
           >
@@ -91,17 +102,40 @@ export function DayCell({
           
           {/* Weather indicator */}
           {weather && isCurrentMonth && (
-            <div className="flex items-center gap-1">
-              <WeatherIcon className="h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">
-                {weather.temperature.high}°
-              </span>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary/30 px-1.5 py-0.5 rounded-sm">
+                <WeatherIcon className="h-3 w-3" />
+                <span>{weather.temperature.high}°</span>
+              </div>
+              {weather.humidity !== undefined && (
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 px-1.5 rounded-sm">
+                  <Droplets className="h-2.5 w-2.5 text-blue-400" />
+                  <span>{weather.humidity}%</span>
+                </div>
+              )}
             </div>
           )}
         </div>
         
-        {/* Meals */}
-        <div className="space-y-1">
+        <div className="space-y-1 flex-1">
+          {/* Meal Plan Markers */}
+          {activePlansOnDate.map(plan => (
+            <div
+              key={`plan-${plan.id}`}
+              onClick={(e) => handleActivatePlan(e, plan.id)}
+              className={cn(
+                'text-xs px-2 py-1 rounded border truncate cursor-pointer transition-colors',
+                plan.isActive 
+                  ? 'bg-primary text-primary-foreground border-primary font-medium'
+                  : 'bg-primary/10 border-primary/20 text-primary hover:bg-primary/20'
+              )}
+              title={`Click to enter plan mode: ${plan.name}`}
+            >
+              🗓️ {plan.name}
+            </div>
+          ))}
+
+          {/* Meals */}
           {displayedMeals.map(meal => (
             <div
               key={meal.id}
@@ -123,7 +157,7 @@ export function DayCell({
         </div>
         
         {/* Add meal button (shows on hover in month view) */}
-        {view === 'month' && isCurrentMonth && meals.length === 0 && (
+        {view === 'month' && isCurrentMonth && meals.length === 0 && mealPlan && (
           <Button
             variant="ghost"
             size="icon"
@@ -138,14 +172,16 @@ export function DayCell({
         )}
       </div>
       
-      <AddMealDialog
-        open={showAddMeal}
-        onOpenChange={setShowAddMeal}
-        date={date}
-        mealPlan={mealPlan}
-        weather={weather}
-        recipes={recipes}
-      />
+      {mealPlan && (
+        <AddMealDialog
+          open={showAddMeal}
+          onOpenChange={setShowAddMeal}
+          date={date}
+          mealPlan={mealPlan}
+          weather={weather}
+          recipes={recipes}
+        />
+      )}
     </>
   );
 }

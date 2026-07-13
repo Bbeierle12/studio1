@@ -30,7 +30,8 @@ interface Recipe {
 
 interface DayViewProps {
   currentDate: Date;
-  mealPlan: MealPlan;
+  mealPlan?: MealPlan;
+  mealPlans: MealPlan[];
   weatherForecast: WeatherForecast[];
   recipes?: Recipe[];
 }
@@ -44,8 +45,8 @@ const mealTypeColors: Record<MealType, string> = {
   SNACK: 'border-meal-snack',
 };
 
-export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }: DayViewProps) {
-  const { deleteMeal, isDeleting } = useMealPlan();
+export function DayView({ currentDate, mealPlan, mealPlans, weatherForecast, recipes = [] }: DayViewProps) {
+  const { deleteMeal, isDeleting, updateMealPlan } = useMealPlan();
   const [showAddMeal, setShowAddMeal] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType>('DINNER');
   const [editingMeal, setEditingMeal] = useState<PlannedMeal | null>(null);
@@ -55,7 +56,7 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
   
   // Get meals for this day
   const getMealsForType = (mealType: MealType): PlannedMeal[] => {
-    if (!mealPlan.meals) return [];
+    if (!mealPlan?.meals) return [];
     
     const dateStr = currentDate.toISOString().split('T')[0];
     return mealPlan.meals.filter(meal => {
@@ -63,6 +64,20 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
       return mealDateStr === dateStr && meal.mealType === mealType;
     });
   };
+
+  // Get meal plans that overlap with this date
+  const getPlansForDate = (date: Date): MealPlan[] => {
+    const dateStr = date.toISOString().split('T')[0];
+    const dateMs = new Date(dateStr).getTime();
+    
+    return mealPlans.filter(plan => {
+      const planStart = new Date(new Date(plan.startDate).toISOString().split('T')[0]).getTime();
+      const planEnd = new Date(new Date(plan.endDate).toISOString().split('T')[0]).getTime();
+      return dateMs >= planStart && dateMs <= planEnd;
+    });
+  };
+
+  const activePlansOnDate = getPlansForDate(currentDate);
   
   const handleAddMeal = (mealType: MealType) => {
     setSelectedMealType(mealType);
@@ -134,9 +149,39 @@ export function DayView({ currentDate, mealPlan, weatherForecast, recipes = [] }
                     </div>
                   </div>
                 )}
+                
+                {weather.humidity !== undefined && (
+                  <div className="flex items-center gap-2">
+                    <Droplets className="h-4 w-4 text-blue-400" />
+                    <div>
+                      <div className="text-sm text-muted-foreground">Humidity</div>
+                      <div className="text-lg font-semibold text-foreground">{weather.humidity}%</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Active Meal Plans on Date */}
+        {activePlansOnDate.length > 0 && (
+          <div className="flex gap-2 flex-wrap">
+            {activePlansOnDate.map(plan => (
+              <div
+                key={`plan-${plan.id}`}
+                onClick={() => updateMealPlan({ id: plan.id, data: { isActive: true } })}
+                className={cn(
+                  'px-3 py-1.5 rounded-md border text-sm cursor-pointer transition-colors flex items-center gap-2',
+                  plan.isActive 
+                    ? 'bg-primary text-primary-foreground border-primary font-medium'
+                    : 'bg-card border-border hover:border-primary/50 text-foreground'
+                )}
+              >
+                🗓️ {plan.name}
+              </div>
+            ))}
+          </div>
         )}
 
         {/* Weather-Based Suggestions */}

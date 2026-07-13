@@ -21,12 +21,13 @@ interface Recipe {
 
 interface MonthViewProps {
   currentDate: Date;
-  mealPlan: MealPlan;
+  mealPlan?: MealPlan;
+  mealPlans: MealPlan[];
   weatherForecast: WeatherForecast[];
   recipes?: Recipe[];
 }
 
-export function MonthView({ currentDate, mealPlan, weatherForecast, recipes = [] }: MonthViewProps) {
+export function MonthView({ currentDate, mealPlan, mealPlans, weatherForecast, recipes = [] }: MonthViewProps) {
   // Get days in month
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -62,14 +63,26 @@ export function MonthView({ currentDate, mealPlan, weatherForecast, recipes = []
     calendarDays.push(new Date(year, month + 1, i));
   }
   
-  // Get meals for each day
+  // Get meals for each day (from active plan only)
   const getMealsForDate = (date: Date): PlannedMeal[] => {
-    if (!mealPlan.meals) return [];
+    if (!mealPlan?.meals) return [];
     
     const dateStr = date.toISOString().split('T')[0];
     return mealPlan.meals.filter(meal => {
       const mealDateStr = new Date(meal.date).toISOString().split('T')[0];
       return mealDateStr === dateStr;
+    });
+  };
+
+  // Get meal plans that overlap with this date
+  const getPlansForDate = (date: Date): MealPlan[] => {
+    const dateStr = date.toISOString().split('T')[0];
+    const dateMs = new Date(dateStr).getTime();
+    
+    return mealPlans.filter(plan => {
+      const planStart = new Date(new Date(plan.startDate).toISOString().split('T')[0]).getTime();
+      const planEnd = new Date(new Date(plan.endDate).toISOString().split('T')[0]).getTime();
+      return dateMs >= planStart && dateMs <= planEnd;
     });
   };
   
@@ -94,6 +107,7 @@ export function MonthView({ currentDate, mealPlan, weatherForecast, recipes = []
           const isToday =
             date.toDateString() === new Date().toDateString();
           const meals = getMealsForDate(date);
+          const activePlansOnDate = getPlansForDate(date);
           const weather = getWeatherForDate(weatherForecast, date);
           
           return (
@@ -101,6 +115,7 @@ export function MonthView({ currentDate, mealPlan, weatherForecast, recipes = []
               key={index}
               date={date}
               meals={meals}
+              activePlansOnDate={activePlansOnDate}
               weather={weather}
               isCurrentMonth={isCurrentMonth}
               isToday={isToday}

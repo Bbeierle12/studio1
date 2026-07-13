@@ -45,9 +45,31 @@ export function MealPlanningCalendar() {
   const [showExport, setShowExport] = useState(false);
 
   const { activeMealPlan, mealPlans, isLoading, addMeal } = useMealPlan();
+  // Calculate date bounds for weather fetching
+  const getBoundsForView = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    if (view === 'month') {
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      return { start: firstDay, end: lastDay };
+    } else if (view === 'week') {
+      const start = new Date(currentDate);
+      start.setDate(currentDate.getDate() - currentDate.getDay());
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return { start, end };
+    } else {
+      return { start: currentDate, end: currentDate };
+    }
+  };
+
+  const { start: weatherStart, end: weatherEnd } = getBoundsForView();
+
   const { weatherForecast, isLoading: weatherLoading } = useWeather(
-    activeMealPlan?.startDate ? new Date(activeMealPlan.startDate) : undefined,
-    activeMealPlan?.endDate ? new Date(activeMealPlan.endDate) : undefined
+    weatherStart,
+    weatherEnd
   );
   
   // Fetch user's recipes
@@ -239,11 +261,14 @@ export function MealPlanningCalendar() {
 
       {/* Active Meal Plan Info */}
       {activeMealPlan && (
-        <div className="rounded-lg border border-border bg-card p-4">
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 relative">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-foreground">{activeMealPlan.name}</h3>
-              <p className="text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span className="text-xs uppercase font-bold tracking-wider text-primary">Plan Mode Active</span>
+                <h3 className="font-semibold text-foreground">{activeMealPlan.name}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
                 {new Date(activeMealPlan.startDate).toLocaleDateString()} - {new Date(activeMealPlan.endDate).toLocaleDateString()}
               </p>
             </div>
@@ -254,52 +279,38 @@ export function MealPlanningCalendar() {
         </div>
       )}
 
-      {/* No Active Plan Message */}
-      {!activeMealPlan && (
-        <div className="rounded-lg border border-dashed bg-card p-8 text-center">
-          <CalendarDays className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">No Active Meal Plan</h3>
-          <p className="text-muted-foreground mb-4">
-            Create a new meal plan to start planning your meals with weather-based suggestions.
-          </p>
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Meal Plan
-          </Button>
-        </div>
-      )}
-
       {/* Calendar Views */}
-      {activeMealPlan && (
-        <div className="rounded-lg border border-border overflow-hidden">
-          {view === 'month' && (
-            <MonthView
-              currentDate={currentDate}
-              mealPlan={activeMealPlan}
-              weatherForecast={weatherForecast || []}
-              recipes={recipes as any}
-            />
-          )}
-          
-          {view === 'week' && (
-            <WeekView
-              currentDate={currentDate}
-              mealPlan={activeMealPlan}
-              weatherForecast={weatherForecast || []}
-              recipes={recipes as any}
-            />
-          )}
-          
-          {view === 'day' && (
-            <DayView
-              currentDate={currentDate}
-              mealPlan={activeMealPlan}
-              weatherForecast={weatherForecast || []}
-              recipes={recipes as any}
-            />
-          )}
-        </div>
-      )}
+      <div className="rounded-lg border border-border overflow-hidden">
+        {view === 'month' && (
+          <MonthView
+            currentDate={currentDate}
+            mealPlan={activeMealPlan || undefined}
+            mealPlans={mealPlans || []}
+            weatherForecast={weatherForecast || []}
+            recipes={recipes as any}
+          />
+        )}
+        
+        {view === 'week' && (
+          <WeekView
+            currentDate={currentDate}
+            mealPlan={activeMealPlan || undefined}
+            mealPlans={mealPlans || []}
+            weatherForecast={weatherForecast || []}
+            recipes={recipes as any}
+          />
+        )}
+        
+        {view === 'day' && (
+          <DayView
+            currentDate={currentDate}
+            mealPlan={activeMealPlan || undefined}
+            mealPlans={mealPlans || []}
+            weatherForecast={weatherForecast || []}
+            recipes={recipes as any}
+          />
+        )}
+      </div>
 
       {/* Dialogs */}
       <CreateMealPlanDialog
