@@ -76,7 +76,8 @@ export function normalizeIngredients(ingredients: unknown): string[] {
       if (entry && typeof entry === 'object') {
         const { amount, unit, item } = entry as Record<string, unknown>;
         return [amount, unit, item]
-          .filter((part) => typeof part === 'string' && part.trim())
+          .filter((part) => (typeof part === 'string' || typeof part === 'number') && String(part).trim())
+          .map(String)
           .join(' ')
           .trim();
       }
