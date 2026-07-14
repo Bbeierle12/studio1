@@ -23,17 +23,35 @@ const MIN_TEXT_LENGTH = 10;
 const URL_PATTERN = /https?:\/\/[^\s]+/;
 
 export function extractShareTarget({ url, text }: ShareParams): ShareTarget | null {
+  const isSocial = (link: string) => /instagram\.com|tiktok\.com|youtube\.com|youtu\.be|facebook\.com|twitter\.com|x\.com|pinterest\.com|insta\.com/i.test(link);
+  
+  const caption = text?.trim() || '';
+
   if (url && url.trim()) {
-    return { kind: 'url', url: url.trim() };
+    const trimmedUrl = url.trim();
+    if (isSocial(trimmedUrl)) {
+      const stripped = caption.replace(trimmedUrl, '').trim();
+      if (stripped.length > MIN_TEXT_LENGTH) {
+        return { kind: 'text', text: caption };
+      }
+    }
+    return { kind: 'url', url: trimmedUrl };
   }
 
-  const caption = text?.trim();
   if (!caption) return null;
 
   const match = caption.match(URL_PATTERN);
   if (match) {
     // Trailing sentence punctuation is not part of the URL.
     const cleaned = match[0].replace(/[.,;:!?)\]}'"]+$/, '');
+    
+    if (isSocial(cleaned)) {
+      const stripped = caption.replace(cleaned, '').trim();
+      if (stripped.length > MIN_TEXT_LENGTH) {
+        return { kind: 'text', text: caption };
+      }
+    }
+    
     return { kind: 'url', url: cleaned };
   }
 
