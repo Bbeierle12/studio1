@@ -1,5 +1,7 @@
 import { getRecipeById } from '@/lib/data';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import {
   Card,
   CardContent,
@@ -17,7 +19,11 @@ type EditRecipePageProps = {
 
 export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const resolvedParams = await params;
-  const recipe = await getRecipeById(resolvedParams.id);
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    redirect('/login');
+  }
+  const recipe = await getRecipeById(resolvedParams.id, session.user.id);
 
   if (!recipe) {
     notFound();

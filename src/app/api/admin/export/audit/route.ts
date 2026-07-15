@@ -1,28 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/data';
-import { hasPermission } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 import { arrayToCSV, generateCSVFilename, formatDateForCSV } from '@/lib/csv-utils';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
     // Bulk export is more sensitive than viewing; require the export-level
     // permission (SUPER_ADMIN) rather than the view permission (CONTENT_ADMIN+).
-    if (!adminUser || !hasPermission(adminUser.role, 'EXPORT_AUDIT_LOGS')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await requireAdmin('EXPORT_AUDIT_LOGS');
+    if (!auth.authorized) return auth.response;
 
     // Parse query parameters
     const searchParams = req.nextUrl.searchParams;
@@ -95,7 +81,7 @@ export async function GET(req: NextRequest) {
     // Create audit log for export action
     await prisma.auditLog.create({
       data: {
-        userId: session.user.id,
+        userId: auth.user.id,
         action: 'EXPORT',
         entityType: 'audit_logs',
         entityId: 'export',

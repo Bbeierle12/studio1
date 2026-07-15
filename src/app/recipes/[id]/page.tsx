@@ -1,5 +1,7 @@
 import { getRecipeById } from '@/lib/data';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import Image from 'next/image';
 import {
   ChefHat,
@@ -25,7 +27,11 @@ type RecipePageProps = {
 
 export default async function RecipePage({ params }: RecipePageProps) {
   const { id } = await params;
-  const recipe = await getRecipeById(id);
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    redirect('/login');
+  }
+  const recipe = await getRecipeById(id, session.user.id);
 
   if (!recipe) {
     notFound();

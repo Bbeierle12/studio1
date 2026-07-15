@@ -242,10 +242,7 @@ function getMockWeatherData(): WeatherData {
  */
 export async function fetchWeatherData(lat: number, lon: number): Promise<WeatherData> {
   const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
-  
-  console.log('API Key exists:', !!apiKey);
-  console.log('API Key first 10 chars:', apiKey ? apiKey.substring(0, 10) : 'undefined');
-  
+
   if (!apiKey) {
     console.warn('No OpenWeatherMap API key found, using mock data');
     return getMockWeatherData();

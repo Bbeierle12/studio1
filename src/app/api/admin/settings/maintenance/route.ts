@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/data';
+import { isSuperAdmin } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await requireAdmin(isSuperAdmin);
+    if (!auth.authorized) return auth.response;
 
     // Fetch maintenance settings from SystemSetting table
     const settings = await prisma.systemSetting.findMany({
@@ -50,11 +47,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await requireAdmin(isSuperAdmin);
+    if (!auth.authorized) return auth.response;
 
     const body = await req.json();
     const { maintenanceMode, maintenanceMessage } = body;
@@ -65,13 +59,14 @@ export async function POST(req: NextRequest) {
       { key: 'maintenance_message', value: maintenanceMessage },
     ];
 
-    await Promise.all(
-      settingsToUpdate.map((setting) =>
+    // Apply all setting upserts and the audit log atomically
+    await prisma.$transaction([
+      ...settingsToUpdate.map((setting) =>
         prisma.systemSetting.upsert({
           where: { key: setting.key },
           update: {
             value: JSON.stringify(setting.value),
-            updatedBy: session.user.id,
+            updatedBy: auth.user.id,
           },
           create: {
             key: setting.key,
@@ -79,28 +74,27 @@ export async function POST(req: NextRequest) {
             category: 'Maintenance',
             description: `Maintenance setting: ${setting.key}`,
             dataType: typeof setting.value === 'boolean' ? 'boolean' : 'string',
-            updatedBy: session.user.id,
+            updatedBy: auth.user.id,
           },
         })
-      )
-    );
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        action: 'SETTING_UPDATE',
-        entityType: 'settings',
-        entityId: 'maintenance',
-        changes: JSON.stringify({
-          maintenanceMode,
-          maintenanceMessage,
-          timestamp: new Date().toISOString(),
-        }),
-        ipAddress: req.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: req.headers.get('user-agent') || 'unknown',
-      },
-    });
+      ),
+      // Create audit log
+      prisma.auditLog.create({
+        data: {
+          userId: auth.user.id,
+          action: 'SETTING_UPDATE',
+          entityType: 'settings',
+          entityId: 'maintenance',
+          changes: JSON.stringify({
+            maintenanceMode,
+            maintenanceMessage,
+            timestamp: new Date().toISOString(),
+          }),
+          ipAddress: req.headers.get('x-forwarded-for') || 'unknown',
+          userAgent: req.headers.get('user-agent') || 'unknown',
+        },
+      }),
+    ]);
 
     // Create response and set cookie to match maintenance mode state
     const response = NextResponse.json({

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateText } from 'ai';
+import { generateText, generateObject } from 'ai';
+import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/data';
@@ -22,6 +23,28 @@ const ALLOWED_IMAGE_TYPES = new Set([
   'image/webp',
 ]);
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
+
+// Bound generated tokens on each (paid) vision/structuring call.
+const MAX_OUTPUT_TOKENS = 2048;
+
+// Shape the second AI call must return, so the response is schema-guaranteed
+// rather than a JSON.parse of free-form model text.
+const TranscribedRecipeSchema = z.object({
+  title: z.string().describe('Recipe name'),
+  ingredients: z.array(z.string()).describe('Ingredient lines with measurements'),
+  instructions: z.array(z.string()).describe('Step-by-step instructions'),
+  additionalInfo: z
+    .object({
+      servingSize: z.string().optional(),
+      cookTime: z.string().optional(),
+      prepTime: z.string().optional(),
+      temperature: z.string().optional(),
+      notes: z.string().optional(),
+    })
+    .optional(),
+  confidence: z.number().optional().describe('1-10 confidence, for handwritten recipes'),
+  isHandwritten: z.boolean().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -112,6 +135,7 @@ Format the output as a structured recipe with clear sections.`;
 
     const result = await withRetry(() => generateText({
       model: geminiModel(),
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
       messages: [
         {
           role: 'user',
@@ -132,37 +156,24 @@ Format the output as a structured recipe with clear sections.`;
     // Parse the response to extract structured data
     const extractedText = result.text;
     
-    // Use another AI call to structure the data
-    const structureResult = await withRetry(() => generateText({
-      model: geminiModel(),
-      prompt: `Please convert the following recipe text into a structured JSON format:
-
-${extractedText}
-
-Return a JSON object with the following structure:
-{
-  "title": "Recipe Name",
-  "ingredients": ["ingredient 1", "ingredient 2", ...],
-  "instructions": ["step 1", "step 2", ...],
-  "additionalInfo": {
-    "servingSize": "X servings",
-    "cookTime": "X minutes",
-    "prepTime": "X minutes",
-    "temperature": "X°F",
-    "notes": "any additional notes"
-  },
-  "confidence": X (1-10 scale for handwritten recipes),
-  "isHandwritten": boolean
-}
-
-Only include fields that have actual data. If information is missing, omit those fields.`,
-    }));
-
+    // Use another AI call to structure the data. generateObject enforces the
+    // schema, so the response shape is guaranteed rather than a JSON.parse of
+    // free-form text. If the model still fails to produce a valid object, fall
+    // back to the raw text so the request degrades gracefully instead of 500ing.
     let structuredRecipe;
     try {
-      structuredRecipe = JSON.parse(structureResult.text);
+      const structureResult = await withRetry(() => generateObject({
+        model: geminiModel(),
+        schema: TranscribedRecipeSchema,
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        prompt: `Convert the following recipe text into structured data. Only include fields that have actual data; omit anything missing.
+
+${extractedText}`,
+      }));
+      structuredRecipe = { ...structureResult.object, isHandwritten };
     } catch (e) {
-      // Fallback if JSON parsing fails
+      // Fallback if the model output can't be coerced to the schema.
+      console.error('Failed to structure transcribed recipe:', e);
       structuredRecipe = {
         title: "Extracted Recipe",
         rawText: extractedText,

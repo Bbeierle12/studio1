@@ -19,8 +19,10 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, status, update } = useSession();
 
-  // Debug logging
-  console.log('AuthProvider - status:', status, 'session:', session);
+  // Debug logging (development only — never log full session in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('AuthProvider - status:', status);
+  }
 
   const user: User | null = session?.user
     ? {
@@ -29,7 +31,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: session.user.email || '',
         avatarUrl:
           session.user.image ||
-          `https://i.pravatar.cc/150?u=${session.user.email}`,
+          // Use the opaque user id (not the email) so no PII is sent to the
+          // third-party avatar service.
+          `https://i.pravatar.cc/150?u=${(session.user as any).id}`,
         role: (session.user as any).role || 'USER',
         isActive: (session.user as any).isActive !== false,
         lastLogin: (session.user as any).lastLogin ? new Date((session.user as any).lastLogin) : undefined,

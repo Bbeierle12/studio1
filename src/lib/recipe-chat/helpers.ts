@@ -37,18 +37,19 @@ export function getDefaultPreferences(): UserPreferences {
 }
 
 /**
- * Save or update recipe in database
+ * Save or update recipe in database.
+ *
+ * NOT IMPLEMENTED. A previous stub returned a fabricated success without ever
+ * writing to the DB and without any ownership (userId) check, which would have
+ * been an IDOR the moment it persisted. Until it is implemented with an explicit
+ * `where: { id, userId }` ownership guard, it throws so no caller can rely on a
+ * fake save. The recipe-chat tool that called this has been removed.
  */
 export async function updateRecipeInDB(
-  recipeId: string | undefined,
-  updates: Partial<RecipeChatRecipe>
+  _recipeId: string | undefined,
+  _updates: Partial<RecipeChatRecipe>
 ): Promise<RecipeChatRecipe> {
-  // In a real implementation, this would save to database
-  // For now, return the updated recipe with an ID
-  return {
-    id: recipeId || uuidv4(),
-    ...updates,
-  } as RecipeChatRecipe;
+  throw new Error('updateRecipeInDB is not implemented: recipe persistence via chat is disabled.');
 }
 
 /**

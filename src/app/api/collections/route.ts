@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { getTags, getRecipes } from '@/lib/data';
 import type { Recipe } from '@/lib/types';
 
@@ -14,8 +16,13 @@ async function getCoverImageForTag(tag: string, recipes: Recipe[]) {
 
 export async function GET() {
   try {
-    const tags = await getTags();
-    const recipes = await getRecipes();
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const tags = await getTags(session.user.id);
+    const recipes = await getRecipes({ userId: session.user.id });
 
     const collections = await Promise.all(
       tags.map(async (tag) => {

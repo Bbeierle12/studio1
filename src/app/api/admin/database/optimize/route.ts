@@ -1,19 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { isSuperAdmin } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 import { createAuditLog } from '@/lib/audit-log';
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || (session.user as any).role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized. Only Super Admins can optimize database.' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Unauthorized. Only Super Admins can optimize database.');
+    if (!auth.authorized) return auth.response;
 
     const body = await request.json();
     const { operation } = body;
@@ -75,7 +69,7 @@ export async function POST(request: Request) {
 
       // Log the optimization action
       await createAuditLog({
-        userId: session.user.id,
+        userId: auth.user.id,
         action: 'UPDATE',
         entityType: 'System',
         entityId: 'database-optimization',

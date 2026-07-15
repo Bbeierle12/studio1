@@ -36,7 +36,7 @@ model User {
   role                UserRole        @default(USER)
   householdRole       HouseholdRole   @default(CONTRIBUTOR)
   householdId         String?         // Link to household
-  household           Household?      @relation(fields: [householdId], references: [id])
+  household           Household?      @relation("HouseholdMembers", fields: [householdId], references: [id])
   isActive            Boolean         @default(true)
   lastLogin           DateTime?
   twoFactorSecret     String?         // Encrypted TOTP secret for 2FA
@@ -54,6 +54,12 @@ model User {
   reactions           RecipeReaction[] @relation("UserReactions")
   auditLogs           AuditLog[]
   securityEvents      SecurityEvent[]
+  ownedHouseholds     Household[]     @relation("HouseholdOwner")
+  passwordHistory     PasswordHistory[]
+  webAuthnCredentials WebAuthnCredential[]
+  webAuthnChallenges  WebAuthnChallenge[]
+  csrfTokens          CsrfToken[]
+  cookingSessions     CookingSession[]
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
 
@@ -73,7 +79,7 @@ model Recipe {
   servings        Int?      // Number of servings - positive values only
   course          String?
   cuisine         String?
-  difficulty      String?   // Easy, Medium, Hard
+  difficulty      Difficulty?   // Easy, Medium, Hard
   ingredients     String    // JSON string array
   instructions    String    // JSON string array
   tags            String    // JSON string array
@@ -120,6 +126,7 @@ model Recipe {
   plannedMeals    PlannedMeal[] @relation("PlannedMealRecipes")
   favorites       FavoriteRecipe[] @relation("RecipeFavorites")
   reactions       RecipeReaction[] @relation("RecipeReactions")
+  cookingSessions CookingSession[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -128,10 +135,7 @@ model Recipe {
   @@index([course])
   @@index([cuisine])
   @@index([difficulty])
-  @@index([tags])
   @@index([isFeatured])
-  @@index([allergyTags])
-  @@index([dietaryFlags])
   @@index([prefetchPriority])
 }
 
@@ -169,6 +173,12 @@ enum MealType {
   LUNCH
   DINNER
   SNACK
+}
+
+enum Difficulty {
+  Easy
+  Medium
+  Hard
 }
 
 model MealPlan {
@@ -238,7 +248,7 @@ model MealTemplate {
 
 model WeatherCache {
   id          String   @id @default(cuid())
-  date        DateTime @unique
+  date        DateTime
   latitude    Float
   longitude   Float
   temperature Json     // { high: number, low: number, current: number }
@@ -249,7 +259,8 @@ model WeatherCache {
   windSpeed   Float?
   icon        String?  // Weather icon code
   fetchedAt   DateTime @default(now())
-  
+
+  @@unique([date, latitude, longitude])
   @@index([date])
   @@index([fetchedAt])
 }
@@ -340,6 +351,7 @@ model CsrfToken {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
 
@@ -366,6 +378,7 @@ model AuditWebhook {
 model PasswordHistory {
   id           String   @id @default(cuid())
   userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   passwordHash String   // Hashed password for comparison
   createdAt    DateTime @default(now())
   
@@ -395,6 +408,7 @@ model LoginAttempt {
 model WebAuthnCredential {
   id              String   @id @default(cuid())
   userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   credentialId    String   @unique // Base64URL encoded credential ID
   publicKey       String   // Base64URL encoded public key
   counter         BigInt   @default(0) // Signature counter for replay protection
@@ -410,6 +424,7 @@ model WebAuthnCredential {
 model WebAuthnChallenge {
   id        String   @id @default(cuid())
   userId    String?  // Null for registration challenges
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   challenge String   @unique // Base64URL encoded challenge
   expiresAt DateTime
   createdAt DateTime @default(now())
@@ -445,8 +460,10 @@ model Household {
   id          String   @id @default(cuid())
   name        String   // "The Smith Family"
   description String?
-  members     User[]
+  members     User[]   @relation("HouseholdMembers")
   ownerId     String   // User ID of the owner
+  owner       User     @relation("HouseholdOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  digests     FamilyDigest[]
   // Family digest settings
   digestEnabled Boolean @default(true)
   digestDay    String  @default("sunday") // Day to send digest
@@ -478,6 +495,7 @@ model RecipeReaction {
 model FamilyDigest {
   id              String   @id @default(cuid())
   householdId     String
+  household       Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   weekStartDate   DateTime
   weekEndDate     DateTime
   newRecipeCount  Int      @default(0)
@@ -496,7 +514,9 @@ model FamilyDigest {
 model CookingSession {
   id            String   @id @default(cuid())
   userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   recipeId      String
+  recipe        Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   startedAt     DateTime @default(now())
   completedAt   DateTime?
   currentStep   Int      @default(0)

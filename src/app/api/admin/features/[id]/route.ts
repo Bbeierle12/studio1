@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { isSuperAdmin } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 import { createAuditLog } from '@/lib/audit-log';
 
 // PUT - Update feature flag
@@ -10,14 +10,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || (session.user as any).role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized. Only Super Admins can update feature flags.' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Unauthorized. Only Super Admins can update feature flags.');
+    if (!auth.authorized) return auth.response;
 
     const { id } = await params;
     const body = await request.json();
@@ -58,7 +52,7 @@ export async function PUT(
     }
 
     await createAuditLog({
-      userId: session.user.id,
+      userId: auth.user.id,
       action: 'UPDATE',
       entityType: 'FeatureFlag',
       entityId: flag.id,
@@ -84,14 +78,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || (session.user as any).role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized. Only Super Admins can delete feature flags.' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Unauthorized. Only Super Admins can delete feature flags.');
+    if (!auth.authorized) return auth.response;
 
     const { id } = await params;
 
@@ -114,7 +102,7 @@ export async function DELETE(
 
     // Log the deletion
     await createAuditLog({
-      userId: session.user.id,
+      userId: auth.user.id,
       action: 'DELETE',
       entityType: 'FeatureFlag',
       entityId: id,

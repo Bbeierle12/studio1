@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const query = searchParams.get('query') || undefined;
     const tag = searchParams.get('tag') || undefined;
 
-    const recipes = await getRecipes({ query, tag });
+    const recipes = await getRecipes({ query, tag, userId: session.user.id });
     return NextResponse.json(recipes);
   } catch (error) {
     console.error('Error fetching recipes:', error);
