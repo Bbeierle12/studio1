@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -65,7 +65,7 @@ async function main() {
   const user = createdUsers[0]; // Use first user for recipes
 
   // Create some sample recipes
-  const recipes = [
+  const recipes: Prisma.RecipeUncheckedCreateInput[] = [
     {
       title: "Grandma's Classic Lasagna",
       slug: generateSlug("Grandma's Classic Lasagna"),

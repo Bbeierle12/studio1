@@ -156,8 +156,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const recipe = await prisma.recipe.findUnique({
-      where: { id },
+    // Tenancy: only return the recipe if the caller owns it (else 404).
+    // TODO(household): widen scope to household members once membership is wired
+    const recipe = await prisma.recipe.findFirst({
+      where: { id, userId: session.user.id },
       select: {
         id: true,
         title: true,

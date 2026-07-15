@@ -56,8 +56,9 @@ export function AutoImporter() {
       });
       
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Failed to extract recipe with AI');
+        let errData;
+        try { errData = await response.json(); } catch(e) {}
+        throw new Error(errData?.error || 'Failed to extract recipe with AI');
       }
       
       const data = await response.json();
@@ -85,8 +86,9 @@ export function AutoImporter() {
       });
       
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Failed to import recipe');
+        let errData;
+        try { errData = await response.json(); } catch(e) {}
+        throw new Error(errData?.error || 'Failed to import recipe');
       }
       
       const data = await response.json();

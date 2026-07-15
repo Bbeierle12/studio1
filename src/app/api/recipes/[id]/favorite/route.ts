@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { Prisma } from '@prisma/client';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
@@ -25,9 +26,11 @@ export async function POST(
     const recipeId = (await params).id;
     const userId = session.user.id;
 
-    // Check if recipe exists
-    const recipe = await prisma.recipe.findUnique({
-      where: { id: recipeId },
+    // Check the recipe exists and the caller owns it (else 404 — no cross-tenant favoriting).
+    // TODO(household): widen scope to household members once membership is wired
+    const recipe = await prisma.recipe.findFirst({
+      where: { id: recipeId, userId },
+      select: { id: true },
     });
 
     if (!recipe) {
@@ -37,34 +40,37 @@ export async function POST(
       );
     }
 
-    // Check if already favorited
-    const existingFavorite = await prisma.favoriteRecipe.findUnique({
-      where: {
-        userId_recipeId: {
-          userId,
-          recipeId,
-        },
-      },
+    // Toggle atomically so concurrent POSTs (double-tap/retry) don't 500 on the
+    // @@unique([userId, recipeId]) constraint.
+    const removed = await prisma.favoriteRecipe.deleteMany({
+      where: { userId, recipeId },
     });
 
     let favorited: boolean;
 
-    if (existingFavorite) {
-      // Remove favorite
-      await prisma.favoriteRecipe.delete({
-        where: {
-          id: existingFavorite.id,
-        },
-      });
+    if (removed.count > 0) {
+      // A favorite existed and was removed.
       favorited = false;
     } else {
-      // Add favorite
-      await prisma.favoriteRecipe.create({
-        data: {
-          userId,
-          recipeId,
-        },
-      });
+      // No favorite existed — create one, tolerating a concurrent create (P2002).
+      try {
+        await prisma.favoriteRecipe.create({
+          data: {
+            userId,
+            recipeId,
+          },
+        });
+      } catch (error) {
+        if (
+          !(
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === 'P2002'
+          )
+        ) {
+          throw error;
+        }
+        // A concurrent request already created it — treat as favorited (idempotent).
+      }
       favorited = true;
     }
 

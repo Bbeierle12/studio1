@@ -42,6 +42,20 @@ export function extractRecipeContent(html: string): string {
     }
   }
 
+  const metaContent: string[] = [];
+  const metaTags = html.match(/<meta[^>]+>/gi) || [];
+  for (const tag of metaTags) {
+    if (
+      /name=["'](description|twitter:description|twitter:title)["']/i.test(tag) || 
+      /property=["'](og:description|og:title)["']/i.test(tag)
+    ) {
+      const match = tag.match(/content=(["'])([\s\S]*?)\1/i);
+      if (match && match[2]) {
+        metaContent.push(match[2].trim());
+      }
+    }
+  }
+
   const text = html
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -51,7 +65,8 @@ export function extractRecipeContent(html: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 
-  return text.substring(0, MAX_CONTENT_CHARS);
+  const combined = [...metaContent, text].filter(Boolean).join('\n\n');
+  return combined.substring(0, MAX_CONTENT_CHARS);
 }
 
 export async function importRecipeFromUrl(url: string): Promise<ImportedRecipe> {

@@ -1,4 +1,7 @@
 import { getTags, getRecipes } from '@/lib/data';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import {
   Card,
@@ -20,8 +23,12 @@ async function getCoverImageForTag(tag: string, recipes: Recipe[]) {
 }
 
 export default async function CollectionsPage() {
-  const tags = await getTags();
-  const recipes = await getRecipes();
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    redirect('/login');
+  }
+  const tags = await getTags(session.user.id);
+  const recipes = await getRecipes({ userId: session.user.id });
 
   const collections = await Promise.all(
     tags.map(async tag => {

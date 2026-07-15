@@ -84,30 +84,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Deactivate other meal plans if this is being set as active
-    if (body.isActive !== false) {
-      await prisma.mealPlan.updateMany({
-        where: {
-          userId,
-          isActive: true
-        },
+    // Deactivate other meal plans and create the new one atomically so we
+    // never leave the user with zero active plans if the create fails.
+    const mealPlan = await prisma.$transaction(async (tx) => {
+      if (body.isActive !== false) {
+        await tx.mealPlan.updateMany({
+          where: {
+            userId,
+            isActive: true
+          },
+          data: {
+            isActive: false
+          }
+        });
+      }
+
+      return tx.mealPlan.create({
         data: {
-          isActive: false
+          userId,
+          name,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          isActive: body.isActive !== false
+        },
+        include: {
+          meals: true
         }
       });
-    }
-
-    const mealPlan = await prisma.mealPlan.create({
-      data: {
-        userId,
-        name,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        isActive: body.isActive !== false
-      },
-      include: {
-        meals: true
-      }
     });
 
     return NextResponse.json(mealPlan, { status: 201 });

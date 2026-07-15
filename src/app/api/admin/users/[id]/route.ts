@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/data';
 import { hasPermission } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 import { UserRole } from '@prisma/client';
 
 export async function GET(
@@ -10,20 +9,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (!adminUser || !hasPermission(adminUser.role, 'VIEW_USERS')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await requireAdmin('VIEW_USERS');
+    if (!auth.authorized) return auth.response;
 
     const user = await prisma.user.findUnique({
       where: { id: (await params).id },
@@ -79,20 +66,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true, id: true },
-    });
-
-    if (!adminUser || !hasPermission(adminUser.role, 'EDIT_USERS')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await requireAdmin('EDIT_USERS');
+    if (!auth.authorized) return auth.response;
+    const adminUser = auth.user;
 
     const body = await req.json();
     const { name, email, role, isActive } = body;
@@ -175,20 +151,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true, id: true },
-    });
-
-    if (!adminUser || !hasPermission(adminUser.role, 'DELETE_USERS')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await requireAdmin('DELETE_USERS');
+    if (!auth.authorized) return auth.response;
+    const adminUser = auth.user;
 
     // Prevent self-deletion
     if ((await params).id === adminUser.id) {

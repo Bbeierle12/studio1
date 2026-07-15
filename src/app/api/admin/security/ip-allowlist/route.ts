@@ -6,9 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/data';
+import { isSuperAdmin } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 import {
   addIPToAllowlist,
   removeIPFromAllowlist,
@@ -21,22 +20,8 @@ import { createAuditLog } from '@/lib/audit-log';
 // GET - List all allowed IPs
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    });
-
-    if (!user || user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Only Super Admins can manage IP allowlist' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Only Super Admins can manage IP allowlist');
+    if (!auth.authorized) return auth.response;
 
     // Clean up expired IPs first
     await cleanupExpiredIPs();
@@ -56,22 +41,9 @@ export async function GET() {
 // POST - Add IP to allowlist
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, role: true }
-    });
-
-    if (!user || user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Only Super Admins can manage IP allowlist' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Only Super Admins can manage IP allowlist');
+    if (!auth.authorized) return auth.response;
+    const user = auth.user;
 
     const { ipAddress, description, expiresInDays } = await request.json();
 
@@ -132,22 +104,9 @@ export async function POST(request: NextRequest) {
 // DELETE - Remove IP from allowlist
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, role: true }
-    });
-
-    if (!user || user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Only Super Admins can manage IP allowlist' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Only Super Admins can manage IP allowlist');
+    if (!auth.authorized) return auth.response;
+    const user = auth.user;
 
     const { ipAddress } = await request.json();
 

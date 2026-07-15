@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { checkRateLimit as rateLimitCheck } from '@/lib/rate-limit';
 
 // Standard error codes
 export enum ApiErrorCode {
@@ -234,28 +235,15 @@ export function withRequestId(request: Request): string {
   return requestId;
 }
 
-// Rate limiting helper (simple in-memory implementation)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
+// Rate limiting helper. The actual limiter + store seam lives in
+// `@/lib/rate-limit`; this is a thin boolean-returning adapter over it so
+// there is no second, independent Map here.
 export function checkRateLimit(
   identifier: string,
   limit: number = 100,
   windowMs: number = 60000
 ): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(identifier);
-
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs });
-    return true;
-  }
-
-  if (record.count >= limit) {
-    return false;
-  }
-
-  record.count++;
-  return true;
+  return rateLimitCheck(identifier, { maxRequests: limit, windowMs }).allowed;
 }
 
 // Validation helper

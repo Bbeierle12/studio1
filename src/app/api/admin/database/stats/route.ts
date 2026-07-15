@@ -1,19 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { isSuperAdmin } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 import { createAuditLog } from '@/lib/audit-log';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || (session.user as any).role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized. Only Super Admins can view database statistics.' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Unauthorized. Only Super Admins can view database statistics.');
+    if (!auth.authorized) return auth.response;
 
     // Check if database is configured
     if (!process.env.DATABASE_URL) {
@@ -84,13 +78,13 @@ export async function GET() {
         responseTime,
       },
       prismaVersion: '^6.16.2', // Hardcoded version - update when upgrading Prisma
-      databaseUrl: process.env.DATABASE_URL?.split('@')[1]?.split('?')[0] || 'Hidden',
+      databaseUrl: 'Hidden', // Never expose the DB host/connection details to clients
       lastMigration: null, // Could be enhanced to read migration history
     };
 
     // Log the database stats access
     await createAuditLog({
-      userId: session.user.id,
+      userId: auth.user.id,
       action: 'VIEW',
       entityType: 'System',
       changes: {
@@ -115,7 +109,7 @@ export async function GET() {
     }
     
     return NextResponse.json(
-      { error: errorMessage, details: error.message },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -22,8 +22,8 @@ describe('extractShareTarget', () => {
 
   it('extracts a URL embedded in caption text', () => {
     expect(
-      extractShareTarget({ text: 'Check this out https://insta.com/p/abc it slaps' })
-    ).toEqual({ kind: 'url', url: 'https://insta.com/p/abc' });
+      extractShareTarget({ text: 'Check this out https://example.com/p/abc it slaps' })
+    ).toEqual({ kind: 'url', url: 'https://example.com/p/abc' });
   });
 
   it('strips trailing punctuation from an embedded URL', () => {
@@ -31,6 +31,11 @@ describe('extractShareTarget', () => {
       kind: 'url',
       url: 'https://a.com/r',
     });
+  });
+
+  it('falls back to text for a social media URL if the caption is substantial', () => {
+    const caption = 'Here is the recipe for cookies: 1 cup flour... https://instagram.com/p/xyz';
+    expect(extractShareTarget({ text: caption })).toEqual({ kind: 'text', text: caption });
   });
 
   it('falls back to AI text extraction for a caption with no URL', () => {

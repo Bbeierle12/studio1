@@ -7,8 +7,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: false,
   },
   typescript: {
-    // Temporarily ignore TypeScript errors during build for Next.js 15 migration
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     dangerouslyAllowSVG: true,

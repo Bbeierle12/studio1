@@ -4,33 +4,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/data';
-import { hasPermission } from '@/lib/admin-permissions';
+import { isSuperAdmin } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 import { createAuditLog } from '@/lib/audit-log';
 import { getClientIP } from '@/lib/ip-allowlist';
 
 // GET - List all webhooks
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, role: true },
-    });
-
-    if (!adminUser || adminUser.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Only Super Admins can manage webhooks' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Only Super Admins can manage webhooks');
+    if (!auth.authorized) return auth.response;
 
     const webhooks = await prisma.auditWebhook.findMany({
       orderBy: { createdAt: 'desc' },
@@ -49,23 +33,9 @@ export async function GET() {
 // POST - Create new webhook
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, role: true },
-    });
-
-    if (!adminUser || adminUser.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Only Super Admins can manage webhooks' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Only Super Admins can manage webhooks');
+    if (!auth.authorized) return auth.response;
+    const adminUser = auth.user;
 
     const { name, url, secret, events } = await request.json();
 
@@ -118,23 +88,9 @@ export async function POST(request: NextRequest) {
 // PATCH - Update webhook
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, role: true },
-    });
-
-    if (!adminUser || adminUser.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Only Super Admins can manage webhooks' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Only Super Admins can manage webhooks');
+    if (!auth.authorized) return auth.response;
+    const adminUser = auth.user;
 
     const { id, name, url, secret, events, isActive } = await request.json();
 
@@ -178,23 +134,9 @@ export async function PATCH(request: NextRequest) {
 // DELETE - Delete webhook
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, role: true },
-    });
-
-    if (!adminUser || adminUser.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Only Super Admins can manage webhooks' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Only Super Admins can manage webhooks');
+    if (!auth.authorized) return auth.response;
+    const adminUser = auth.user;
 
     const { id } = await request.json();
 

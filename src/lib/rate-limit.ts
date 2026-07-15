@@ -8,8 +8,23 @@ interface RateLimitEntry {
   resetTime: number;
 }
 
-// In-memory store (use Redis for production)
-const rateLimitStore = new Map<string, RateLimitEntry>();
+/**
+ * Result returned by every rate-limit store implementation.
+ */
+export interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  resetIn: number;
+}
+
+/**
+ * Storage seam for the limiter. Swapping this out is the only thing that
+ * changes when moving from single-host (in-memory Map) to a shared store
+ * (Redis / Upstash / Vercel KV) for multi-instance deployments.
+ */
+interface RateLimitStore {
+  check(identifier: string, config: RateLimitConfig): RateLimitResult;
+}
 
 /**
  * Rate limit configuration
@@ -69,6 +84,107 @@ export const RATE_LIMITS = {
 };
 
 /**
+ * In-memory store (single-host / dev fallback). A per-process Map resets on
+ * restart and is not shared across instances, so it is only correct on a
+ * single-host deployment (e.g. HB). Use a shared store for multi-instance.
+ */
+function createInMemoryStore(): RateLimitStore {
+  const rateLimitStore = new Map<string, RateLimitEntry>();
+
+  function cleanupExpiredEntries() {
+    const now = Date.now();
+    const expiredKeys: string[] = [];
+
+    for (const [key, entry] of rateLimitStore.entries()) {
+      if (entry.resetTime < now) {
+        expiredKeys.push(key);
+      }
+    }
+
+    for (const key of expiredKeys) {
+      rateLimitStore.delete(key);
+    }
+  }
+
+  return {
+    check(identifier, config) {
+      const now = Date.now();
+      const entry = rateLimitStore.get(identifier);
+
+      // Clean up expired entries periodically
+      if (Math.random() < 0.01) { // 1% chance
+        cleanupExpiredEntries();
+      }
+
+      // No entry or expired entry - allow request
+      if (!entry || entry.resetTime < now) {
+        const newEntry: RateLimitEntry = {
+          count: 1,
+          resetTime: now + config.windowMs,
+        };
+        rateLimitStore.set(identifier, newEntry);
+
+        return {
+          allowed: true,
+          remaining: config.maxRequests - 1,
+          resetIn: config.windowMs,
+        };
+      }
+
+      // Entry exists and is valid
+      if (entry.count < config.maxRequests) {
+        entry.count++;
+        rateLimitStore.set(identifier, entry);
+
+        return {
+          allowed: true,
+          remaining: config.maxRequests - entry.count,
+          resetIn: entry.resetTime - now,
+        };
+      }
+
+      // Rate limit exceeded
+      return {
+        allowed: false,
+        remaining: 0,
+        resetIn: entry.resetTime - now,
+      };
+    },
+  };
+}
+
+/**
+ * Shared-store adapter (Redis / Upstash / Vercel KV) for multi-instance
+ * deployments where counters must survive restarts and be shared across
+ * processes. This is a documented stub: once RATE_LIMIT_REDIS_URL /
+ * RATE_LIMIT_KV_URL is set, wire an actual client here. Until then it throws
+ * so a misconfigured shared-store deploy fails loud instead of silently
+ * falling back to a per-process Map.
+ */
+function createSharedStore(): RateLimitStore {
+  return {
+    check() {
+      throw new Error(
+        'Rate limit shared store requested (RATE_LIMIT_REDIS_URL/RATE_LIMIT_KV_URL is set) ' +
+        'but no client is wired. Configure a store adapter in createSharedStore().'
+      );
+    },
+  };
+}
+
+// Select the store once, based on env. Presence of a shared-store URL opts into
+// the shared adapter; otherwise fall back to the in-memory Map (dev/single-host).
+let store: RateLimitStore | undefined;
+function getStore(): RateLimitStore {
+  if (!store) {
+    const sharedStoreUrl =
+      process.env.RATE_LIMIT_REDIS_URL || process.env.RATE_LIMIT_KV_URL;
+    store = sharedStoreUrl ? createSharedStore() : createInMemoryStore();
+  }
+  return store;
+}
+
+/**
  * Check if user has exceeded rate limit
  * @param identifier - User identifier (userId or IP)
  * @param config - Rate limit configuration
@@ -77,66 +193,8 @@ export const RATE_LIMITS = {
 export function checkRateLimit(
   identifier: string,
   config: RateLimitConfig
-): { allowed: boolean; remaining: number; resetIn: number } {
-  const now = Date.now();
-  const entry = rateLimitStore.get(identifier);
-
-  // Clean up expired entries periodically
-  if (Math.random() < 0.01) { // 1% chance
-    cleanupExpiredEntries();
-  }
-
-  // No entry or expired entry - allow request
-  if (!entry || entry.resetTime < now) {
-    const newEntry: RateLimitEntry = {
-      count: 1,
-      resetTime: now + config.windowMs,
-    };
-    rateLimitStore.set(identifier, newEntry);
-    
-    return {
-      allowed: true,
-      remaining: config.maxRequests - 1,
-      resetIn: config.windowMs,
-    };
-  }
-
-  // Entry exists and is valid
-  if (entry.count < config.maxRequests) {
-    entry.count++;
-    rateLimitStore.set(identifier, entry);
-    
-    return {
-      allowed: true,
-      remaining: config.maxRequests - entry.count,
-      resetIn: entry.resetTime - now,
-    };
-  }
-
-  // Rate limit exceeded
-  return {
-    allowed: false,
-    remaining: 0,
-    resetIn: entry.resetTime - now,
-  };
-}
-
-/**
- * Clean up expired entries from rate limit store
- */
-function cleanupExpiredEntries() {
-  const now = Date.now();
-  const expiredKeys: string[] = [];
-
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (entry.resetTime < now) {
-      expiredKeys.push(key);
-    }
-  }
-
-  for (const key of expiredKeys) {
-    rateLimitStore.delete(key);
-  }
+): RateLimitResult {
+  return getStore().check(identifier, config);
 }
 
 /**
