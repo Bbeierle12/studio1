@@ -67,7 +67,8 @@ This plan is the output of a full multi-pass review (all 68 API routes, the data
   - **Acceptance:** Unit test: a non-owner (and a null-owner row, constructed in a test double) is denied edit/delete; the real owner still succeeds. `typecheck` + `test` green.
   - **Notes:** Safe to do in either tenancy world; not blocked on the decision.
 
-- [ ] **7. Prisma migration history is broken / not provisionable** *(confirmed)*
+- [x] **7. Prisma migration history is broken / not provisionable** *(authored + locally validated; prod apply pending — see `prisma/MIGRATION-RUNBOOK.md`)*
+  - **Status:** History rebuilt as `00000000000000_baseline` (current prod shape) + `20260714120000_review_schema_hardening` (tasks 20–23). Old files archived under `prisma/migrations-legacy-broken/`. Validated on a throwaway local Postgres with adversarial data: difficulty enum conversion is data-preserving, orphan rows are cleaned before FK creation, all 8 FKs create, cascade works. **The prod apply (backup → resolve baseline → deploy change) is NOT done — follow `prisma/MIGRATION-RUNBOOK.md` in a supervised window.**
   - **Severity:** High (disaster-recovery / environment parity)
   - **Files:** `prisma/migrations/` contains only ~9 of the 27 models' `CREATE TABLE`s; a loose `prisma/migrations/manual_add_favorite_recipes.sql` sits **outside** any timestamped folder (never run by `migrate deploy`). Early migrations are **SQLite syntax** (`20250919065500_init/migration.sql` uses `DATETIME`/`REAL`; `20251005002954_add_admin_system` uses the SQLite table-rebuild pattern) while `migration_lock.toml` says `postgresql`. `20260605120000_add_nextauth_oauth_support:52` ALTERs `SecurityEvent`, a table **no migration creates**.
   - **Problem:** `prisma migrate deploy` against a fresh Postgres DB fails outright — new-environment bring-up and disaster recovery are impossible from migrations; production shape exists only in the live DB, and schema/DB parity is unverifiable.
