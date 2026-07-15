@@ -1,32 +1,69 @@
 import { WeatherForecast } from './types';
 import { prisma } from './data';
 import {
-  buildDailyForecasts,
   isWeatherConfigured,
   roundCoord,
   WeatherUnavailableError,
-  type OpenWeatherForecastResponse,
 } from './weather-forecast';
 
-const OPENWEATHER_FORECAST_URL = 'https://api.openweathermap.org/data/2.5/forecast';
+const OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast';
 
-/** OpenWeather's free forecast covers 5 days of 3-hour blocks. Nothing beyond that exists. */
 export const FORECAST_HORIZON_DAYS = 5;
 
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
+function wmoToCondition(code: number): string {
+  if (code === 0) return 'Clear';
+  if (code >= 1 && code <= 3) return 'Clouds';
+  if (code === 45 || code === 48) return 'Fog';
+  if (code >= 51 && code <= 57) return 'Drizzle';
+  if (code >= 61 && code <= 67) return 'Rain';
+  if (code >= 71 && code <= 77) return 'Snow';
+  if (code >= 80 && code <= 82) return 'Rain';
+  if (code >= 85 && code <= 86) return 'Snow';
+  if (code >= 95 && code <= 99) return 'Thunderstorm';
+  return 'Clear';
+}
+
+function wmoToDescription(code: number): string {
+  if (code === 0) return 'clear sky';
+  if (code === 1) return 'mainly clear';
+  if (code === 2) return 'partly cloudy';
+  if (code === 3) return 'overcast';
+  if (code === 45 || code === 48) return 'fog';
+  if (code >= 51 && code <= 57) return 'drizzle';
+  if (code >= 61 && code <= 67) return 'rain';
+  if (code >= 71 && code <= 77) return 'snow';
+  if (code >= 80 && code <= 82) return 'rain showers';
+  if (code >= 85 && code <= 86) return 'snow showers';
+  if (code >= 95 && code <= 99) return 'thunderstorm';
+  return 'clear';
+}
+
+function wmoToIcon(code: number): string {
+  if (code === 0) return '01d';
+  if (code === 1) return '02d';
+  if (code === 2) return '03d';
+  if (code === 3) return '04d';
+  if (code === 45 || code === 48) return '50d';
+  if (code >= 51 && code <= 57) return '09d';
+  if (code >= 61 && code <= 67) return '10d';
+  if (code >= 71 && code <= 77) return '13d';
+  if (code >= 80 && code <= 82) return '09d';
+  if (code >= 85 && code <= 86) return '13d';
+  if (code >= 95 && code <= 99) return '11d';
+  return '01d';
+}
+
 /**
- * Fetch the 5-day forecast for a specific point and collapse it into daily entries.
- *
- * Throws WeatherUnavailableError rather than returning invented data. There is no mock
- * fallback and no default location: if we cannot say what the weather is, we say that.
+ * Fetch the 5-day forecast for a specific point.
  */
 export async function fetchWeatherForecast(lat: number, lon: number): Promise<WeatherForecast[]> {
   if (!isWeatherConfigured()) {
-    throw new WeatherUnavailableError('not_configured', 'OPENWEATHER_API_KEY is not set');
+    throw new WeatherUnavailableError('not_configured', 'Weather is not configured');
   }
 
-  const url = `${OPENWEATHER_FORECAST_URL}?lat=${lat}&lon=${lon}&appid=${process.env.OPENWEATHER_API_KEY}`;
+  const url = `${OPEN_METEO_URL}?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=${FORECAST_HORIZON_DAYS}`;
 
   let response: Response;
   try {
@@ -34,22 +71,40 @@ export async function fetchWeatherForecast(lat: number, lon: number): Promise<We
   } catch (error) {
     throw new WeatherUnavailableError(
       'upstream_error',
-      `OpenWeather request failed: ${(error as Error).message}`
+      `Open-Meteo request failed: ${(error as Error).message}`
     );
   }
 
   if (!response.ok) {
     throw new WeatherUnavailableError(
       'upstream_error',
-      `OpenWeather returned ${response.status} ${response.statusText}`
+      `Open-Meteo returned ${response.status} ${response.statusText}`
     );
   }
 
-  const data = (await response.json()) as OpenWeatherForecastResponse;
+  const data = await response.json();
+  const daily = data.daily;
 
-  // city.timezone is the location's UTC offset in seconds — the input that makes day
-  // bucketing correct for the place being forecast rather than for the server.
-  const forecasts = buildDailyForecasts(data.list ?? [], data.city?.timezone ?? 0);
+  if (!daily || !daily.time) {
+     return [];
+  }
+
+  const forecasts: WeatherForecast[] = daily.time.map((dateKey: string, i: number) => {
+    const code = daily.weather_code[i];
+    return {
+      dateKey,
+      temperature: {
+        high: Math.round(daily.temperature_2m_max[i]),
+        low: Math.round(daily.temperature_2m_min[i]),
+        current: Math.round(daily.temperature_2m_max[i]), // approximation for day's representative temp
+      },
+      condition: wmoToCondition(code),
+      description: wmoToDescription(code),
+      precipitation: daily.precipitation_probability_max[i],
+      windSpeed: Math.round(daily.wind_speed_10m_max[i]),
+      icon: wmoToIcon(code)
+    };
+  });
 
   await cacheWeatherData(forecasts, lat, lon);
 

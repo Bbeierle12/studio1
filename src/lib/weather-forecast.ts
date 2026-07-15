@@ -38,7 +38,7 @@ export class WeatherUnavailableError extends Error {
 }
 
 export function isWeatherConfigured(): boolean {
-  return Boolean(process.env.OPENWEATHER_API_KEY);
+  return true;
 }
 
 /**

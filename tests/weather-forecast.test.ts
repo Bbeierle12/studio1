@@ -258,26 +258,8 @@ describe('date-key range math', () => {
 });
 
 describe('isWeatherConfigured', () => {
-  const original = process.env.OPENWEATHER_API_KEY;
-  beforeEach(() => { delete process.env.OPENWEATHER_API_KEY; });
-  afterEach(() => {
-    if (original === undefined) delete process.env.OPENWEATHER_API_KEY;
-    else process.env.OPENWEATHER_API_KEY = original;
-  });
-
-  it('is false when no key is set', () => {
-    expect(isWeatherConfigured()).toBe(false);
-  });
-
-  it('is true when a key is set', () => {
-    process.env.OPENWEATHER_API_KEY = 'test-key';
+  it('is always true because Open-Meteo requires no API key', () => {
     expect(isWeatherConfigured()).toBe(true);
-  });
-
-  it('never reads a NEXT_PUBLIC_ key — that would ship the key to the browser', () => {
-    process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY = 'leaked-key';
-    expect(isWeatherConfigured()).toBe(false);
-    delete process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
   });
 });
 
