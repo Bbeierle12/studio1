@@ -45,7 +45,10 @@ export function extractRecipeContent(html: string): string {
   const metaContent: string[] = [];
   const metaTags = html.match(/<meta[^>]+>/gi) || [];
   for (const tag of metaTags) {
-    if (/name=["']description["']/i.test(tag) || /property=["']og:description["']/i.test(tag)) {
+    if (
+      /name=["'](description|twitter:description|twitter:title)["']/i.test(tag) || 
+      /property=["'](og:description|og:title)["']/i.test(tag)
+    ) {
       const match = tag.match(/content=(["'])([\s\S]*?)\1/i);
       if (match && match[2]) {
         metaContent.push(match[2].trim());
