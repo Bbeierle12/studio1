@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { RecipeChatEngine } from '@/lib/recipe-chat/recipe-chat-engine';
-import { getOrCreateContext, updateRecipeInDB, saveChatInteraction } from '@/lib/recipe-chat/helpers';
+import { getOrCreateContext, saveChatInteraction } from '@/lib/recipe-chat/helpers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import {
@@ -61,28 +61,16 @@ export async function POST(req: NextRequest) {
       recipeContext
     );
 
-    // Stream Gemini text deltas to the client, applying any update_recipe tool
-    // call to the DB as it arrives. The AI SDK yields fully-parsed tool inputs,
-    // so no JSON.parse of partial argument fragments is needed.
+    // Stream Gemini text deltas to the client. The chat advertises no tools
+    // (recipe persistence via chat is not implemented — see updateRecipeInDB),
+    // so the engine streams conversational prose only and the UX degrades to a
+    // read-only assistant rather than claiming a fake save.
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
           for await (const part of result.fullStream) {
             if (part.type === 'text-delta') {
               controller.enqueue(new TextEncoder().encode(part.text));
-            } else if (part.type === 'tool-call' && part.toolName === 'update_recipe') {
-              const input = part.input as { updates?: unknown; nextQuestion?: string };
-              try {
-                await updateRecipeInDB(recipeContext.currentRecipe?.id, input.updates as any);
-              } catch (e) {
-                console.error('Error updating recipe:', e);
-              }
-              // Gemini often answers with a tool call and no prose. Without this
-              // the user would watch an empty reply while the recipe silently
-              // updated, so surface the model's follow-up question as the text.
-              if (input.nextQuestion) {
-                controller.enqueue(new TextEncoder().encode(input.nextQuestion));
-              }
             } else if (part.type === 'error') {
               console.error('Recipe chat stream error:', part.error);
             }
@@ -103,7 +91,6 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'X-Recipe-Context': JSON.stringify(recipeContext),
         'X-Recipe-Mode': mode || 'recipe_creation'
       }
     });

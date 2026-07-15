@@ -168,13 +168,13 @@ export async function updateRecipeAction(
   }
 
   const userId = await getUserId();
+  if (!userId) {
+    return { message: 'You must be logged in to edit a recipe.' };
+  }
+
   const recipeToUpdate = await getRecipeById(id);
 
-  if (
-    recipeToUpdate &&
-    recipeToUpdate.userId &&
-    recipeToUpdate.userId !== userId
-  ) {
+  if (!recipeToUpdate || recipeToUpdate.userId !== userId) {
     return { message: 'You do not have permission to edit this recipe.' };
   }
 
@@ -203,7 +203,7 @@ export async function updateRecipeAction(
       originLat: recipeToUpdate?.originLat,
       originLng: recipeToUpdate?.originLng,
       parentId: recipeToUpdate?.parentId,
-      userId: recipeToUpdate?.userId || userId || undefined,
+      userId,
     });
   } catch (error) {
     console.error('Error updating recipe:', error);
@@ -219,13 +219,13 @@ export async function updateRecipeAction(
 
 export async function deleteRecipeAction(id: string) {
   const userId = await getUserId();
+  if (!userId) {
+    return { message: 'You must be logged in to delete a recipe.' };
+  }
+
   const recipeToDelete = await getRecipeById(id);
 
-  if (
-    recipeToDelete &&
-    recipeToDelete.userId &&
-    recipeToDelete.userId !== userId
-  ) {
+  if (!recipeToDelete || recipeToDelete.userId !== userId) {
     return { message: 'You do not have permission to delete this recipe.' };
   }
 

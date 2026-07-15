@@ -1,28 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/data';
-import { hasPermission } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (!adminUser || !hasPermission(adminUser.role, 'VIEW_ALL_RECIPES')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await requireAdmin('VIEW_ALL_RECIPES');
+    if (!auth.authorized) return auth.response;
 
     const recipe = await prisma.recipe.findUnique({
       where: { id: (await params).id },
@@ -65,20 +51,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true, id: true },
-    });
-
-    if (!adminUser || !hasPermission(adminUser.role, 'EDIT_ANY_RECIPE')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await requireAdmin('EDIT_ANY_RECIPE');
+    if (!auth.authorized) return auth.response;
+    const adminUser = auth.user;
 
     const body = await req.json();
 
@@ -172,20 +147,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true, id: true },
-    });
-
-    if (!adminUser || !hasPermission(adminUser.role, 'DELETE_ANY_RECIPE')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const auth = await requireAdmin('DELETE_ANY_RECIPE');
+    if (!auth.authorized) return auth.response;
+    const adminUser = auth.user;
 
     // Get recipe before deletion for audit log
     const recipe = await prisma.recipe.findUnique({

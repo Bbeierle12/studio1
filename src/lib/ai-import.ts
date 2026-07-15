@@ -15,6 +15,9 @@ const TextRecipeSchema = z.object({
   course: z.string().optional().describe('Course, e.g. Main'),
 });
 
+/** Cap on text handed to the model, to bound prompt cost (mirrors recipe-importer). */
+const MAX_CONTENT_CHARS = 15000;
+
 /**
  * Recipe shape shared with the manual import dialog (ParsedRecipe-compatible):
  * ingredients and instructions are plain strings.
@@ -40,6 +43,10 @@ export async function parseRecipeFromText(text: string): Promise<TextImportedRec
     throw new Error('No text or URL provided.');
   }
 
+  // Bound input length before the (paid) Gemini call.
+  const boundedText =
+    text.length > MAX_CONTENT_CHARS ? text.slice(0, MAX_CONTENT_CHARS) : text;
+
   let object: z.infer<typeof TextRecipeSchema>;
   try {
     const result = await generateObject({
@@ -52,7 +59,7 @@ export async function parseRecipeFromText(text: string): Promise<TextImportedRec
 Extract all recipe information you can find. If there is no recipe, return empty arrays.
 
 Input Text:
-${text}`,
+${boundedText}`,
         },
       ],
     });

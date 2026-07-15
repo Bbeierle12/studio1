@@ -77,43 +77,46 @@ export const getUsers = async (): Promise<User[]> => {
 export const getRecipes = async ({
   query,
   tag,
-}: { query?: string; tag?: string } = {}): Promise<Recipe[]> => {
-  try {
-    const where: any = {};
+  userId,
+}: { query?: string; tag?: string; userId?: string } = {}): Promise<Recipe[]> => {
+  const where: any = {};
 
-    if (query) {
-      const lowerCaseQuery = query.toLowerCase();
-      where.OR = [
-        { title: { contains: lowerCaseQuery, mode: 'insensitive' } },
-        { ingredients: { contains: lowerCaseQuery, mode: 'insensitive' } },
-        { summary: { contains: lowerCaseQuery, mode: 'insensitive' } },
-      ];
-    }
-
-    const recipes = await prisma.recipe.findMany({
-      where,
-      include: { user: true },
-      orderBy: { title: 'asc' },
-    });
-
-    let filteredRecipes = recipes.map(mapPrismaRecipe);
-
-    if (tag) {
-      filteredRecipes = filteredRecipes.filter(recipe =>
-        recipe.tags.includes(tag.toLowerCase())
-      );
-    }
-
-    return filteredRecipes;
-  } catch (error) {
-    console.error('Database error in getRecipes:', error);
-    // Return empty array if database is not available
-    return [];
+  // Tenancy: scope to the caller's own recipes when a userId is supplied.
+  // Omit userId only for permissioned/admin "view all" reads.
+  // TODO(household): widen scope to household members once membership is wired
+  if (userId) {
+    where.userId = userId;
   }
+
+  if (query) {
+    const lowerCaseQuery = query.toLowerCase();
+    where.OR = [
+      { title: { contains: lowerCaseQuery, mode: 'insensitive' } },
+      { ingredients: { contains: lowerCaseQuery, mode: 'insensitive' } },
+      { summary: { contains: lowerCaseQuery, mode: 'insensitive' } },
+    ];
+  }
+
+  const recipes = await prisma.recipe.findMany({
+    where,
+    include: { user: true },
+    orderBy: { title: 'asc' },
+  });
+
+  let filteredRecipes = recipes.map(mapPrismaRecipe);
+
+  if (tag) {
+    filteredRecipes = filteredRecipes.filter(recipe =>
+      recipe.tags.includes(tag.toLowerCase())
+    );
+  }
+
+  return filteredRecipes;
 };
 
 export const getRecipeById = async (
-  id: string
+  id: string,
+  userId?: string
 ): Promise<Recipe | undefined> => {
   const recipe = await prisma.recipe.findUnique({
     where: { id },
@@ -121,32 +124,32 @@ export const getRecipeById = async (
   });
 
   if (!recipe) return undefined;
+  // Tenancy: when scoped, hide recipes the caller does not own (return 404/empty).
+  // TODO(household): widen scope to household members once membership is wired
+  if (userId && recipe.userId !== userId) return undefined;
   return mapPrismaRecipe(recipe);
 };
 
-export const getTags = async (): Promise<string[]> => {
-  try {
-    const recipes = await prisma.recipe.findMany({
-      select: { tags: true },
-    });
+export const getTags = async (userId?: string): Promise<string[]> => {
+  // Tenancy: scope tags to the caller's own recipes when a userId is supplied.
+  // TODO(household): widen scope to household members once membership is wired
+  const recipes = await prisma.recipe.findMany({
+    where: userId ? { userId } : {},
+    select: { tags: true },
+  });
 
-    const allTags = new Set<string>();
-    recipes.forEach(recipe => {
-      try {
-        const tags = JSON.parse(recipe.tags || '[]');
-        tags.forEach((tag: string) => allTags.add(tag));
-      } catch (parseError) {
-        console.error('Error parsing tags for recipe:', parseError);
-        // Continue processing other recipes
-      }
-    });
+  const allTags = new Set<string>();
+  recipes.forEach(recipe => {
+    try {
+      const tags = JSON.parse(recipe.tags || '[]');
+      tags.forEach((tag: string) => allTags.add(tag));
+    } catch (parseError) {
+      console.error('Error parsing tags for recipe:', parseError);
+      // Continue processing other recipes
+    }
+  });
 
-    return Array.from(allTags).sort();
-  } catch (error) {
-    console.error('Database error in getTags:', error);
-    // Return empty array if database is not available
-    return [];
-  }
+  return Array.from(allTags).sort();
 };
 
 // Function to ensure slug uniqueness

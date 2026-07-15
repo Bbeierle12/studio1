@@ -1,20 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { isSuperAdmin } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 import { createAuditLog } from '@/lib/audit-log';
 
 // GET - List all feature flags
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || (session.user as any).role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized. Only Super Admins can view feature flags.' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Unauthorized. Only Super Admins can view feature flags.');
+    if (!auth.authorized) return auth.response;
 
     const flags = await prisma.featureFlag.findMany({
       orderBy: [
@@ -36,14 +30,8 @@ export async function GET() {
 // POST - Create new feature flag
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || (session.user as any).role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized. Only Super Admins can create feature flags.' },
-        { status: 403 }
-      );
-    }
+    const auth = await requireAdmin(isSuperAdmin, 'Unauthorized. Only Super Admins can create feature flags.');
+    if (!auth.authorized) return auth.response;
 
     const body = await request.json();
     const { name, description, enabled, rolloutPercentage } = body;
@@ -86,7 +74,7 @@ export async function POST(request: Request) {
 
     // Log the creation
     await createAuditLog({
-      userId: session.user.id,
+      userId: auth.user.id,
       action: 'CREATE',
       entityType: 'FeatureFlag',
       entityId: flag.id,

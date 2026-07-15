@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { isSuperAdmin } from '@/lib/admin-permissions';
+import { requireAdmin } from '@/lib/admin-middleware';
 import { dbMonitor } from '@/lib/database-monitoring';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await requireAdmin(isSuperAdmin);
+    if (!auth.authorized) return auth.response;
 
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') || 'overview';
@@ -75,11 +72,8 @@ export async function GET(request: NextRequest) {
 // POST endpoint for manual query recording (for testing)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await requireAdmin(isSuperAdmin);
+    if (!auth.authorized) return auth.response;
 
     const body = await request.json();
     const { query, duration, table, operation } = body;
@@ -89,7 +83,7 @@ export async function POST(request: NextRequest) {
       duration,
       table,
       operation,
-      session.user.id
+      auth.user.id
     );
 
     return NextResponse.json({ success: true });

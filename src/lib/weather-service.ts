@@ -157,7 +157,11 @@ async function cacheWeatherData(
     for (const forecast of forecasts) {
       await prisma.weatherCache.upsert({
         where: {
-          date: forecast.date
+          date_latitude_longitude: {
+            date: forecast.date,
+            latitude: lat,
+            longitude: lon
+          }
         },
         update: {
           latitude: lat,
@@ -195,14 +199,27 @@ async function cacheWeatherData(
  */
 export async function getCachedWeatherForecast(
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  lat: number,
+  lon: number
 ): Promise<WeatherForecast[] | null> {
   try {
+    // Cache is keyed by (date, latitude, longitude); match the requested
+    // location within a small tolerance to avoid float-precision misses.
+    const TOLERANCE = 0.01;
     const cached = await prisma.weatherCache.findMany({
       where: {
         date: {
           gte: startDate,
           lte: endDate
+        },
+        latitude: {
+          gte: lat - TOLERANCE,
+          lte: lat + TOLERANCE
+        },
+        longitude: {
+          gte: lon - TOLERANCE,
+          lte: lon + TOLERANCE
         },
         fetchedAt: {
           gte: new Date(Date.now() - 3600000) // Only use cache from last hour

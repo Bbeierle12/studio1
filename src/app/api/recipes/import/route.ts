@@ -41,10 +41,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ recipe }, { status: 200 });
   } catch (error: any) {
     console.error('Recipe import API error:', error);
-    // Invalid/disallowed URLs are client errors, not server faults.
-    const status = error?.message === 'Invalid URL' ? 400 : 500;
+    // Invalid/disallowed URLs are client errors, not server faults. Return a
+    // generic message rather than the raw error to avoid leaking internals.
+    const isInvalidUrl = error?.message === 'Invalid URL';
+    const status = isInvalidUrl ? 400 : 500;
     return NextResponse.json(
-      { error: error.message || 'Failed to import recipe' },
+      { error: isInvalidUrl ? 'Invalid URL' : 'Failed to import recipe' },
       { status }
     );
   }

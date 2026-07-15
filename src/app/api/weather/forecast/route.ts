@@ -37,22 +37,24 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check cache first
-    const cachedForecast = await getCachedWeatherForecast(
-      new Date(startDate),
-      new Date(endDate)
-    );
-
-    if (cachedForecast && cachedForecast.length > 0) {
-      return NextResponse.json(cachedForecast);
-    }
-
-    // Get location
+    // Get location (needed to scope the location-keyed weather cache)
     let location;
     if (lat && lon) {
       location = { lat: parseFloat(lat), lon: parseFloat(lon) };
     } else {
       location = await getUserLocation();
+    }
+
+    // Check cache first (scoped to this location)
+    const cachedForecast = await getCachedWeatherForecast(
+      new Date(startDate),
+      new Date(endDate),
+      location.lat,
+      location.lon
+    );
+
+    if (cachedForecast && cachedForecast.length > 0) {
+      return NextResponse.json(cachedForecast);
     }
 
     // Calculate number of days
