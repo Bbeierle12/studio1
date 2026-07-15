@@ -73,12 +73,16 @@ describe('extractRecipeContent', () => {
     const html = `<html>
       <head>
         <meta property="og:description" content="Social media recipe caption here">
+        <meta name="twitter:title" content="My Recipe Title">
+        <meta name="twitter:description" content="Twitter specific recipe caption">
       </head>
       <body><p>Barely anything else</p></body>
     </html>`;
 
     const content = extractRecipeContent(html);
     expect(content).toContain('Social media recipe caption here');
+    expect(content).toContain('My Recipe Title');
+    expect(content).toContain('Twitter specific recipe caption');
     expect(content).toContain('Barely anything else');
   });
 
