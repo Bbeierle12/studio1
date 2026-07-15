@@ -69,6 +69,19 @@ describe('extractRecipeContent', () => {
     expect(content).toContain('Flour and sugar.');
   });
 
+  it('preserves meta description tags (for social media recipes)', () => {
+    const html = `<html>
+      <head>
+        <meta property="og:description" content="Social media recipe caption here">
+      </head>
+      <body><p>Barely anything else</p></body>
+    </html>`;
+
+    const content = extractRecipeContent(html);
+    expect(content).toContain('Social media recipe caption here');
+    expect(content).toContain('Barely anything else');
+  });
+
   it('caps content length to bound prompt cost', () => {
     const html = `<body>${'word '.repeat(20000)}</body>`;
     expect(extractRecipeContent(html).length).toBeLessThanOrEqual(15000);
