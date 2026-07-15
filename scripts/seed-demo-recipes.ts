@@ -7,7 +7,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
-import { PrismaClient, Difficulty } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -44,7 +44,7 @@ async function main() {
       tags: JSON.stringify(r.tags),
       prepTime: r.prepTime,
       servings: 4,
-      difficulty: r.difficulty as Difficulty,
+      difficulty: r.difficulty,
       course: r.course,
       cuisine: r.cuisine,
       userId: owner.id,
