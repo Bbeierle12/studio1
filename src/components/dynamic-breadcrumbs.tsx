@@ -20,7 +20,7 @@ interface BreadcrumbSegment {
 
 const routeLabels: Record<string, string> = {
   recipes: 'Recipe Hub',
-  'meal-plan': 'Meal Plan',
+  'meal-plan': 'Calendar',
   household: 'Family',
   saved: 'Saved',
   settings: 'Settings',

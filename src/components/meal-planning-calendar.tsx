@@ -172,7 +172,7 @@ export function MealPlanningCalendar() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-6 w-6" />
-            <h1 className="text-2xl font-bold">Meal Planning Calendar</h1>
+            <h1 className="text-2xl font-bold">Calendar</h1>
           </div>
         </div>
 

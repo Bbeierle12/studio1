@@ -45,7 +45,7 @@ export function Sidebar() {
   const navItems: NavItem[] = [
     { href: '/', label: 'Foyer', icon: Home },
     { href: '/recipes', label: 'Recipe Hub', icon: CookingPot, badge: counts.recipes },
-    { href: '/meal-plan', label: 'Meal Plan', icon: CalendarDays, badge: counts.mealPlan },
+    { href: '/meal-plan', label: 'Calendar', icon: CalendarDays, badge: counts.mealPlan },
     { href: '/saved', label: 'Saved', icon: Bookmark, badge: counts.saved },
     { href: '/household', label: 'Family', icon: Users, badge: counts.family },
     { href: '/recipe-chat', label: 'AI Recipe Chat', icon: MessageSquare },
