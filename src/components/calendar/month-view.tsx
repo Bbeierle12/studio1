@@ -25,9 +25,10 @@ interface MonthViewProps {
   mealPlans: MealPlan[];
   weatherForecast: WeatherForecast[];
   recipes?: Recipe[];
+  onRequestCreatePlan?: (date: Date) => void;
 }
 
-export function MonthView({ currentDate, mealPlan, mealPlans, weatherForecast, recipes = [] }: MonthViewProps) {
+export function MonthView({ currentDate, mealPlan, mealPlans, weatherForecast, recipes = [], onRequestCreatePlan }: MonthViewProps) {
   // Get days in month
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -122,6 +123,7 @@ export function MonthView({ currentDate, mealPlan, mealPlans, weatherForecast, r
               mealPlan={mealPlan}
               view="month"
               recipes={recipes}
+              onRequestCreatePlan={onRequestCreatePlan}
             />
           );
         })}

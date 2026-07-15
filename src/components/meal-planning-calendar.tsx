@@ -39,6 +39,7 @@ export function MealPlanningCalendar() {
   const [view, setView] = useState<CalendarView>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [createPlanSeedDate, setCreatePlanSeedDate] = useState<Date | undefined>();
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
@@ -115,6 +116,13 @@ export function MealPlanningCalendar() {
     setCurrentDate(new Date());
   };
 
+  // A day clicked with no active plan opens the create-plan dialog on that date,
+  // rather than doing nothing.
+  const handleRequestCreatePlan = (date: Date) => {
+    setCreatePlanSeedDate(date);
+    setShowCreateDialog(true);
+  };
+
   // Load template into meal plan
   const handleLoadTemplate = async (template: MealTemplate, targetDate: Date) => {
     if (!activeMealPlan) return;
@@ -172,7 +180,10 @@ export function MealPlanningCalendar() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowCreateDialog(true)}
+            onClick={() => {
+              setCreatePlanSeedDate(undefined);
+              setShowCreateDialog(true);
+            }}
           >
             <Plus className="h-4 w-4 mr-2" />
             New Plan
@@ -297,6 +308,7 @@ export function MealPlanningCalendar() {
             mealPlans={mealPlans || []}
             weatherForecast={weatherForecast || []}
             recipes={recipes as any}
+            onRequestCreatePlan={handleRequestCreatePlan}
           />
         )}
         
@@ -325,6 +337,7 @@ export function MealPlanningCalendar() {
       <CreateMealPlanDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
+        defaultStartDate={createPlanSeedDate}
       />
 
       <GenerateMealPlanDialog

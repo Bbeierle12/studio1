@@ -33,6 +33,8 @@ interface DayCellProps {
   mealPlan?: MealPlan;
   view: 'month' | 'week' | 'day';
   recipes?: Recipe[];
+  /** Called when a day is clicked with no active plan, so the day is never a dead end. */
+  onRequestCreatePlan?: (date: Date) => void;
 }
 
 const weatherIcons: Record<string, any> = {
@@ -60,11 +62,24 @@ export function DayCell({
   isToday,
   mealPlan,
   view,
-  recipes = []
+  recipes = [],
+  onRequestCreatePlan
 }: DayCellProps) {
   const [showAddMeal, setShowAddMeal] = useState(false);
   const { updateMealPlan } = useMealPlan();
-  
+
+  // Without an active plan there is nothing to add a meal to, so a click offers to
+  // create one instead. Only claim to be clickable when one of those is actually wired up.
+  const isInteractive = Boolean(mealPlan || onRequestCreatePlan);
+
+  const handleClick = () => {
+    if (mealPlan) {
+      setShowAddMeal(true);
+    } else {
+      onRequestCreatePlan?.(date);
+    }
+  };
+
   const WeatherIcon = weather ? weatherIcons[weather.condition] || Cloud : Cloud;
   const dayNumber = date.getDate();
   
@@ -81,13 +96,12 @@ export function DayCell({
     <>
       <div
         className={cn(
-          'min-h-[120px] border border-border rounded-lg p-2 transition-colors bg-card hover:bg-accent cursor-pointer flex flex-col',
+          'min-h-[120px] border border-border rounded-lg p-2 transition-colors bg-card flex flex-col',
+          isInteractive && 'hover:bg-accent cursor-pointer',
           !isCurrentMonth && 'opacity-40',
           isToday && 'ring-2 ring-primary'
         )}
-        onClick={() => {
-          if (mealPlan) setShowAddMeal(true);
-        }}
+        onClick={isInteractive ? handleClick : undefined}
       >
         {/* Date header */}
         <div className="flex items-start justify-between mb-2">

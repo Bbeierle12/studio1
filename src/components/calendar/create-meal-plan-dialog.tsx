@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,14 +15,25 @@ import { cn } from '@/lib/utils';
 interface CreateMealPlanDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Pre-fills the start date, e.g. when the dialog is opened by clicking a calendar day. */
+  defaultStartDate?: Date;
 }
 
-export function CreateMealPlanDialog({ open, onOpenChange }: CreateMealPlanDialogProps) {
+export function CreateMealPlanDialog({ open, onOpenChange, defaultStartDate }: CreateMealPlanDialogProps) {
   const { createMealPlan, isCreating } = useMealPlan();
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  
+
+  // The dialog stays mounted between openings, so the seed has to be applied on each
+  // open rather than at first render. Keyed on `open` so it never overwrites an edit
+  // the user is making while the dialog is already up.
+  useEffect(() => {
+    if (open && defaultStartDate) {
+      setStartDate(defaultStartDate);
+    }
+  }, [open, defaultStartDate]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
